@@ -6,3 +6,6 @@ tab_width = 2
 
 [*.cs]
 csharp_new_line_before_open_brace = none
+
+[*.{html,css,js,razor}]
+indent_size = 2
