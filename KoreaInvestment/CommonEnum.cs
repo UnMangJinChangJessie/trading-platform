@@ -54,20 +54,6 @@ public enum OrderMethod {
   [JsonStringEnumMemberName("79")] AfterMarketHugeTreasuryStock,
   [JsonStringEnumMemberName("80")] Basket,
 }
-public enum MarketField {
-  STOCK,
-  OVERSEA_STOCK,
-  INDEX,
-  STOCK_FUTURES,
-  INDEX_FUTURES,
-  COMMODITY_FUTURES,
-  NIGHT_FUTURES,
-  STOCK_OPTIONS,
-  INDEX_OPTIONS,
-  NIGHT_OPTIONS,
-  OVERSEA_FUTURES,
-  EXCHANGE_TRADED_FUND,
-}
 public enum DomesticOrderRoute {
   [JsonStringEnumMemberName("KRX")] KoreaExchange,
   [JsonStringEnumMemberName("NXT")] NexTrade,

@@ -5,16 +5,22 @@
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
         x:Class="trading_platform.MainWindow"
         Title="Trading Platform">
-  <Grid ColumnDefinitions="Auto, 4*, *" RowDefinitions="*">
-    <StackPanel Grid.Column="0" Orientation="Vertical">
-      <Button HorizontalAlignment="Center">API 접속 토큰 발급</Button>
-      <Button HorizontalAlignment="Center">국내 주식</Button>
-      <Button HorizontalAlignment="Center">해외 주식</Button>
-      <Button HorizontalAlignment="Center">국내 선물옵션</Button>
-      <Button HorizontalAlignment="Center">해외 선물옵션</Button>
-      <Button HorizontalAlignment="Center">국내 채권</Button>
-    </StackPanel>
-    <TextBlock Grid.Column="1" HorizontalAlignment="Center">차트 및 정보</TextBlock>
-    <TextBlock Grid.Column="2" HorizontalAlignment="Center">주문 창</TextBlock>
+  <Window.Styles>
+    <Style Selector="GridSplitter">
+      <Setter Property="Background" Value="Silver"/>
+    </Style>
+  </Window.Styles>
+  <Grid ColumnDefinitions="Auto, 4*, 1, *" RowDefinitions="*">
+    <!-- 거래 종류 선택 -->
+    <ListBox 
+      Grid.Column="0"
+      SelectionMode="Toggle, AlwaysSelected"
+      SelectedIndex="0"
+      Name="ScreenIds"
+      SelectionChanged="ScreenIds_SelectionChanged"
+    />
+    <UserControl Grid.Column="1" Name="MiddleUserControl" />
+    <GridSplitter Grid.Column="2" ResizeDirection="Columns" />
+    <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="24">주문 창</TextBlock>
   </Grid>
 </Window>
