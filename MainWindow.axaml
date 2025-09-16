@@ -2,8 +2,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
         x:Class="trading_platform.MainWindow"
-        Title="trading_platform">
-    Welcome to Avalonia!
+        Title="Trading Platform">
+  <Grid ColumnDefinitions="Auto, 4*, *" RowDefinitions="*">
+    <StackPanel Grid.Column="0" Orientation="Vertical">
+      <Button HorizontalAlignment="Center">API 접속 토큰 발급</Button>
+      <Button HorizontalAlignment="Center">국내 주식</Button>
+      <Button HorizontalAlignment="Center">해외 주식</Button>
+      <Button HorizontalAlignment="Center">국내 선물옵션</Button>
+      <Button HorizontalAlignment="Center">해외 선물옵션</Button>
+      <Button HorizontalAlignment="Center">국내 채권</Button>
+    </StackPanel>
+    <TextBlock Grid.Column="1" HorizontalAlignment="Center">차트 및 정보</TextBlock>
+    <TextBlock Grid.Column="2" HorizontalAlignment="Center">주문 창</TextBlock>
+  </Grid>
 </Window>
