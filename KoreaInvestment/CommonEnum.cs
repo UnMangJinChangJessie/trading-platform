@@ -1,15 +1,21 @@
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace trading_platform.KoreaInvestment;
 
 public enum OrderPosition {
-  [JsonStringEnumMemberName("01")] Sell, // also short
-  [JsonStringEnumMemberName("02")] Buy, // also long
+  [JsonStringEnumMemberName("01")]
+  Sell, // also short
+  [JsonStringEnumMemberName("02")]
+  Buy, // also long
 }
 public enum OrderSelling {
-  [JsonStringEnumMemberName("01")] Ordinary, // 개인이면 이것만 사용하게 될 것
-  [JsonStringEnumMemberName("02")] Involuntary,
-  [JsonStringEnumMemberName("05")] Loaned,
+  [JsonStringEnumMemberName("01")]
+  Ordinary, // 개인이면 이것만 사용하게 될 것
+  [JsonStringEnumMemberName("02")]
+  Involuntary,
+  [JsonStringEnumMemberName("05")]
+  Loaned,
 }
 public enum OrderCredit {
   [JsonStringEnumMemberName("21")] BrokerageLong,
@@ -22,27 +28,69 @@ public enum OrderCredit {
   [JsonStringEnumMemberName("27")] LiquidityShortReturn,
 }
 public enum OrderMethod {
-  [JsonStringEnumMemberName("00")] Limit,
-  [JsonStringEnumMemberName("01")] Market,
-  [JsonStringEnumMemberName("02")] ConditionalLimit,
-  [JsonStringEnumMemberName("03")] BestOffer,
-  [JsonStringEnumMemberName("04")] TopPriority,
-  [JsonStringEnumMemberName("05")] PreMarket,
-  [JsonStringEnumMemberName("06")] PostMarket,
-  [JsonStringEnumMemberName("07")] AfterMarket,
-  [JsonStringEnumMemberName("08")] TreasuryStock,
-  [JsonStringEnumMemberName("09")] TreasuryStockOptions,
-  [JsonStringEnumMemberName("10")] TreasuryStockTrust,
-  [JsonStringEnumMemberName("11")] IocLimit,
-  [JsonStringEnumMemberName("12")] FokLimit,
-  [JsonStringEnumMemberName("13")] IocMarket,
-  [JsonStringEnumMemberName("14")] FokMarket,
-  [JsonStringEnumMemberName("15")] IocBestOffer,
-  [JsonStringEnumMemberName("16")] FokBestOffer,
-  [JsonStringEnumMemberName("21")] Intermediate,
-  [JsonStringEnumMemberName("22")] StopLossLimit,
-  [JsonStringEnumMemberName("23")] IocIntermediate,
-  [JsonStringEnumMemberName("24")] FokIntermediate,
+  [JsonStringEnumMemberName("00")]
+  [Description("지정가")]
+  Limit,
+  [JsonStringEnumMemberName("01")]
+  [Description("시장가")]
+  Market,
+  [JsonStringEnumMemberName("02")]
+  [Description("조건부지정가")]
+  ConditionalLimit,
+  [JsonStringEnumMemberName("03")]
+  [Description("최유리지정가")]
+  BestOffer,
+  [JsonStringEnumMemberName("04")]
+  [Description("최우선지정가")]
+  TopPriority,
+  [JsonStringEnumMemberName("05")]
+  [Description("장전전일종가매매")]
+  PreMarket,
+  [JsonStringEnumMemberName("06")]
+  [Description("장후종가매매")]
+  PostMarket,
+  [JsonStringEnumMemberName("07")]
+  [Description("장후단일가매매")]
+  AfterMarket,
+  [JsonStringEnumMemberName("08")]
+  [Description("자기주식")]
+  TreasuryStock,
+  [JsonStringEnumMemberName("09")]
+  [Description("자기주식스톡옵션")]
+  TreasuryStockOptions,
+  [JsonStringEnumMemberName("10")]
+  [Description("자기주식신탁")]
+  TreasuryStockTrust,
+  [JsonStringEnumMemberName("11")]
+  [Description("지정가(Immediate or Cancel)")]
+  IocLimit,
+  [JsonStringEnumMemberName("12")]
+  [Description("지정가(Fill or Kill)")]
+  FokLimit,
+  [JsonStringEnumMemberName("13")]
+  [Description("시장가(Immediate or Cancel)")]
+  IocMarket,
+  [JsonStringEnumMemberName("14")]
+  [Description("시장가(Fill or Kill)")]
+  FokMarket,
+  [JsonStringEnumMemberName("15")]
+  [Description("최유리지정가(Immediate or Cancel)")]
+  IocBestOffer,
+  [JsonStringEnumMemberName("16")]
+  [Description("최유리지정가(Fill or Kill)")]
+  FokBestOffer,
+  [JsonStringEnumMemberName("21")]
+  [Description("중간가")]
+  Intermediate,
+  [JsonStringEnumMemberName("22")]
+  [Description("손실제한지정가")]
+  StopLossLimit,
+  [JsonStringEnumMemberName("23")]
+  [Description("중간가(Immediate or Cancel)")]
+  IocIntermediate,
+  [JsonStringEnumMemberName("24")]
+  [Description("중간가(Fill or Kill)")]
+  FokIntermediate,
   [JsonStringEnumMemberName("51")] MidMarketHuge,
   [JsonStringEnumMemberName("52")] MidMarketBasket,
   [JsonStringEnumMemberName("62")] PreMarketHuge,

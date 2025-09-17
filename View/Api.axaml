@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="trading_platform.View.Api">
+  <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" >
+    <TextBlock Text="API 접근 토큰 관리" Classes="h1" HorizontalAlignment="Center" />
+    <Grid ColumnDefinitions="Auto, 400" RowDefinitions="Auto, Auto, Auto">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="API Public Key" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10"/>
+      <TextBox 
+        Grid.Row="0" Grid.Column="1"
+        Name="AppPublicKey"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextChanged="AppPublicKey_TextChanged"
+        Margin="0 5"
+      />
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="API Secret Key" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10"/>
+      <TextBox 
+        Grid.Row="1" Grid.Column="1"
+        Name="AppSecretKey"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        TextChanged="AppSecretKey_TextChanged"
+        PasswordChar="*"
+        Margin="0 5"
+      />
+    </Grid>
+    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
+      <Button
+        Grid.Row="0" Grid.Column="0"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Center"
+        Click="IssueButton_Click"
+        Background="ForestGreen"
+        TextElement.Foreground="White"
+        Margin="10 5"
+      >
+        API 접근 토큰 발급
+      </Button>
+      <Button
+        Grid.Row="0" Grid.Column="1"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Center"
+        Click="RevokeButton_Click"
+        Background="OrangeRed"
+        TextElement.Foreground="White"
+        Margin="0 5"
+      >
+        API 접근 토큰 폐기
+      </Button>
+    </Grid>
+    <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto" >
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="접속 토큰" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0" />
+      <TextBox Grid.Row="0" Grid.Column="1" IsReadOnly="True" Name="AccessKeyTextBox" HorizontalAlignment="Stretch" PasswordChar="*" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="WebSocket 접속 토큰" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,5,10,0" />
+      <TextBox Grid.Row="1" Grid.Column="1" IsReadOnly="True" Name="WebSocketAccessKeyTextBox" HorizontalAlignment="Stretch" Margin="0,5,0,0" PasswordChar="*" />
+    </Grid>
+  </StackPanel>
+</UserControl>

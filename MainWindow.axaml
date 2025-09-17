@@ -2,14 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:component="using:trading_platform.Components"
+        xmlns:view="using:trading_platform.View"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
         x:Class="trading_platform.MainWindow"
         Title="Trading Platform">
-  <Window.Styles>
-    <Style Selector="GridSplitter">
-      <Setter Property="Background" Value="Silver"/>
-    </Style>
-  </Window.Styles>
+  <!-- Resource -->
+  <!-- Style -->
+  <!-- 여기서부터 Layout 정의 -->
   <Grid ColumnDefinitions="Auto, 4*, 1, *" RowDefinitions="*">
     <!-- 거래 종류 선택 -->
     <ListBox 
@@ -19,8 +19,8 @@
       Name="ScreenIds"
       SelectionChanged="ScreenIds_SelectionChanged"
     />
-    <UserControl Grid.Column="1" Name="MiddleUserControl" />
+    <UserControl Grid.Column="1" Name="MiddleView" />
     <GridSplitter Grid.Column="2" ResizeDirection="Columns" />
-    <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="24">주문 창</TextBlock>
+    <view:DomesticStockOrderView Grid.Column="3" Name="OrderView" />
   </Grid>
 </Window>

@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:component="using:trading_platform.Components"
+             xmlns:vm="using:trading_platform.ViewModel"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="trading_platform.Template.Order"
+             x:DataType="vm:Order">
+  <StackPanel Margin="10,10,10,10">
+    <TextBlock Classes="h1" Margin="0, 0, 0, 5" HorizontalAlignment="Center">
+      <Run Text="종목 이름" />
+      <Run Text=" 주문" />
+    </TextBlock>
+    <component:AccountForm
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+    />
+    <ComboBox 
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,5"
+      Name="OrderMethodComboBox"
+      PlaceholderText="주문 방식 선택"
+    />
+    <NumericUpDown
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+      AllowSpin="True"
+      Watermark="주문 단가"
+      Value="{Binding UnitPrice}"
+    />
+    <NumericUpDown
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+      Watermark="주문 수량"
+      Value="{Binding Quantity}"
+    />
+    <NumericUpDown
+      Value="{Binding StopLossPrice}"
+      Watermark="손실제한가격"
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+    />
+    <Grid
+      RowDefinitions="Auto"
+      ColumnDefinitions="*,*"
+    >
+      <Button
+        Grid.Row="0" Grid.Column="0"
+        HorizontalAlignment="Stretch"
+        VerticalContentAlignment="Center"
+        HorizontalContentAlignment="Center"
+        Margin="0,0,5,0"
+        Background="DarkGreen"
+      >
+      매수
+      </Button>
+      <Button
+        Grid.Row="0" Grid.Column="1"
+        HorizontalAlignment="Stretch"
+        VerticalContentAlignment="Center"
+        HorizontalContentAlignment="Center"
+        Margin="5,0,0,0"
+        Background="DarkRed"
+      >
+      매도
+      </Button>
+    </Grid>
+  </StackPanel>
+</UserControl>

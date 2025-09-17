@@ -19,7 +19,7 @@ public partial class MainWindow : Window {
   public MainWindow() {
     InitializeComponent();
     ScreenIds.ItemsSource = SCREEN_SELECTION_DICT.Keys;
-    MiddleUserControl.Content = new AppScreen.Api();
+    MiddleView.Content = new View.Api();
   }
   private void ScreenIds_SelectionChanged(object? sender, RoutedEventArgs args) {
     if (sender == null) return;
@@ -34,10 +34,10 @@ public partial class MainWindow : Window {
     }
   }
   private void SwitchMiddlePanel(MiddlePanelType screen) {
-    MiddleUserControl.Content = screen switch {
-      MiddlePanelType.KoreaStock => new AppScreen.KoreaStock(),
-      MiddlePanelType.OverseaStock => new AppScreen.OverseaStock(),
-      MiddlePanelType.Api => new AppScreen.Api(),
+    MiddleView.Content = screen switch {
+      MiddlePanelType.KoreaStock => new View.KoreaStock(),
+      MiddlePanelType.OverseaStock => new View.OverseaStock(),
+      MiddlePanelType.Api => new View.Api(),
       _ => throw new NotImplementedException()
     };
   }
