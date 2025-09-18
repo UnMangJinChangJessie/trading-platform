@@ -5,19 +5,19 @@ namespace trading_platform.KoreaInvestment;
 
 public class StockCashOrderBody : IAccount, IOrder {
   [JsonPropertyName("CANO")]
-  public required string AccountBase { get; init; }
+  public string AccountBase { get; init; }
   [JsonPropertyName("ACNT_PRDT_CD")]
-  public required string AccountCode { get; init; }
+  public string AccountCode { get; init; }
   [JsonIgnore]
-  public required OrderPosition Position { get; init; }
+  public OrderPosition Position { get; init; }
   [JsonPropertyName("PDNO")]
-  public required string Ticker { get; init; }
+  public string Ticker { get; init; }
   [JsonPropertyName("ORD_DVSN")]
-  public required OrderMethod OrderDivision { get; init; }
+  public OrderMethod OrderDivision { get; init; }
   [JsonPropertyName("ORD_UNPR"), JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-  public required decimal UnitPrice { get; init; }
+  public decimal UnitPrice { get; init; }
   [JsonPropertyName("ORD_QTY"), JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-  public required ulong Quantity { get; init; }
+  public ulong Quantity { get; init; }
   [JsonPropertyName("CNDT_PRIC"), JsonNumberHandling(JsonNumberHandling.WriteAsString), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public decimal? StopLossLimit { get; init; }
   [JsonPropertyName("SLL_TYPE"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

@@ -3,17 +3,15 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:vm="using:trading_platform.ViewModel"
-  mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+  mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
   x:DataType="vm:PriceDisplay"
   x:Class="trading_platform.Components.PriceDisplay"
 >
-  <StackPanel Orientation="Horizontal" >
-    <StackPanel Orientation="Vertical" >
-      <TextBlock Classes="h1" Text="{Binding TickerName}" />
-      <TextBlock>
-        <Run Classes="h2" Text="{Binding Price}" />
-        <Run Text="{Binding Currency}" />
-      </TextBlock>
-    </StackPanel>
+  <StackPanel Orientation="Vertical" >
+    <TextBlock Classes="h1" Text="{Binding TickerName}" />
+    <TextBlock >
+      <Run Classes="h2" Text="{Binding Price}" />
+      <Run Text="{Binding Currency}" />
+    </TextBlock>
   </StackPanel>
 </UserControl>

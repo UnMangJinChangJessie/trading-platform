@@ -6,7 +6,11 @@
         x:Class="trading_platform.Dialogs.OkDialog"
         Title="Meow :3">
   <StackPanel Orientation="Vertical">
-    <TextBlock Name="DialogTextBlock" HorizontalAlignment="Center" />
-    <Button HorizontalAlignment="Center" Name="OkButton" Click="OkButton_Click">OK</Button>
+    <TextBlock Text="메시지" Name="DialogTextBlock" HorizontalAlignment="Center" />
+    <Button HorizontalAlignment="Center" Name="OkButton" Click="OkButton_Click">
+      <TextBlock>
+        OK
+      </TextBlock>
+    </Button>
   </StackPanel>
 </Window>

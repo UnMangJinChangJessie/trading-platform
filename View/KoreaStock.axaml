@@ -10,7 +10,7 @@
   <Grid ColumnDefinitions="*,200" RowDefinitions="*">
     <Grid
       Grid.Column="0"
-      ColumnDefinitions="Auto" RowDefinitions="100, *"
+      ColumnDefinitions="*" RowDefinitions="200, *"
     >
       <components:PriceDisplay
         Grid.Row="0"

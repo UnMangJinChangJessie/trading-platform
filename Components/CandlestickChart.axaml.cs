@@ -27,14 +27,16 @@ public partial class CandlestickChart : UserControl {
     get => this.GetValue(ZoomSensitivityProperty);
     set => SetValue(ZoomSensitivityProperty, value);
   }
-  public List<OHLC> CandlesticksSource { get; private set; }
+  public List<OHLC> CandlesticksSource { get; private set; } = [];
   
   private double BottomLimitRateStart { get; set; } = 0.0;
   private double BottomLimitRateEnd { get; set; } = 1.0;
   public CandlestickChart() {
     InitializeComponent();
     // 디버그 전용 파일 불러오기
-    CandlesticksSource = Generate.RandomOHLCs(250*3, DateTime.Today);
+    if (Design.IsDesignMode) {
+      CandlesticksSource = Generate.RandomOHLCs(250 * 3, DateTime.Today);
+    }
     var ohlc = PriceChart.Plot.Add.OHLC(CandlesticksSource);
     PriceChart.Plot.Font.Set("Gowun Dodum");
     PriceChart.Plot.Axes.ContinuouslyAutoscale = true;
@@ -44,9 +46,9 @@ public partial class CandlestickChart : UserControl {
     PriceChart.Refresh();
   }
   public void PriceChart_ContinuousAutoscale(RenderPack rp) {
+    if (CandlesticksSource.Count == 0) return;
     var plot = rp.Plot;
     if (plot == null) return;
-
     var dataLimits = plot.Axes.GetDataLimits();
     var limits = plot.Axes.GetLimits();
     var (leftCoordinate, rightCoordinate) = (

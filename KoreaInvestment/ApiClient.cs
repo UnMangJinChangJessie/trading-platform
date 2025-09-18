@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Text.Json;
 
 namespace trading_platform.KoreaInvestment;
@@ -35,8 +36,9 @@ public static partial class ApiClient {
     return Simulation;
   }
   public static Uri BuildApiBaseAddress() {
-    UriBuilder builder = new($"https://openapi.koreainvestment.com");
-    builder.Port = Simulation ? 29443 : 9443;
+    UriBuilder builder = new($"https://openapi.koreainvestment.com") {
+      Port = Simulation ? 29443 : 9443
+    };
     return builder.Uri;
   }
   public static string GetFirstThreeTokenChar() {
@@ -55,11 +57,7 @@ public static partial class ApiClient {
     if (restSpan < REQUEST_RATE_LIMIT) {
       await Task.Delay(restSpan);
     }
-    var builder = new UriBuilder {
-      Host = relUri,
-      Query = queries != null ? Common.BuildQueryString(queries) : ""
-    };
-    HttpRequestMessage message = new(method, builder.Uri);
+    HttpRequestMessage message = new(method, relUri + (queries == null ? "" : Common.BuildQueryString(queries)));
     message.Headers.Add("appkey", AppPublicKey);
     message.Headers.Add("appsecret", AppSecretKey);
     message.Headers.Add("authorization", $"Bearer {AccessToken}");
@@ -68,7 +66,9 @@ public static partial class ApiClient {
     if (header != null) foreach (var (key, value) in header) {
         message.Headers.Add(key, value);
       }
-    if (body != null) message.Content = JsonContent.Create(body);
+    if (body != null) message.Content = new StringContent(
+      Encoding.UTF8.GetString(JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerOption)), Encoding.UTF8, "application/json"
+    );
     var response = await RequestClient.SendAsync(message);
     var bodyJson = await response.Content.ReadFromJsonAsync<TResult>(JsonSerializerOption);
     return (response.StatusCode, bodyJson);
