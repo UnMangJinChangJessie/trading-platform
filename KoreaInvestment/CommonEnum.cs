@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace trading_platform.KoreaInvestment;
@@ -29,67 +30,67 @@ public enum OrderCredit {
 }
 public enum OrderMethod {
   [JsonStringEnumMemberName("00")]
-  [Description("지정가")]
+  [Display(Name = "지정가")]
   Limit,
   [JsonStringEnumMemberName("01")]
-  [Description("시장가")]
+  [Display(Name = "시장가")]
   Market,
   [JsonStringEnumMemberName("02")]
-  [Description("조건부지정가")]
+  [Display(Name = "조건부지정가")]
   ConditionalLimit,
   [JsonStringEnumMemberName("03")]
-  [Description("최유리지정가")]
+  [Display(Name = "최유리지정가")]
   BestOffer,
   [JsonStringEnumMemberName("04")]
-  [Description("최우선지정가")]
+  [Display(Name = "최우선지정가")]
   TopPriority,
   [JsonStringEnumMemberName("05")]
-  [Description("장전전일종가매매")]
+  [Display(Name = "장전전일종가매매")]
   PreMarket,
   [JsonStringEnumMemberName("06")]
-  [Description("장후종가매매")]
+  [Display(Name = "장후종가매매")]
   PostMarket,
   [JsonStringEnumMemberName("07")]
-  [Description("장후단일가매매")]
+  [Display(Name = "장후단일가매매")]
   AfterMarket,
   [JsonStringEnumMemberName("08")]
-  [Description("자기주식")]
+  [Display(Name = "자기주식")]
   TreasuryStock,
   [JsonStringEnumMemberName("09")]
-  [Description("자기주식스톡옵션")]
+  [Display(Name = "자기주식스톡옵션")]
   TreasuryStockOptions,
   [JsonStringEnumMemberName("10")]
-  [Description("자기주식신탁")]
+  [Display(Name = "자기주식신탁")]
   TreasuryStockTrust,
   [JsonStringEnumMemberName("11")]
-  [Description("지정가(Immediate or Cancel)")]
+  [Display(Name = "지정가(Immediate or Cancel)")]
   IocLimit,
   [JsonStringEnumMemberName("12")]
-  [Description("지정가(Fill or Kill)")]
+  [Display(Name = "지정가(Fill or Kill)")]
   FokLimit,
   [JsonStringEnumMemberName("13")]
-  [Description("시장가(Immediate or Cancel)")]
+  [Display(Name = "시장가(Immediate or Cancel)")]
   IocMarket,
   [JsonStringEnumMemberName("14")]
-  [Description("시장가(Fill or Kill)")]
+  [Display(Name = "시장가(Fill or Kill)")]
   FokMarket,
   [JsonStringEnumMemberName("15")]
-  [Description("최유리지정가(Immediate or Cancel)")]
+  [Display(Name = "최유리지정가(Immediate or Cancel)")]
   IocBestOffer,
   [JsonStringEnumMemberName("16")]
-  [Description("최유리지정가(Fill or Kill)")]
+  [Display(Name = "최유리지정가(Fill or Kill)")]
   FokBestOffer,
   [JsonStringEnumMemberName("21")]
-  [Description("중간가")]
+  [Display(Name = "중간가")]
   Intermediate,
   [JsonStringEnumMemberName("22")]
-  [Description("손실제한지정가")]
+  [Display(Name = "손실제한지정가")]
   StopLossLimit,
   [JsonStringEnumMemberName("23")]
-  [Description("중간가(Immediate or Cancel)")]
+  [Display(Name = "중간가(Immediate or Cancel)")]
   IocIntermediate,
   [JsonStringEnumMemberName("24")]
-  [Description("중간가(Fill or Kill)")]
+  [Display(Name = "중간가(Fill or Kill)")]
   FokIntermediate,
   [JsonStringEnumMemberName("51")] MidMarketHuge,
   [JsonStringEnumMemberName("52")] MidMarketBasket,
@@ -199,6 +200,12 @@ public static class KoreaInvestmentExtensions {
     OrderMethod.Basket => "80",
     _ => throw new ArgumentOutOfRangeException(nameof(type))
   };
+  public static bool IsPriceMarket(this OrderMethod method) => Enumerable.Contains([
+    OrderMethod.Market, OrderMethod.IocMarket, OrderMethod.FokMarket,
+    OrderMethod.BestOffer, OrderMethod.IocBestOffer, OrderMethod.FokBestOffer,
+    OrderMethod.TopPriority,
+    OrderMethod.Intermediate, OrderMethod.IocIntermediate, OrderMethod.FokIntermediate,
+  ], method);
   public static string GetCode(this Exchange exchange) => exchange switch {
     Exchange.KoreaExchange => "J",
     Exchange.NexTrade => "NX",

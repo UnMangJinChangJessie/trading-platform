@@ -20,10 +20,27 @@ public partial class Api : UserControl {
     if (sender == null) return;
     ApiClient.AppSecretKey = ((TextBox)sender).Text ?? "";
   }
-  private static async void IssueButton_Click(object? sender, RoutedEventArgs args) {
+  private async void IssueButton_Click(object? sender, RoutedEventArgs args) {
     var success = await ApiClient.IssueToken();
+    if (success) {
+      AccessKeyTextBox.Text = ApiClient.AccessToken;
+      AccessKeyExpireTextBox.Text = ApiClient.AccessTokenExpire.ToString("yyyy-MM-ddThh:mm:sszzz");
+    }
+    success = await ApiClient.IssueWebSocketToken();
+    if (success) {
+      WebSocketAccessKeyTextBox.Text = ApiClient.WebSocketAccessToken;
+    }
   }
-  private static async void RevokeButton_Click(object? sender, RoutedEventArgs args) {
+  private async void RevokeButton_Click(object? sender, RoutedEventArgs args) {
     var success = await ApiClient.RevokeToken();
+    if (success) {
+      AccessKeyTextBox.Text = "";
+      AccessKeyExpireTextBox.Text = "";
+    }
+  }
+  private void RevealButton_Click(object? sender, RoutedEventArgs args) {
+    if (sender == null) return;
+    AccessKeyTextBox.RevealPassword = !AccessKeyTextBox.RevealPassword;
+    WebSocketAccessKeyTextBox.RevealPassword = !WebSocketAccessKeyTextBox.RevealPassword;
   }
 }

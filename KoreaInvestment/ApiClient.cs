@@ -13,8 +13,8 @@ public static partial class ApiClient {
   public static bool Simulation { get; private set; } = false;
   public static string AppPublicKey { get; set; } = "";
   public static string AppSecretKey { get; set; } = "";
-  private static string AccessToken { get; set; } = default!;
-  private static string WebSocketAccessToken { get; set; } = default!;
+  public static string AccessToken { get; set; } = default!;
+  public static string WebSocketAccessToken { get; set; } = default!;
   public static DateTime AccessTokenExpire { get; private set; } = DateTime.Now;
   private readonly static HttpClient RequestClient = new() {
     BaseAddress = BuildApiBaseAddress(),

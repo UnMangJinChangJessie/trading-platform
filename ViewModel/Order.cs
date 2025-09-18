@@ -1,31 +1,20 @@
-using Avalonia;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using Avalonia.Data.Converters;
+using CommunityToolkit.Mvvm.ComponentModel;
 using trading_platform.KoreaInvestment;
 
 namespace trading_platform.ViewModel;
 
-public class Order : AvaloniaObject {
-  public static readonly StyledProperty<OrderMethod> SelectionProperty =
-    AvaloniaProperty.Register<Order, OrderMethod>(nameof(Selection));
-  public OrderMethod Selection {
-    get => GetValue(SelectionProperty);
-    set => SetValue(SelectionProperty, value);
-  }
-  public static readonly StyledProperty<decimal> UnitPriceProperty =
-    AvaloniaProperty.Register<Order, decimal>(nameof(UnitPrice));
-  public decimal UnitPrice {
-    get => GetValue(UnitPriceProperty);
-    set => SetValue(UnitPriceProperty, value);
-  }
-  public static readonly StyledProperty<decimal> QuantityProperty =
-    AvaloniaProperty.Register<Order, decimal>(nameof(Quantity));
-  public decimal Quantity {
-    get => GetValue(QuantityProperty);
-    set => SetValue(QuantityProperty, value);
-  }
-  public static readonly StyledProperty<decimal> StopLossPriceProperty =
-    AvaloniaProperty.Register<Order, decimal>(nameof(StopLossPrice));
-  public decimal StopLossPrice {
-    get => GetValue(StopLossPriceProperty);
-    set => SetValue(StopLossPriceProperty, value);
-  }
+public partial class Order : ObservableObject {
+  [ObservableProperty] public partial string AccountBase { get; set; } = "";
+  [ObservableProperty] public partial string AccountCode { get; set; } = "";
+  [ObservableProperty] public partial IDictionary<string, OrderMethod> MethodsAllowed { get; set; } = new Dictionary<string, OrderMethod>();
+  [ObservableProperty] public partial string? SelectedMethod { get; set; }
+  [ObservableProperty] public partial string Ticker { get; set; } = "";
+  [ObservableProperty] public partial decimal UnitPrice { get; set; } = 0.0M;
+  [ObservableProperty] public partial decimal Quantity { get; set; } = 0.0M;
+  [ObservableProperty] public partial decimal StopLossPrice { get; set; } = 0.0M;
 }

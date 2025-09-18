@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:partial="using:trading_platform.Forms.Partial"
+  xmlns:vm="using:trading_platform.ViewModel"
+  mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+  x:Class="trading_platform.Forms.Order"
+  x:DataType="vm:Order"
+>
+  <StackPanel Margin="10,10,10,10" >
+    <TextBlock Classes="h1" Margin="0, 0, 0, 5" HorizontalAlignment="Center" >
+      <Run Text="종목 이름" />
+      <Run Text=" 주문" />
+    </TextBlock>
+    <Grid
+      ColumnDefinitions="Auto,5*,2*" RowDefinitions="Auto"
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+    >
+      <TextBlock
+        Grid.Row="0" Grid.Column="0"
+        VerticalAlignment="Center"
+        Text="계좌번호"
+      />
+      <TextBox
+        Grid.Row="0" Grid.Column="1"
+        Margin="5, 10"
+        Text="{Binding AccountBase}"
+        Watermark="12345678"
+        MaxLength="8"
+        MinWidth="0"
+      />
+      <TextBox 
+        Grid.Row="0" Grid.Column="2"
+        Margin="0, 10"
+        Text="{Binding AccountCode}"
+        Watermark="90"
+        MaxLength="2"
+        MinWidth="0"
+      />
+    </Grid>
+    <ComboBox 
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+      Name="OrderMethodComboBox"
+      PlaceholderText="주문 방식 선택"
+      ItemsSource="{Binding MethodsAllowed.Keys}"
+      SelectedValue="{Binding SelectedMethod}"
+      SelectionChanged="OrderMethodComboBox_SelectionChanged"
+    />
+    <NumericUpDown
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+      AllowSpin="True"
+      Name="UnitPriceNumericUpDown"
+      Watermark="주문 단가"
+      Value="{Binding UnitPrice}"
+    />
+    <NumericUpDown
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+      AllowSpin="True"
+      Watermark="주문 수량"
+      Value="{Binding Quantity}"
+      Minimum="0"
+    />
+    <NumericUpDown
+      Value="{Binding StopLossPrice}"
+      Watermark="손실제한가격"
+      AllowSpin="True"
+      Name="StopLossNumericUpDown"
+      HorizontalAlignment="Stretch"
+      Margin="0,0,0,10"
+    />
+    <Grid
+      RowDefinitions="Auto"
+      ColumnDefinitions="*,*"
+    >
+      <Button
+        Grid.Row="0" Grid.Column="0"
+        HorizontalAlignment="Stretch"
+        VerticalContentAlignment="Center"
+        HorizontalContentAlignment="Center"
+        Margin="0,0,5,0"
+        Background="DarkGreen"
+        Click="LongButton_Click"
+      >
+        <TextBlock Foreground="White">
+          매수
+        </TextBlock>
+      </Button>
+      <Button
+        Grid.Row="0" Grid.Column="1"
+        HorizontalAlignment="Stretch"
+        VerticalContentAlignment="Center"
+        HorizontalContentAlignment="Center"
+        Margin="5,0,0,0"
+        Background="DarkRed"
+        Click="ShortButton_Click"
+      >
+        <TextBlock Foreground="White">
+          매도
+        </TextBlock>
+      </Button>
+    </Grid>
+  </StackPanel>
+</UserControl>
