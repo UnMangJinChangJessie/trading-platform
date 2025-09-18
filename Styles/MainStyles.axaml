@@ -13,26 +13,21 @@
     <Setter Property="Background" Value="Silver"/>
   </Style>
   
-  <Style Selector="TextBlock">
-    <Setter Property="FontSize" Value="12" />
-    <Setter Property="FontFamily" Value="{StaticResource GowunDodum}" />
-  </Style>
-  <Style Selector="TextBox">
+  <Style Selector=":is(InputElement), :is(TextElement)">
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontFamily" Value="{StaticResource GowunDodum}" />
   </Style>
   <Style Selector="TabItem">
     <Setter Property="FontSize" Value="12" />
     <Setter Property="FontFamily" Value="{StaticResource GowunDodum}" />
-  </Style>
-  
-  <Style Selector="TextBlock.h1">
-    <Setter Property="FontSize" Value="20" />
-  </Style>
-  <Style Selector="TextBlock.h2">
-    <Setter Property="FontSize" Value="18" />
-  </Style>
-  <Style Selector="TextBlock.h3">
-    <Setter Property="FontSize" Value="16" />
+    <Style Selector=".h1">
+      <Setter Property="FontSize" Value="20" />
+    </Style>
+    <Style Selector=".h2">
+      <Setter Property="FontSize" Value="18" />
+    </Style>
+    <Style Selector=".h3">
+      <Setter Property="FontSize" Value="16" />
+    </Style>
   </Style>
 </Styles>
