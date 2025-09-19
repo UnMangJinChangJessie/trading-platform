@@ -33,7 +33,7 @@
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Center"
         Click="IssueButton_Click"
-        Background="ForestGreen"
+        Classes="Success"
         TextElement.Foreground="White"
         Margin="10 5"
       >
@@ -46,7 +46,7 @@
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Center"
         Click="RevokeButton_Click"
-        Background="OrangeRed"
+        Classes="Fail"
         TextElement.Foreground="White"
         Margin="0 5"
       >
