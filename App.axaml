@@ -1,50 +1,23 @@
 <Application xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:cat="using:trading_platform.Styles.Catppuccin"
   x:Class="trading_platform.App"
-  RequestedThemeVariant="Light"
 >
   <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
   <Application.Resources>
     <FontFamily x:Key="GowunDodum">
       avares://trading-platform/Assets/Fonts#Gowun Dodum
     </FontFamily>
+    <x:Double x:Key="XXSmallFontSize" >8</x:Double>
+    <x:Double x:Key="XSmallFontSize" >10</x:Double>
+    <x:Double x:Key="SmallFontSize" >12</x:Double>
+    <x:Double x:Key="MediumFontSize" >14</x:Double>
+    <x:Double x:Key="LargeFontSize" >16</x:Double>
+    <x:Double x:Key="XLargeFontSize" >20</x:Double>
+    <x:Double x:Key="XXLargeFontSize" >24</x:Double>
   </Application.Resources>
   <Application.Styles>
-    <FluentTheme>
-      <FluentTheme.Palettes>
-        <!-- Catppuccin Latte -->
-        <ColorPaletteResources
-          x:Key="Light"
-          Accent="#1e66f5"
-          AltHigh="#7c7f934d"
-          AltMediumHigh="#7c7f9380"
-          AltMedium="#7c7f9333"
-          AltMediumLow="#7c7f9326"
-          AltLow="#7c7f931a"
-          BaseHigh="#dce0e8"
-          BaseMediumHigh="#e6e9ef"
-          BaseMedium="#eff1f5"
-          BaseMediumLow="#ccd0da"
-          BaseLow="#bcc0cc"
-          ChromeAltLow="#ff5d5d5d"
-          ChromeBlackHigh="#4c4f69"
-          ChromeBlackMedium="#5c5f77"
-          ChromeBlackMediumLow="#6c6f85"
-          ChromeBlackLow="#6c6f85"
-          ChromeDisabledHigh="#8c8fa1"
-          ChromeDisabledLow="#7c7f93"
-          ChromeGray="#ff737373"
-          ChromeHigh="#ffcccccc"
-          ChromeLow="#ffececec"
-          ChromeMedium="#ffe6e6e6"
-          ChromeMediumLow="#ffececec"
-          ChromeWhite="#ccd0da"
-          ListLow="#ffe6e6e6"
-          ListMedium="#ffcccccc"
-          RegionColor="#eff1f5"
-        />
-      </FluentTheme.Palettes>
-    </FluentTheme>
-    <StyleInclude Source="/Styles/MainStyles.axaml" />
+    <!-- <FluentTheme /> -->
+    <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Theme.axaml" />
   </Application.Styles>
 </Application>

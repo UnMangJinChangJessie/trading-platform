@@ -1,0 +1,32 @@
+<Style
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  Selector=":is(Window)"
+>
+  <Setter Property="Background" Value="{DynamicResource MantleColor}" />
+  <Setter Property="Foreground" Value="{DynamicResource TextColor}" />
+  <Setter Property="FontFamily" Value="{StaticResource GowunDodum}" />
+  <Setter Property="Margin" Value="5" />
+  <Setter Property="Padding" Value="5" />
+  <Setter Property="CornerRadius" Value="5" />
+  <Setter Property="CanMaximize" Value="True" />
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border
+        Background="{DynamicResource CrustColor}"
+      >
+        <ContentPresenter
+          Background="{TemplateBinding Background}"
+          Foreground="{TemplateBinding Foreground}"
+          FontFamily="{StaticResource GowunDodum}"
+          CornerRadius="{TemplateBinding CornerRadius}"
+          Content="{TemplateBinding Content}"
+          Padding="{TemplateBinding Padding}"
+          Margin="{TemplateBinding Margin}"
+          VerticalAlignment="Stretch"
+          HorizontalAlignment="Stretch"
+        />
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>

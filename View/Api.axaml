@@ -34,25 +34,19 @@
         HorizontalContentAlignment="Center"
         Click="IssueButton_Click"
         Classes="Success"
-        TextElement.Foreground="White"
         Margin="10 5"
       >
-        <TextBlock>
-          API 접근 토큰 발급
-        </TextBlock>
+        API 접근 토큰 발급
       </Button>
       <Button
         Grid.Row="0" Grid.Column="1"
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Center"
         Click="RevokeButton_Click"
-        Classes="Fail"
-        TextElement.Foreground="White"
+        Classes="Error"
         Margin="0 5"
       >
-        <TextBlock>
-          API 접근 토큰 폐기
-        </TextBlock>
+        API 접근 토큰 폐기
       </Button>
     </Grid>
     <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto, Auto, Auto" >
@@ -63,9 +57,7 @@
       <TextBlock Grid.Row="2" Grid.Column="0" Text="WebSocket 접속 토큰" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,10,10,0" />
       <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Name="WebSocketAccessKeyTextBox" HorizontalAlignment="Stretch" Margin="0,10,0,0" PasswordChar="*" />
       <Button Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Click="RevealButton_Click" Margin="0,10,0,0">
-        <TextBlock>
-          접근 토큰 공개/비공개
-        </TextBlock>
+        접근 토큰 공개/비공개
       </Button>
     </Grid>
   </StackPanel>

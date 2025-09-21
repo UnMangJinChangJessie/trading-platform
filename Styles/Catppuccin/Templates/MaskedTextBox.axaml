@@ -1,0 +1,15 @@
+<Style
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  Selector=":is(MaskedTextBox)"
+>
+  <Setter Property="Foreground" Value="{DynamicResource TextColor}" />
+  <Setter Property="Background" Value="{DynamicResource SurfaceColor0}" />
+  <Setter Property="BorderBrush" Value="{DynamicResource SurfaceColor1}" />
+  <Setter Property="BorderThickness" Value="1" />
+  <Style Selector="^:focus">
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Blue}" />
+    <Setter Property="Background" Value="{DynamicResource OverlayColor2}" />
+  </Style>
+</Style>
