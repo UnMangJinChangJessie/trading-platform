@@ -21,7 +21,7 @@
     </ThemeVariantScope>
   </Design.PreviewWith>
   <Setter Property="Background" Value="{DynamicResource OverlayColor0_4}" />
-  <Setter Property="BorderBrush" Value="{DynamicResource OverlayColor0_1}" />
+  <Setter Property="BorderBrush" Value="{DynamicResource OverlayColor0}" />
   <Setter Property="BorderThickness" Value="1" />
   <Setter Property="CaretBrush" Value="{DynamicResource SubtextColor1}" />
   <Setter Property="SelectionBrush" Value="{DynamicResource Blue_2}" />

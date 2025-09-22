@@ -31,5 +31,5 @@
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/TextBox.axaml" />
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/NumericUpDown.axaml" />
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/ButtonSpinner.axaml" />
-  <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/RepeatButton.axaml" />
+  <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/ComboBox.axaml" />
 </Styles>

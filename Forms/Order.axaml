@@ -48,19 +48,20 @@
     <NumericUpDown
       HorizontalAlignment="Stretch"
       AllowSpin="True"
+      InnerLeftContent="주문단가"
       Name="UnitPriceNumericUpDown"
       Value="{Binding UnitPrice}"
     />
     <NumericUpDown
       HorizontalAlignment="Stretch"
       AllowSpin="True"
-      Watermark="주문 수량"
+      InnerLeftContent="주문수량"
       Value="{Binding Quantity}"
       Minimum="0"
     />
     <NumericUpDown
       Value="{Binding StopLossPrice}"
-      Watermark="손실제한가격"
+      InnerLeftContent="손실제한가격"
       AllowSpin="True"
       Name="StopLossNumericUpDown"
       HorizontalAlignment="Stretch"

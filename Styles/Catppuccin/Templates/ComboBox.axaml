@@ -1,0 +1,33 @@
+<Style
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  Selector="ComboBox"
+>
+  <Setter Property="Background" Value="{DynamicResource Overlay0_4}" />
+  <Setter Property="TextElement.Foreground" Value="{DynamicResource TextColor}" />
+  <Setter Property="BorderBrush" Value="{DynamicResource Overlay0}" />
+  <Setter Property="BorderThickness" Value="1" />
+  <Setter Property="Template">
+    <ControlTemplate>
+      <Border
+        Background="{TemplateBinding Background}"
+        TextElement.Foreground="{TemplateBinding TextElement.Foreground}"
+        BorderBrush="{TemplateBinding BorderBrush}"
+        BorderThickness="{TemplateBinding BorderThickness}"
+        Margin="{TemplateBinding Margin}"
+        Padding="{TemplateBinding Padding}"
+      >
+        <ContentPresenter
+          Margin="0"
+          Content="{TemplateBinding Content}"
+          ContentTemplate="{TemplateBinding ContentTemplate}"
+        />
+        <Popup
+          x:Name="PART_Popup"
+          Margin="0"
+          IsVisible="{TemplateBinding IsDropDownOpen}"
+        />
+      </Border>
+    </ControlTemplate>
+  </Setter>
+</Style>
