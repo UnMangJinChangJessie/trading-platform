@@ -1,65 +1,132 @@
 <Style
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:cat="using:trading_platform.Styles.Catppuccin"
   Selector="TextBox"
 >
-  <Setter Property="TextElement.Foreground" />
-  <Setter Property="Background" Value="{DynamicResource OverlayColor1_3}" />
+  <Design.PreviewWith>
+    <ThemeVariantScope RequestedThemeVariant="{x:Static cat:ColourPalette.Latte}" >
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <TextBox>Left</TextBox>
+        <TextBox TextAlignment="Center">Center</TextBox>
+        <TextBox Classes="clearButton">Clear</TextBox>
+        <TextBox PasswordChar="*" Classes="revealPasswordButton">Reveal Password</TextBox>
+        <TextBox PasswordChar="*" Classes="revealPasswordButton" RevealPassword="True">Password Revealed</TextBox>
+        <TextBox Watermark="Watermark"/>
+        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True"/>
+        <TextBox Watermark="Floating Watermark" UseFloatingWatermark="True">Content</TextBox>
+      </StackPanel>
+    </Border>
+    </ThemeVariantScope>
+  </Design.PreviewWith>
+  <Setter Property="Background" Value="{DynamicResource OverlayColor0_4}" />
   <Setter Property="BorderBrush" Value="{DynamicResource OverlayColor0_1}" />
   <Setter Property="BorderThickness" Value="1" />
+  <Setter Property="CaretBrush" Value="{DynamicResource SubtextColor1}" />
+  <Setter Property="SelectionBrush" Value="{DynamicResource Blue_2}" />
+  <Setter Property="TextElement.Foreground" Value="{DynamicResource TextColor}" />
+  <Setter Property="CornerRadius" Value="{StaticResource DefaultCornerRadius}" />
   <Setter Property="Padding" Value="2.5" />
   <Setter Property="Margin" Value="2.5" />
   <Setter Property="Template">
     <ControlTemplate>
       <DataValidationErrors>
-        <Border
-          Background="{TemplateBinding Background}"
-          BorderBrush="{TemplateBinding BorderBrush}"
-          BorderThickness="{TemplateBinding BorderThickness}"
-          Padding="{TemplateBinding Padding}"
-          Margin="{TemplateBinding Margin}"
-        >
-          <Panel>
-            <TextBlock Name="PART_Watermark"
-                    Opacity="0.5"
-                    Text="{TemplateBinding Watermark}"
-                    TextAlignment="{TemplateBinding TextAlignment}"
-                    TextWrapping="{TemplateBinding TextWrapping}"
-                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-              <TextBlock.IsVisible>
-                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
-                  <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
-                </MultiBinding>
-              </TextBlock.IsVisible>
-            </TextBlock>
-            <TextPresenter
-              Name="PART_TextPresenter"
-              Text="{TemplateBinding Text, Mode=TwoWay}"
-              CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
-              CaretIndex="{TemplateBinding CaretIndex}"
-              SelectionStart="{TemplateBinding SelectionStart}"
-              SelectionEnd="{TemplateBinding SelectionEnd}"
-              TextAlignment="{TemplateBinding TextAlignment}"
-              TextWrapping="{TemplateBinding TextWrapping}"
-              LineHeight="{TemplateBinding LineHeight}"
-              LetterSpacing="{TemplateBinding LetterSpacing}"
-              PasswordChar="{TemplateBinding PasswordChar}"
-              RevealPassword="{TemplateBinding RevealPassword}"
-              SelectionBrush="{TemplateBinding SelectionBrush}"
-              SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-              CaretBrush="{TemplateBinding CaretBrush}"
-              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-            />
-            <ScrollViewer
-              Name="PART_ScrollViewer"
-              Background="{TemplateBinding BorderBrush}"
-            />
-          </Panel>
-        </Border>
+        <Panel>
+          <Border
+            Name="PART_BorderElement"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{TemplateBinding CornerRadius}"
+            MinWidth="{TemplateBinding MinWidth}"
+            MinHeight="{TemplateBinding MinHeight}"
+          />
+          <Border Margin="{TemplateBinding BorderThickness}" >
+            <Grid ColumnDefinitions="Auto,*,Auto" >
+              <ContentPresenter
+                Grid.Column="0"
+                Grid.ColumnSpan="1"
+                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                Content="{TemplateBinding InnerLeftContent}"/>
+              <DockPanel
+                x:Name="PART_InnerDockPanel"
+                Grid.Column="1"
+                Grid.ColumnSpan="1"
+                Margin="{TemplateBinding Padding}">
+                <TextBlock
+                  Name="PART_FloatingWatermark"
+                  Foreground="{DynamicResource SubtextColor0}"
+                  IsVisible="False"
+                  Text="{TemplateBinding Watermark}"
+                  DockPanel.Dock="Top" />
+                <ScrollViewer
+                  Name="PART_ScrollViewer"
+                  HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                  VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                  IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                  AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}"
+                  BringIntoViewOnFocusChange="{TemplateBinding (ScrollViewer.BringIntoViewOnFocusChange)}">
+                  <Panel>
+                    <TextBlock
+                      Name="PART_Watermark"
+                      Opacity="0.5"
+                      Text="{TemplateBinding Watermark}"
+                      TextAlignment="{TemplateBinding TextAlignment}"
+                      TextWrapping="{TemplateBinding TextWrapping}"
+                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                      <TextBlock.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                          <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                          <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                        </MultiBinding>
+                      </TextBlock.IsVisible>
+                    </TextBlock>
+                    <TextPresenter
+                      Name="PART_TextPresenter"
+                      Text="{TemplateBinding Text, Mode=TwoWay}"
+                      CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                      CaretIndex="{TemplateBinding CaretIndex}"
+                      SelectionStart="{TemplateBinding SelectionStart}"
+                      SelectionEnd="{TemplateBinding SelectionEnd}"
+                      TextAlignment="{TemplateBinding TextAlignment}"
+                      TextWrapping="{TemplateBinding TextWrapping}"
+                      LineHeight="{TemplateBinding LineHeight}"
+                      LetterSpacing="{TemplateBinding LetterSpacing}"
+                      PasswordChar="{TemplateBinding PasswordChar}"
+                      RevealPassword="{TemplateBinding RevealPassword}"
+                      SelectionBrush="{TemplateBinding SelectionBrush}"
+                      SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                      CaretBrush="{TemplateBinding CaretBrush}"
+                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                    />
+                  </Panel>
+                  <ScrollViewer.Styles>
+                    <Style Selector="ScrollContentPresenter#PART_ContentPresenter">
+                      <Setter Property="Cursor" Value="IBeam" />
+                    </Style>
+                  </ScrollViewer.Styles>
+                </ScrollViewer>
+              </DockPanel>
+              <ContentPresenter
+                Grid.Column="2"
+                Grid.ColumnSpan="1"
+                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                Content="{TemplateBinding InnerRightContent}"
+              />
+            </Grid>
+          </Border>
+        </Panel>
       </DataValidationErrors>
     </ControlTemplate>
   </Setter>
+  <Style Selector="^:pointerover" >
+    <Setter Property="Cursor" Value="Ibeam" />
+  </Style>
+  <Style Selector="^:focus" >
+    <Setter Property="BorderBrush" Value="{DynamicResource Blue_2}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
 </Style>

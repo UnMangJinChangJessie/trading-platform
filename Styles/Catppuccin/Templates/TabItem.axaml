@@ -22,6 +22,7 @@
   <Setter Property="HorizontalContentAlignment" Value="Center" />
   <Setter Property="VerticalContentAlignment" Value="Center" />
   <Setter Property="Padding" Value="5" />
+  <Setter Property="Margin" Value="2.5" />
   <Setter Property="Template">
     <ControlTemplate>
       <ContentPresenter
@@ -54,5 +55,6 @@
   <Style Selector="^:pointerover">
     <Setter Property="Background" Value="{DynamicResource OverlayColor2_4}" />
     <Setter Property="Opacity" Value="0.7" />
+    <Setter Property="Cursor" Value="Hand" />
   </Style>
 </Style>

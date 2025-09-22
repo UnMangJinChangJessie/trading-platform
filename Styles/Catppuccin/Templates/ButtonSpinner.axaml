@@ -1,0 +1,63 @@
+<Style
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  Selector="ButtonSpinner"
+>
+  <Setter Property="Template" >
+    <ControlTemplate>
+      <DataValidationErrors>
+        <Border
+          Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          CornerRadius="{TemplateBinding CornerRadius}"
+          MinHeight="{TemplateBinding MinHeight}"
+        >
+          <DockPanel>
+            <StackPanel
+              Name="PART_SpinnerPanel"
+              TabIndex="2"
+              DockPanel.Dock="Right"
+              Orientation="Vertical"
+              IsVisible="{TemplateBinding ShowButtonSpinner}"
+            >
+              <RepeatButton
+                Name="PART_IncreaseButton"
+                IsTabStop="{TemplateBinding IsTabStop}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Foreground="{TemplateBinding Foreground}"
+                MinWidth="34"
+              >
+              </RepeatButton>
+              <RepeatButton
+                Name="PART_DecreaseButton"
+                IsTabStop="{TemplateBinding IsTabStop}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Foreground="{TemplateBinding Foreground}"
+                MinWidth="34"
+              >
+              </RepeatButton>
+            </StackPanel>
+
+            <ContentPresenter
+              Name="PART_ContentPresenter"
+              Grid.Column="1"
+              TabIndex="1"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              Content="{TemplateBinding Content}"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              Padding="{TemplateBinding Padding}"
+            />
+          </DockPanel>
+        </Border>
+      </DataValidationErrors>
+    </ControlTemplate>
+  </Setter>
+</Style>

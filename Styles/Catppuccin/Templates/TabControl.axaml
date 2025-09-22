@@ -24,7 +24,7 @@
 
   <Setter Property="Background" Value="{DynamicResource OverlayColor0}" />
   <Setter Property="TextElement.Foreground" Value="{DynamicResource TextColor}" />
-  <Setter Property="CornerRadius" Value="5" />
+  <Setter Property="CornerRadius" Value="{StaticResource DefaultCornerRadius}" />
   <Setter Property="Margin" Value="5" />
   <Setter Property="Padding" Value="5" />
   <Setter Property="Template">

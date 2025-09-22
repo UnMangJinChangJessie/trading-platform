@@ -3,7 +3,7 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   Selector=":is(Button)"
 >
-  <Setter Property="CornerRadius" Value="2" />
+  <Setter Property="CornerRadius" Value="{StaticResource DefaultCornerRadius}" />
   <Setter Property="Background" Value="{DynamicResource Blue}" />
   <Setter Property="TextElement.Foreground" Value="{DynamicResource BaseColor}" />
   <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -13,6 +13,7 @@
   <Setter Property="Margin" Value="2.5,2.5,2.5,2.5" />
   <Style Selector="^:pointerover">
     <Setter Property="Background" Value="{DynamicResource Blue_1}" />
+    <Setter Property="Cursor" Value="Hand" />
   </Style>
   <Style Selector="^:pressed">
     <Setter Property="Background" Value="{DynamicResource Blue_3}" />

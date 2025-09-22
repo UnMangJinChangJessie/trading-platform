@@ -19,13 +19,17 @@
         <Button Classes="Warning">Mrrp ;3</Button>
         <Button Classes="Error"  >Nyaa &gt;:3</Button>
         <TextBox Watermark="Meow :3" />
+        <NumericUpDown Watermark="Meow :3" />
       </StackPanel>
     </ThemeVariantScope>
   </Design.PreviewWith>
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/Window.axaml" />
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/Button.axaml" />
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/AccessText.axaml" />
-  <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/MaskedTextBox.axaml" />
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/TabControl.axaml" />
   <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/TabItem.axaml" />
+  <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/TextBox.axaml" />
+  <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/NumericUpDown.axaml" />
+  <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/ButtonSpinner.axaml" />
+  <StyleInclude Source="avares://trading-platform/Styles/Catppuccin/Templates/RepeatButton.axaml" />
 </Styles>
