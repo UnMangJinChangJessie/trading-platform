@@ -1,13 +1,8 @@
-using System.Diagnostics;
+using System.Numerics;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Avalonia.Platform;
 using ScottPlot;
-using ScottPlot.Avalonia;
-using ScottPlot.DataSources;
+using ScottPlot.Plottables;
 
 namespace trading_platform.Components;
 
@@ -28,7 +23,7 @@ public partial class CandlestickChart : UserControl {
     set => SetValue(ZoomSensitivityProperty, value);
   }
   public List<OHLC> CandlesticksSource { get; private set; } = [];
-  
+
   private double BottomLimitRateStart { get; set; } = 0.0;
   private double BottomLimitRateEnd { get; set; } = 1.0;
   public CandlestickChart() {
@@ -44,6 +39,12 @@ public partial class CandlestickChart : UserControl {
     var dtAxis = PriceChart.Plot.Axes.DateTimeTicksBottom();
     dtAxis.ClipLabel = true;
     PriceChart.Refresh();
+    // 테마 설정
+    // 현재 창에 맞는 색으로 설정
+    PriceChart.Plot.FigureBackground.Color = new Color(System.Drawing.Color.Transparent);
+    PriceChart.Plot.DataBackground.Color = Color.FromARGB(0x00000000U);
+    ohlc.RisingStyle.Color = Colors.LightPink;
+    ohlc.FallingStyle.Color = Colors.LightBlue;
   }
   public void PriceChart_ContinuousAutoscale(RenderPack rp) {
     if (CandlesticksSource.Count == 0) return;
@@ -72,5 +73,18 @@ public partial class CandlestickChart : UserControl {
     min -= diff / 18;
     max += diff / 18;
     plot.Axes.SetLimitsY(min, max);
+  }
+  public void UpdateClose(double value) {
+    if (CandlesticksSource.Count == 0) return;
+    var candle = CandlesticksSource[^1];
+    candle.Close = value;
+    candle.Low = Math.Min(value, candle.Low);
+    candle.High = Math.Max(value, candle.High);
+  }
+  public void AddCandle(double open, double high, double low, double close) {
+    CandlesticksSource.Add(new(open, high, low, close));
+  }
+  public void AddCandle(OHLC ohlc) {
+    CandlesticksSource.Add(ohlc);
   }
 }

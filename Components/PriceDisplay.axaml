@@ -7,10 +7,10 @@
   x:DataType="vm:PriceDisplay"
   x:Class="trading_platform.Components.PriceDisplay"
 >
-  <StackPanel Orientation="Vertical" >
-    <TextBlock Classes="h1" Text="{Binding TickerName}" />
-    <TextBlock >
-      <Run Classes="h2" Text="{Binding Price}" />
+  <StackPanel Orientation="Vertical" Margin="5" >
+    <TextBlock FontSize="{StaticResource FontSizeXXLarge}" Text="{Binding Name}" />
+    <TextBlock FontSize="{StaticResource FontSizeXXLarge}" >
+      <Run FontWeight="Bold" Text="{Binding CurrentPrice}" />
       <Run Text="{Binding Currency}" />
     </TextBlock>
   </StackPanel>

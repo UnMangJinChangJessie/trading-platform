@@ -8,12 +8,11 @@
   mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
   x:Class="trading_platform.MainWindow"
   Title="Trading Platform"
-  RequestedThemeVariant="{x:Static cat:ColourPalette.Macchiato}"
-  Background="{DynamicResource CrustColor}"
+  TextElement.FontSize="{StaticResource FontSizeMedium}"
 >
   <TabControl
     TabStripPlacement="Left"
-    Background="{DynamicResource MantleColor}"
+    Padding="0,0,5,0"
   >
     <TabItem Header="API 접근 토큰" HorizontalAlignment="Stretch" >
       <view:Api />

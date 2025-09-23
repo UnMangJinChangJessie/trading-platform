@@ -70,7 +70,13 @@ public static partial class ApiClient {
       Encoding.UTF8.GetString(JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerOption)), Encoding.UTF8, "application/json"
     );
     var response = await RequestClient.SendAsync(message);
-    var bodyJson = await response.Content.ReadFromJsonAsync<TResult>(JsonSerializerOption);
+    TResult? bodyJson;
+    try {
+      bodyJson = await response.Content.ReadFromJsonAsync<TResult>(JsonSerializerOption);
+    }
+    catch (JsonException) {
+      return (response.StatusCode, null);
+    }
     return (response.StatusCode, bodyJson);
   }
   public static async Task<(HttpStatusCode StatusCode, TResult? Result)> RequestConsecutive<TBody, TResult>(

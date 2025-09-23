@@ -1,27 +1,17 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:components="using:trading_platform.Components"
-             xmlns:v="using:trading_platform.View"
-             xmlns:forms="using:trading_platform.Forms"
-             mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
-             x:Class="trading_platform.View.KoreaStock">
-  <Grid ColumnDefinitions="*,200" RowDefinitions="*">
-    <Grid
-      Grid.Column="0"
-      ColumnDefinitions="*" RowDefinitions="200, *"
-    >
-      <components:PriceDisplay
-        Grid.Row="0"
-      />
-      <components:CandlestickChart
-        Grid.Row="1"
-        VerticalAlignment="Stretch"
-      />
-    </Grid>
-    <v:DomesticStockOrderView
-      Grid.Column="1"
-    />
-  </Grid>
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:components="using:trading_platform.Components"
+  xmlns:v="using:trading_platform.View"
+  xmlns:forms="using:trading_platform.Forms"
+  mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
+  x:Class="trading_platform.View.KoreaStock"
+>
+  <TabControl>
+    <TabItem Header="차트/주문">
+      <v:KoreaStockChart Name="StockChartAndOrder" />
+    </TabItem>
+  </TabControl>
 </UserControl>

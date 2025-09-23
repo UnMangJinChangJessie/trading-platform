@@ -5,6 +5,6 @@ public static class Common {
     return string.Join("&", keyValues.Select(kv => kv.Key + "=" + kv.Value));
   }
   public static string BuildQueryString(IDictionary<string, string> keyValues) {
-    return string.Join("&", keyValues.Select(kv => $"{kv.Key}={kv.Value}"));
+    return "?" + string.Join("&", keyValues.Select(kv => $"{kv.Key}={kv.Value}"));
   }
 }
