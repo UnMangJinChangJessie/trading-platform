@@ -1,0 +1,246 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:com="using:trading_platform.Components"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:vm="using:trading_platform.ViewModel"
+  x:Class="trading_platform.Components.OrderBookDisplay"
+  d:DesignHeight="720" d:DesignWidth="200"
+>
+  <UserControl.DataContext>
+    <vm:OrderBook />
+  </UserControl.DataContext>
+  <ScrollViewer
+    Margin="5"
+  >
+    <Grid
+      ColumnDefinitions="*,1.5*,*"
+      RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*"
+    >
+      <!-- 매도 수량 -->
+      <com:OrderBookQuantityBlock 
+        Grid.Row="0" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="9"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="1" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="8"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="2" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="7"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="3" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="6"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="4" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="5"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="5" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="4"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="6" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="3"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="7" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="2"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="8" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="1"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="9" Grid.Column="0"
+        IsSelling="True"
+        OrderViewIndex="0"
+      />
+      <!-- 매도 호가 -->
+      <TextBlock
+        Grid.Row="0" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[9].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="1" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[8].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="2" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[7].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="3" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[6].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="4" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[5].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="5" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[4].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="6" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[3].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="7" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[2].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="8" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[1].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="9" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Selling[0].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <!-- 매수 호가 -->
+      <TextBlock
+        Grid.Row="10" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[0].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="11" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[1].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="12" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[2].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="13" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[3].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="14" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[4].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="15" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[5].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="16" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[6].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="17" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[7].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="18" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[8].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <TextBlock
+        Grid.Row="19" Grid.Column="1"
+        Text="{Binding $parent[com:OrderBookDisplay].((vm:OrderBook)DataContext).Buying[9].Price}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+      />
+      <!-- 매수 수량 -->
+      <com:OrderBookQuantityBlock 
+        Grid.Row="10" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="0"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="11" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="1"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="12" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="2"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="13" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="3"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="14" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="4"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="15" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="5"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="16" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="6"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="17" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="7"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="18" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="8"
+      />
+      <com:OrderBookQuantityBlock 
+        Grid.Row="19" Grid.Column="2"
+        IsSelling="False"
+        OrderViewIndex="9"
+      />
+    </Grid>
+  </ScrollViewer>
+</UserControl>

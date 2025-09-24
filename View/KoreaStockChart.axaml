@@ -31,7 +31,7 @@
         VerticalAlignment="Stretch"
       />
     </Grid>
-    <com:BiddingDisplay 
+    <com:OrderBookDisplay
       Grid.Column="1"
     />
     <v:DomesticStockOrderView
