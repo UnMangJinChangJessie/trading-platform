@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Data.Converters;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace trading_platform.Components;
 
@@ -35,21 +36,70 @@ public partial class OrderBookQuantityBlock : UserControl {
     set => SetValue(OrderViewIndexProperty, value);
   }
   /// <summary>
-  /// Quantity StyledProperty definition
-  /// indicates quantity in decimal.
+  /// DecimalPointCount StyledProperty definition
+  /// indicates the number of digits below the decimal point.
   /// </summary>
-  public static readonly StyledProperty<decimal> QuantityProperty =
-    AvaloniaProperty.Register<OrderBookQuantityBlock, decimal>(nameof(Quantity));
-  /// <summary>
-  /// Gets or sets the Quantity property. This StyledProperty
-  /// indicates quantity in decimal.
-  /// </summary>
-  public decimal Quantity {
-    get => GetValue(QuantityProperty);
-    set => SetValue(QuantityProperty, value);
-  }
+  public static readonly StyledProperty<int> DecimalPointCountProperty =
+      AvaloniaProperty.Register<OrderBookQuantityBlock, int>(nameof(DecimalPointCount));
 
+  /// <summary>
+  /// Gets or sets the DecimalPointCount property. This StyledProperty
+  /// indicates the number of digits below the decimal point.
+  /// </summary>
+  public int DecimalPointCount {
+    get => this.GetValue(DecimalPointCountProperty);
+    set => SetValue(DecimalPointCountProperty, value);
+  }
+  /// <summary>
+  /// LongColor StyledProperty definition
+  /// indicates long color.
+  /// </summary>
+  public static readonly StyledProperty<IBrush?> LongColorProperty =
+      AvaloniaProperty.Register<OrderBookQuantityBlock, IBrush?>(nameof(LongColor));
+
+  /// <summary>
+  /// Gets or sets the LongColor property. This StyledProperty
+  /// indicates long color.
+  /// </summary>
+  public IBrush? LongColor {
+    get => this.GetValue(LongColorProperty);
+    set => SetValue(LongColorProperty, value);
+  }
+  /// <summary>
+  /// ShortColor StyledProperty definition
+  /// indicates short color.
+  /// </summary>
+  public static readonly StyledProperty<IBrush?> ShortColorProperty =
+      AvaloniaProperty.Register<OrderBookQuantityBlock, IBrush?>(nameof(ShortColor));
+
+  /// <summary>
+  /// Gets or sets the ShortColor property. This StyledProperty
+  /// indicates short color.
+  /// </summary>
+  public IBrush? ShortColor {
+    get => this.GetValue(ShortColorProperty);
+    set => SetValue(ShortColorProperty, value);
+  }
   public OrderBookQuantityBlock() {
     InitializeComponent();
+  }
+  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+    ShortColor ??= new SolidColorBrush(Colors.LightSkyBlue);
+    LongColor ??= new SolidColorBrush(Colors.LightPink);
+    PART_Rectangle.HorizontalAlignment = IsSelling ? Avalonia.Layout.HorizontalAlignment.Right : Avalonia.Layout.HorizontalAlignment.Left;
+    PART_Rectangle.Fill = IsSelling ? ShortColor : LongColor;
+    PART_Rectangle.Height = Bounds.Height * 0.95;
+    var context = DataContext as ViewModel.OrderBook;
+    context?.PropertyChanged += UpdateBar;
+    UpdateBar(sender, args);
+  }
+  public void UpdateBar(object? sender, EventArgs args) {
+    var boundWidth = Bounds.Width;
+    var context = DataContext as ViewModel.OrderBook;
+
+    var percentage = IsSelling ? context!.SellingVisualBarRatio(OrderViewIndex) : context!.BuyingVisualBarRatio(OrderViewIndex);
+    PART_Rectangle.Width = percentage * boundWidth;
+    var quantity = IsSelling ? context!.SellingQuantities[OrderViewIndex] : context!.BuyingQuantities[OrderViewIndex];
+    PART_TextBlock.Text = string.Format($"{{0:F{DecimalPointCount}}}", quantity);
   }
 }

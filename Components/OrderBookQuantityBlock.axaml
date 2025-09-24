@@ -4,82 +4,22 @@
   xmlns:com="using:trading_platform.Components"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:vm="using:trading_platform.ViewModel"
+  xmlns:local="using:trading_platform"
   d:DesignHeight="36" d:DesignWidth="200"
   x:Class="trading_platform.Components.OrderBookQuantityBlock"
+  Loaded="UserControl_Loaded"
+  x:DataType="vm:OrderBook"
+  DataContext="{Binding $parent[com:OrderBookDisplay].DataContext}"
 >
-  <UserControl.Resources>
-    <SolidColorBrush x:Key="UserControl_LongColor" Color="LightPink" Opacity="0.5" />
-    <SolidColorBrush x:Key="UserControl_ShortColor" Color="LightBlue" Opacity="0.5" />
-  </UserControl.Resources>
   <Panel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
     <Rectangle
-      VerticalAlignment="Center"
-      Width="10"
-      Height="30"
-    >
-      <Rectangle.Fill>
-        <MultiBinding 
-          
-          Converter="{StaticResource ConditionalConverter}"
-          Mode="OneWay"
-        >
-          <Binding Path="$parent[com:OrderBookQuantityBlock].IsSelling" Mode="OneWay" />
-          <Binding Source="{StaticResource UserControl_ShortColor}" Mode="OneWay"  />
-          <Binding Source="{StaticResource UserControl_LongColor}" Mode="OneWay"  />
-        </MultiBinding>
-      </Rectangle.Fill>
-      <Rectangle.Width>
-        <MultiBinding 
-          
-          Converter="{StaticResource LinearInterpolationConverter}"
-          Mode="OneWay"
-        >
-          <Binding Source="0.0" Converter="{StaticResource NumberToStringConverter}" />
-          <Binding Path="$parent.Bounds.Width" Mode="OneWay" />
-          <MultiBinding 
-            Converter="{StaticResource ConditionalConverter}"
-            Mode="OneWay"
-          >
-            <Binding RelativeSource="$parent[com:OrderBookQuantityBlock]" Path="$.IsSelling" Mode="OneWay" />
-            <MultiBinding Converter="{StaticResource IndexAccessConverter}">
-              <Binding RelativeSource="$parent[com:OrderBookDisplay]" Path="$.((vm:OrderBook)DataContext).SellingVisualBarRatio" />
-              <Binding RelativeSource="$parent[com:OrderBookQuantityBlock]" Path="$.OrderViewIndex" />
-            </MultiBinding>
-            <MultiBinding Converter="{StaticResource IndexAccessConverter}">
-              <Binding RelativeSource="$parent[com:OrderBookDisplay]" Path="$.((vm:OrderBook)DataContext).BuyingVisualBarRatio" />
-              <Binding RelativeSource="$parent[com:OrderBookQuantityBlock]" Path="$.OrderViewIndex" />
-            </MultiBinding>
-          </MultiBinding>
-        </MultiBinding>
-      </Rectangle.Width>
-      <Rectangle.HorizontalAlignment>
-        <MultiBinding 
-          Converter="{StaticResource ConditionalConverter}"
-          Mode="OneWay"
-        >
-          <Binding Path="$parent[com:OrderBookQuantityBlock].IsSelling" Mode="OneWay" />
-          <Binding Source="{x:Static HorizontalAlignment.Right}" Mode="OneWay"  />
-          <Binding Source="{x:Static HorizontalAlignment.Left}" Mode="OneWay"  />
-        </MultiBinding>
-      </Rectangle.HorizontalAlignment>
-    </Rectangle>
-    <TextBlock 
-      HorizontalAlignment="Stretch"
+      Name="PART_Rectangle"
       VerticalAlignment="Center" 
-    >
-      <TextBlock.Text>
-        <MultiBinding Converter="{StaticResource ConditionalConverter}">
-          <Binding Path="$parent[com:OrderBookQuantityBlock].IsSelling" Mode="OneWay" />
-          <MultiBinding Converter="{StaticResource IndexAccessConverter}">
-            <Binding RelativeSource="$parent[com:OrderBookDisplay]" Path="$.((vm:OrderBook)DataContext).SellingQuantities" />
-            <Binding RelativeSource="$parent[com:OrderBookQuantityBlock]" Path="$.OrderViewIndex" />
-          </MultiBinding>
-          <MultiBinding Converter="{StaticResource IndexAccessConverter}">
-            <Binding RelativeSource="$parent[com:OrderBookDisplay]" Path="$.((vm:OrderBook)DataContext).SellingQuantities" />
-            <Binding RelativeSource="$parent[com:OrderBookQuantityBlock]" Path="$.OrderViewIndex" />
-          </MultiBinding>
-        </MultiBinding>
-      </TextBlock.Text>
-    </TextBlock>
+    />
+    <TextBlock 
+      Name="PART_TextBlock"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center"
+    />
   </Panel>
 </UserControl>

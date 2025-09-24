@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:component="using:trading_platform.Components"
              xmlns:forms="using:trading_platform.Forms"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="720"
              x:Class="trading_platform.View.DomesticStockOrderView">
   <StackPanel>
     <forms:Order
