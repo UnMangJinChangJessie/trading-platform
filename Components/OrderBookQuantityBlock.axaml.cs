@@ -90,7 +90,7 @@ public partial class OrderBookQuantityBlock : UserControl {
     PART_Rectangle.Fill = IsSelling ? ShortColor : LongColor;
     PART_Rectangle.Height = Bounds.Height * 0.95;
     var context = DataContext as ViewModel.OrderBook;
-    context?.PropertyChanged += UpdateBar;
+    DataContextChanged += UpdateBar;
     UpdateBar(sender, args);
   }
   public void UpdateBar(object? sender, EventArgs args) {

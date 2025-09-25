@@ -244,6 +244,12 @@
         IsSelling="False"
         OrderViewIndex="9"
       />
+      <Border
+        Name="PART_ConclusionBorder"
+        Grid.Row="0" Grid.Column="1"
+        BorderThickness="2"
+        BorderBrush="Black"
+      />
     </Grid>
   </ScrollViewer>
 </UserControl>

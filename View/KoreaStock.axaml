@@ -5,13 +5,18 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:components="using:trading_platform.Components"
   xmlns:v="using:trading_platform.View"
+  xmlns:vm="using:trading_platform.ViewModel"
   xmlns:forms="using:trading_platform.Forms"
   mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
   x:Class="trading_platform.View.KoreaStock"
+  x:DataType="vm:MarketData"
 >
+  <UserControl.DataContext>
+    <vm:MarketData />
+  </UserControl.DataContext>
   <TabControl>
     <TabItem Header="차트/주문">
-      <v:KoreaStockChart Name="StockChartAndOrder" />
+      <v:KoreaStockChart Name="PART_StockChartAndOrder" />
     </TabItem>
   </TabControl>
 </UserControl>

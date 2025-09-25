@@ -1,8 +1,6 @@
-using System.Numerics;
 using Avalonia;
 using Avalonia.Controls;
 using ScottPlot;
-using ScottPlot.Plottables;
 
 namespace trading_platform.Components;
 

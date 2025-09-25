@@ -18,7 +18,7 @@ public partial class OrderBook : ObservableObject {
   [ObservableProperty]
   public partial decimal PreviousClose { get; set; } = 0.0M;
   [ObservableProperty]
-  public partial decimal LastConclusion { get; set; } = 0.0M;
+  public partial decimal? LastConclusion { get; set; } = null;
   public double SellingVisualBarRatio(int idx) {
     decimal max = Math.Max(SellingQuantities.Max(), BuyingQuantities.Max());
     if (max == 0) return 0.0;
@@ -38,7 +38,7 @@ public partial class OrderBook : ObservableObject {
       (SellingPrices[i], SellingQuantities[i]) = (450.00M + 0.05M * i, Random.Shared.Next(1, 10));
       (BuyingPrices[i], BuyingQuantities[i]) = (450.00M - 0.05M * (i + 1), Random.Shared.Next(1, 10));
       PreviousClose = 450.00M + 0.05M * Random.Shared.Next(-5, 5);
-      LastConclusion = 450.00M + 0.05M * Random.Shared.Next(-1, 1);
+      LastConclusion = 450.00M + 0.05M * Random.Shared.Next(-1, 2);
     }
   }
 }
