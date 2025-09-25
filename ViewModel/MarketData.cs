@@ -11,6 +11,20 @@ public partial class MarketData : ObservableObject {
   [ObservableProperty]
   public partial List<decimal> AmountChart { get; set; } = [];
   [ObservableProperty]
+  public partial decimal CurrentOpen { get; set; }
+  [ObservableProperty]
+  public partial decimal CurrentHigh { get; set; }
+  [ObservableProperty]
+  public partial decimal CurrentLow { get; set; }
+  [ObservableProperty]
+  public partial decimal CurrentClose { get; set; }
+  [ObservableProperty]
+  public partial decimal CurrentVolume { get; set; }
+  [ObservableProperty]
+  public partial decimal CurrentAmount { get; set; }
+  [ObservableProperty]
+  public partial string Currency { get; set; } = "";
+  [ObservableProperty]
   public partial string Ticker { get; set; } = "";
   [ObservableProperty]
   public partial string Name { get; set; } = "";
@@ -19,13 +33,13 @@ public partial class MarketData : ObservableObject {
   [ObservableProperty]
   public partial float PriceBookValueRatio { get; set; } = 0.0F;
   [ObservableProperty]
-  public partial float PriceEarningRatio { get; set; } = 0.0F;
+  public partial float PriceEarningsRatio { get; set; } = 0.0F;
   [ObservableProperty]
   public partial float ReturnOnEquity { get; set; } = 0.0F;
 
   public MarketData() {
     if (Design.IsDesignMode) {
-      PriceChart = [ ..Model.Generators.Series.GenerateBrownianOHLC(450.00, 0.01, 2.0, TimeSpan.FromHours(1), DateTime.Now, 300) ];
+      PriceChart = [.. Model.Generators.Series.GenerateBrownianOHLC(450.00, 0.01, 2.0, TimeSpan.FromHours(1), DateTime.Now, 300)];
     }
   }
 }

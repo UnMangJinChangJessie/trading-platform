@@ -27,5 +27,8 @@
   </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+    <Content Include="./kis-developers-key.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

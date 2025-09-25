@@ -95,9 +95,8 @@ public partial class OrderBookQuantityBlock : UserControl {
   }
   public void UpdateBar(object? sender, EventArgs args) {
     var boundWidth = Bounds.Width;
-    var context = DataContext as ViewModel.OrderBook;
-
-    var percentage = IsSelling ? context!.SellingVisualBarRatio(OrderViewIndex) : context!.BuyingVisualBarRatio(OrderViewIndex);
+    if (DataContext is not ViewModel.OrderBook context) return;
+    var percentage = IsSelling ? context.SellingVisualBarRatio(OrderViewIndex) : context.BuyingVisualBarRatio(OrderViewIndex);
     PART_Rectangle.Width = percentage * boundWidth;
     var quantity = IsSelling ? context!.SellingQuantities[OrderViewIndex] : context!.BuyingQuantities[OrderViewIndex];
     PART_TextBlock.Text = string.Format($"{{0:F{DecimalPointCount}}}", quantity);

@@ -5,9 +5,9 @@
   xmlns:v="using:trading_platform.View"
   xmlns:vm="using:trading_platform.ViewModel"
   xmlns:com="using:trading_platform.Components"
-  x:DataType="vm:KoreaStockChart"
-  x:Class="trading_platform.View.KoreaStockChart"
   d:DesignHeight="720" d:DesignWidth="1000"
+  x:Class="trading_platform.View.KoreaStockChart"
+  x:DataType="vm:MarketData"
 >
   <Grid ColumnDefinitions="*,180,180" RowDefinitions="*" Margin="5">
     <Grid
@@ -23,6 +23,7 @@
       </StackPanel>
       <com:PriceDisplay
         Name="PriceDisplay"
+        DataContext="{Binding $parent[UserControl].DataContext}"
         Grid.Row="1"
       />
       <com:CandlestickChart
@@ -34,7 +35,7 @@
     <com:OrderBookDisplay
       Grid.Column="1"
     />
-    <v:DomesticStockOrderView
+    <v:Order
       Name="OrderView"
       Grid.Column="2"
     />

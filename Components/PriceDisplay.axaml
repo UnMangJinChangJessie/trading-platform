@@ -2,15 +2,16 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:v="using:trading_platform.View"
   xmlns:vm="using:trading_platform.ViewModel"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
-  x:DataType="vm:PriceDisplay"
+  x:DataType="vm:MarketData"
   x:Class="trading_platform.Components.PriceDisplay"
 >
   <StackPanel Orientation="Vertical" Margin="5" >
     <TextBlock FontSize="{StaticResource FontSizeXXLarge}" Text="{Binding Name}" />
     <TextBlock FontSize="{StaticResource FontSizeXXLarge}" >
-      <Run FontWeight="Bold" Text="{Binding CurrentPrice}" />
+      <Run FontWeight="Bold" Text="{Binding CurrentClose}" />
       <Run Text="{Binding Currency}" />
     </TextBlock>
   </StackPanel>

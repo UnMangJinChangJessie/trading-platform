@@ -9,6 +9,7 @@
   x:Class="trading_platform.MainWindow"
   Title="Trading Platform"
   TextElement.FontSize="{StaticResource FontSizeMedium}"
+  Loaded="Window_Loaded"
 >
   <TabControl
     TabStripPlacement="Left"

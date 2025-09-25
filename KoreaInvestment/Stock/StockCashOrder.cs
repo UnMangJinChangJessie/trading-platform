@@ -5,13 +5,13 @@ namespace trading_platform.KoreaInvestment;
 
 public class StockCashOrderBody : IAccount, IOrder {
   [JsonPropertyName("CANO")]
-  public string AccountBase { get; init; }
+  public required string AccountBase { get; init; }
   [JsonPropertyName("ACNT_PRDT_CD")]
-  public string AccountCode { get; init; }
+  public required string AccountCode { get; init; }
   [JsonIgnore]
   public OrderPosition Position { get; init; }
   [JsonPropertyName("PDNO")]
-  public string Ticker { get; init; }
+  public required string Ticker { get; init; }
   [JsonPropertyName("ORD_DVSN")]
   public OrderMethod OrderDivision { get; init; }
   [JsonPropertyName("ORD_UNPR"), JsonNumberHandling(JsonNumberHandling.WriteAsString)]

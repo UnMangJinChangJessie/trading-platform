@@ -83,7 +83,7 @@ public partial class OrderBookDisplay : UserControl {
     UpdateColours(sender, args);
   }
   public void UpdateColours(object? sender, EventArgs args) {
-    var context = DataContext as ViewModel.OrderBook;
+    if (DataContext is not ViewModel.OrderBook context) return;
     IBrush? colorPicker(decimal a, decimal b) {
       return a.CompareTo(b) switch {
         > 0 => LongBrush,
@@ -96,7 +96,7 @@ public partial class OrderBookDisplay : UserControl {
       BuyingPriceTextBlocks[i].Foreground = colorPicker(context!.BuyingPrices[i], context!.PreviousClose);
     }
     // 마지막 체결가 표시
-    if (context!.LastConclusion == null) {
+    if (context.LastConclusion == null) {
       PART_ConclusionBorder.IsVisible = false;
     }
     else {

@@ -5,9 +5,12 @@
   xmlns:partial="using:trading_platform.Forms.Partial"
   xmlns:vm="using:trading_platform.ViewModel"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-  x:Class="trading_platform.Forms.Order"
+  x:Class="trading_platform.View.Order"
   x:DataType="vm:Order"
 >
+  <UserControl.DataContext>
+    <vm:Order />
+  </UserControl.DataContext>
   <StackPanel >
     <TextBlock Classes="h1" HorizontalAlignment="Center" >
       <Run Text="종목 이름" />
@@ -41,9 +44,8 @@
       HorizontalAlignment="Stretch"
       Name="OrderMethodComboBox"
       PlaceholderText="주문 방식 선택"
-      ItemsSource="{Binding MethodsAllowed.Keys}"
+      ItemsSource="{Binding MethodsAllowed}"
       SelectedValue="{Binding SelectedMethod}"
-      SelectionChanged="OrderMethodComboBox_SelectionChanged"
     />
     <NumericUpDown
       HorizontalAlignment="Stretch"
@@ -73,7 +75,6 @@
       <Button
         Grid.Row="0" Grid.Column="0"
         HorizontalAlignment="Stretch"
-        Classes="Success"
         Click="LongButton_Click"
       >
         매수
@@ -81,7 +82,6 @@
       <Button
         Grid.Row="0" Grid.Column="1"
         HorizontalAlignment="Stretch"
-        Classes="Error"
         Click="ShortButton_Click"
       >
         매도

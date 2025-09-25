@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace trading_platform.KoreaInvestment;
 
@@ -72,9 +74,10 @@ public static partial class ApiClient {
     var response = await RequestClient.SendAsync(message);
     TResult? bodyJson;
     try {
-      bodyJson = await response.Content.ReadFromJsonAsync<TResult>(JsonSerializerOption);
+      bodyJson = await JsonSerializer.DeserializeAsync<TResult>(response.Content.ReadAsStream(), JsonSerializerOption);
     }
-    catch (JsonException) {
+    catch (JsonException ex) {
+      Debug.WriteLine($"{ex.Message}:\n{ex.StackTrace}");
       return (response.StatusCode, null);
     }
     return (response.StatusCode, bodyJson);
@@ -107,7 +110,14 @@ public static partial class ApiClient {
     }
     if (body != null) message.Content = JsonContent.Create(body);
     var response = await RequestClient.SendAsync(message);
-    var bodyJson = await response.Content.ReadFromJsonAsync<TResult>();
+    TResult? bodyJson;
+    try {
+      bodyJson = await JsonSerializer.DeserializeAsync<TResult>(response.Content.ReadAsStream(), JsonSerializerOption);
+    }
+    catch (JsonException ex) {
+      Debug.WriteLine($"{ex.Message}:\n{ex.StackTrace}");
+      return (response.StatusCode, null);
+    }
     if (bodyJson != null) {
       bodyJson.HasNextData = Enumerable.Contains(["F", "M"], response.Headers.GetValues("tr_cont").Single());
     }

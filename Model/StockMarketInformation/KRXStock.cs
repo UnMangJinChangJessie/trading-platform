@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Net;
+using System.Text;
 
 namespace trading_platform.Model;
 
@@ -14,36 +15,36 @@ public static partial class StockMarketInformation {
   public static class KRXStock {
     public static readonly List<KRXStockInformation> Data = [];
     public static async Task<bool> Load() {
+      Data.Clear();
       // download master zip
-      var client = new WebClient();
-      var kospiResp = await client.DownloadFileAsync(KRX_KOSPI_MASTER_URL, "a.");
-      var kosdaqResp = await client.GetAsync(KRX_KOSDAQ_MASTER_URL);
-      if (!kospiResp.IsSuccessStatusCode || !kosdaqResp.IsSuccessStatusCode) {
-        return false;
-      }
-      var kospiZip = new ZipArchive(await kospiResp.Content.ReadAsStreamAsync());
-      var kosdaqZip = new ZipArchive(await kosdaqResp.Content.ReadAsStreamAsync());
+      var client = new HttpClient() {
+        Timeout = TimeSpan.FromSeconds(5.0)
+      };
+      var kospiResp = await client.GetStreamAsync(KRX_KOSPI_MASTER_URL);
+      var kosdaqResp = await client.GetStreamAsync(KRX_KOSDAQ_MASTER_URL);
+      var kospiZip = new ZipArchive(kospiResp);
+      var kosdaqZip = new ZipArchive(kosdaqResp);
       var kospiEucKr = kospiZip.GetEntry("kospi_code.mst")?.Open();
-      var kosdaqEucKr = kospiZip.GetEntry("kosdaq_code.mst")?.Open();
+      var kosdaqEucKr = kosdaqZip.GetEntry("kosdaq_code.mst")?.Open();
       if (kospiEucKr == null || kosdaqEucKr == null) return false;
 
-      // a line of information is 289, including a line feed.
-      // The first bytes for a ticker is 9, 12 for a standard code, and 40 for a name.
-      // i.e. the last 228 bytes are reserved for further implementations.
-      var line = new byte[289];
-      while (await kospiEucKr.ReadAsync(line, 0, 289) != 289) {
+      // the last 228 bytes are reserved for further implementations.
+      Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+      StreamReader reader = new(kospiEucKr, Encoding.GetEncoding("euc-kr"));
+      string? line;
+      while ((line = await reader.ReadLineAsync()) != null) {
         Data.Add(new() {
-          Ticker = ConvertEucKr(line[0..9]),
-          StandardSecuritiesCode = ConvertEucKr(line[9..21]),
-          Name = ConvertEucKr(line[21..61]),
+          Ticker = line[0..9].Trim(),
+          StandardSecuritiesCode = line[9..21].Trim(),
+          Name = line[21..^228].Trim(),
         });
       }
-      // For KOSDAQ, it's 221 + 61 + 1 = 283 bytes
-      while (await kosdaqEucKr.ReadAsync(line, 0, 283) != 283) {
+      reader = new(kosdaqEucKr, Encoding.GetEncoding("euc-kr"));
+      while ((line = await reader.ReadLineAsync()) != null) {
         Data.Add(new() {
-          Ticker = ConvertEucKr(line[0..9]),
-          StandardSecuritiesCode = ConvertEucKr(line[9..21]),
-          Name = ConvertEucKr(line[21..61]),
+          Ticker = line[0..9].Trim(),
+          StandardSecuritiesCode = line[9..21].Trim(),
+          Name = line[21..^228].Trim(),
         });
       }
       return true;

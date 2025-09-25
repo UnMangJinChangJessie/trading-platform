@@ -18,8 +18,7 @@ public class DateToStringConverter : JsonConverter<DateOnly> {
     return DateOnly.ParseExact(
       reader.GetString() ?? "19700101",
       "yyyyMMdd",
-      CultureInfo.CreateSpecificCulture("ko-KR"),
-      DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal
+      CultureInfo.CreateSpecificCulture("ko-KR")
     );
   }
   public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options) {
@@ -32,8 +31,7 @@ public class TimeToStringConverter : JsonConverter<TimeOnly> {
     return TimeOnly.ParseExact(
       reader.GetString() ?? "000000",
       "hhmmss",
-      CultureInfo.CreateSpecificCulture("ko-KR"),
-      DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal
+      CultureInfo.CreateSpecificCulture("ko-KR")
     );
   }
   public override void Write(Utf8JsonWriter writer, TimeOnly value, JsonSerializerOptions options) {

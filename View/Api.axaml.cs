@@ -14,11 +14,11 @@ public partial class Api : UserControl {
   }
   private void AppPublicKey_TextChanged(object? sender, RoutedEventArgs args) {
     if (sender == null) return;
-    ApiClient.AppPublicKey = ((TextBox)sender).Text ?? "";
+    ApiClient.AppPublicKey = AppPublicKey.Text ?? "";
   }
   private void AppSecretKey_TextChanged(object? sender, RoutedEventArgs args) {
     if (sender == null) return;
-    ApiClient.AppSecretKey = ((TextBox)sender).Text ?? "";
+    ApiClient.AppSecretKey = AppSecretKey.Text ?? "";
   }
   private async void IssueButton_Click(object? sender, RoutedEventArgs args) {
     var success = await ApiClient.IssueToken();

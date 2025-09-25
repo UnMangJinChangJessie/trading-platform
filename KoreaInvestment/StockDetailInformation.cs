@@ -10,7 +10,7 @@ public class StockDetailInformation {
   [JsonPropertyName("rprs_mrkt_kor_name")]
   public required string MarketName { get; init; }
   [JsonPropertyName("new_hgpr_lwpr_cls_code")]
-  public required string NewExtremeCode { get; init; }
+  public string? NewExtremeCode { get; init; }
   [JsonPropertyName("bstp_kor_isnm")]
   public required string IndexName { get; init; }
   [JsonPropertyName("temp_stop_yn")]
@@ -50,7 +50,7 @@ public class StockDetailInformation {
   [JsonPropertyName("stck_llam")]
   public required decimal LowerLimit { get; init; }
   [JsonPropertyName("stck_sdpr")]
-  public required Type StandardPrice { get; init; }
+  public required decimal StandardPrice { get; init; }
   [JsonPropertyName("wghn_avrg_stck_prc")]
   public required decimal WeightedAveragePrice { get; init; }
   [JsonPropertyName("hts_frgn_ehrt")]
@@ -93,7 +93,7 @@ public class StockDetailInformation {
   [JsonPropertyName("pbr")]
   public required float PriceBookValueRatio { get; init; }
   [JsonPropertyName("stac_month")]
-  public required byte SettlementMonth { get; init; }
+  public byte? SettlementMonth { get; init; }
   [JsonPropertyName("vol_tnrt")]
   public required float VolumeTurningRate { get; init; }
   [JsonPropertyName("eps")]
@@ -152,8 +152,8 @@ public class StockDetailInformation {
   public required decimal ForeignHoldingQuantity { get; init; }
   [JsonPropertyName("vi_cls_code")]
   public required bool Interrupted { get; init; }
-  [JsonPropertyName("ovtm_vi_cls_code")]
-  public required bool AfterMarketVolatilityInterrupt { get; init; }
+  [JsonPropertyName("ovtm_vi_cls_code"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+  public bool? AfterMarketVolatilityInterrupt { get; init; }
   [JsonPropertyName("last_ssts_cntg_qty")]
   public required decimal ShortSellingQuantity { get; init; }
   [JsonPropertyName("invt_caful_yn")]

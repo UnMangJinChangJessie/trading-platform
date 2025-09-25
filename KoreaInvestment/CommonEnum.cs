@@ -4,12 +4,14 @@ using System.Text.Json.Serialization;
 
 namespace trading_platform.KoreaInvestment;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderPosition {
   [JsonStringEnumMemberName("01")]
   Sell, // also short
   [JsonStringEnumMemberName("02")]
   Buy, // also long
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderSelling {
   [JsonStringEnumMemberName("01")]
   Ordinary, // 개인이면 이것만 사용하게 될 것
@@ -18,6 +20,7 @@ public enum OrderSelling {
   [JsonStringEnumMemberName("05")]
   Loaned,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderCredit {
   [JsonStringEnumMemberName("21")] BrokerageLong,
   [JsonStringEnumMemberName("23")] LiquidityLong,
@@ -28,69 +31,70 @@ public enum OrderCredit {
   [JsonStringEnumMemberName("28")] BrokerageShortReturn,
   [JsonStringEnumMemberName("27")] LiquidityShortReturn,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderMethod {
   [JsonStringEnumMemberName("00")]
-  [Display(Name = "지정가")]
+  [Description("지정가")]
   Limit,
   [JsonStringEnumMemberName("01")]
-  [Display(Name = "시장가")]
+  [Description("시장가")]
   Market,
   [JsonStringEnumMemberName("02")]
-  [Display(Name = "조건부지정가")]
+  [Description("조건부지정가")]
   ConditionalLimit,
   [JsonStringEnumMemberName("03")]
-  [Display(Name = "최유리지정가")]
+  [Description("최유리지정가")]
   BestOffer,
   [JsonStringEnumMemberName("04")]
-  [Display(Name = "최우선지정가")]
+  [Description("최우선지정가")]
   TopPriority,
   [JsonStringEnumMemberName("05")]
-  [Display(Name = "장전전일종가매매")]
+  [Description("장전전일종가매매")]
   PreMarket,
   [JsonStringEnumMemberName("06")]
-  [Display(Name = "장후종가매매")]
+  [Description("장후종가매매")]
   PostMarket,
   [JsonStringEnumMemberName("07")]
-  [Display(Name = "장후단일가매매")]
+  [Description("장후단일가매매")]
   AfterMarket,
   [JsonStringEnumMemberName("08")]
-  [Display(Name = "자기주식")]
+  [Description("자기주식")]
   TreasuryStock,
   [JsonStringEnumMemberName("09")]
-  [Display(Name = "자기주식스톡옵션")]
+  [Description("자기주식스톡옵션")]
   TreasuryStockOptions,
   [JsonStringEnumMemberName("10")]
-  [Display(Name = "자기주식신탁")]
+  [Description("자기주식신탁")]
   TreasuryStockTrust,
   [JsonStringEnumMemberName("11")]
-  [Display(Name = "지정가(Immediate or Cancel)")]
+  [Description("지정가(Immediate or Cancel)")]
   IocLimit,
   [JsonStringEnumMemberName("12")]
-  [Display(Name = "지정가(Fill or Kill)")]
+  [Description("지정가(Fill or Kill)")]
   FokLimit,
   [JsonStringEnumMemberName("13")]
-  [Display(Name = "시장가(Immediate or Cancel)")]
+  [Description("시장가(Immediate or Cancel)")]
   IocMarket,
   [JsonStringEnumMemberName("14")]
-  [Display(Name = "시장가(Fill or Kill)")]
+  [Description("시장가(Fill or Kill)")]
   FokMarket,
   [JsonStringEnumMemberName("15")]
-  [Display(Name = "최유리지정가(Immediate or Cancel)")]
+  [Description("최유리지정가(Immediate or Cancel)")]
   IocBestOffer,
   [JsonStringEnumMemberName("16")]
-  [Display(Name = "최유리지정가(Fill or Kill)")]
+  [Description("최유리지정가(Fill or Kill)")]
   FokBestOffer,
   [JsonStringEnumMemberName("21")]
-  [Display(Name = "중간가")]
+  [Description("중간가")]
   Intermediate,
   [JsonStringEnumMemberName("22")]
-  [Display(Name = "손실제한지정가")]
+  [Description("손실제한지정가")]
   StopLossLimit,
   [JsonStringEnumMemberName("23")]
-  [Display(Name = "중간가(Immediate or Cancel)")]
+  [Description("중간가(Immediate or Cancel)")]
   IocIntermediate,
   [JsonStringEnumMemberName("24")]
-  [Display(Name = "중간가(Fill or Kill)")]
+  [Description("중간가(Fill or Kill)")]
   FokIntermediate,
   [JsonStringEnumMemberName("51")] MidMarketHuge,
   [JsonStringEnumMemberName("52")] MidMarketBasket,
@@ -103,17 +107,20 @@ public enum OrderMethod {
   [JsonStringEnumMemberName("79")] AfterMarketHugeTreasuryStock,
   [JsonStringEnumMemberName("80")] Basket,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum DomesticOrderRoute {
   [JsonStringEnumMemberName("KRX")] KoreaExchange,
   [JsonStringEnumMemberName("NXT")] NexTrade,
   [JsonStringEnumMemberName("SOR")] SmartOrderRouting,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum CandlePeriod {
   [JsonStringEnumMemberName("D")] Daily,
   [JsonStringEnumMemberName("W")] Weekly,
   [JsonStringEnumMemberName("M")] Monthly,
   [JsonStringEnumMemberName("Y")] Yearly,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Exchange {
   [JsonStringEnumMemberName("J")] KoreaExchange,
   [JsonStringEnumMemberName("NX")] NexTrade,
@@ -128,10 +135,12 @@ public enum Exchange {
   [JsonStringEnumMemberName("HNX")] Hanoi,
   [JsonStringEnumMemberName("HSX")] HoChiMinh,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Modification {
   [JsonStringEnumMemberName("01")] Modify,
   [JsonStringEnumMemberName("02")] Cancel
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum PriceChangeSign {
   [JsonStringEnumMemberName("1")] UpperLimit,
   [JsonStringEnumMemberName("2")] Positive,
@@ -139,6 +148,7 @@ public enum PriceChangeSign {
   [JsonStringEnumMemberName("4")] LowerLimit,
   [JsonStringEnumMemberName("5")] Negative,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum LockType {
   [JsonStringEnumMemberName("01")] Claim,
   [JsonStringEnumMemberName("02")] Dividend,
@@ -148,6 +158,7 @@ public enum LockType {
   [JsonStringEnumMemberName("06")] ClaimedIntermediateDividend,
   [JsonStringEnumMemberName("07")] ClaimedPeriodicalDividend,
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TradingStatusType {
   [JsonStringEnumMemberName("51")] Managed,
   [JsonStringEnumMemberName("52")] Risky,
@@ -158,6 +169,7 @@ public enum TradingStatusType {
   [JsonStringEnumMemberName("58")] Ceased,
   [JsonStringEnumMemberName("59")] ShortTermOverheat
 }
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MarketWarning {
   [JsonStringEnumMemberName("00")] None,
   [JsonStringEnumMemberName("01")] Caution,
