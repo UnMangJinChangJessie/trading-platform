@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
-using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -18,13 +16,13 @@ public static partial class ApiClient {
   public static string AppSecretKey { get; set; } = "";
   public static string AccessToken { get; set; } = default!;
   public static string WebSocketAccessToken { get; set; } = default!;
-  public static DateTime AccessTokenExpire { get; private set; } = DateTime.Now;
+  public static DateTime AccessTokenExpire { get; private set; } = DateTime.UnixEpoch;
   private readonly static HttpClient RequestClient = new() {
     BaseAddress = BuildApiBaseAddress(),
     Timeout = TimeSpan.FromSeconds(5)
   };
   private readonly static JsonSerializerOptions JsonSerializerOption = new() {
-    NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
+    NumberHandling = JsonNumberHandling.AllowReadingFromString,
     AllowTrailingCommas = true,
     Converters = {
       new DateToStringConverter(),

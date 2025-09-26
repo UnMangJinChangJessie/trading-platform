@@ -13,7 +13,7 @@ public partial class OrderBookDisplay : UserControl {
   private readonly TextBlock[] BuyingPriceTextBlocks = new TextBlock[10];
   private readonly OrderBookQuantityBlock[] SellingQuantityBlocks = new OrderBookQuantityBlock[10];
   private readonly OrderBookQuantityBlock[] BuyingQuantityBlocks = new OrderBookQuantityBlock[10];
-
+  private ViewModel.OrderBook? CastedDataContext => DataContext as ViewModel.OrderBook;
   /// <summary>
   /// LongBrush StyledProperty definition
   /// indicates long brush.
@@ -80,10 +80,9 @@ public partial class OrderBookDisplay : UserControl {
       OrderBookQuantityBlock[] controls = rowIdx < 10 ? SellingQuantityBlocks : BuyingQuantityBlocks;
       controls[viewIdx] = block;
     }
-    UpdateColours(sender, args);
   }
   public void UpdateColours(object? sender, EventArgs args) {
-    if (DataContext is not ViewModel.OrderBook context) return;
+    if (CastedDataContext == null) return;
     IBrush? colorPicker(decimal a, decimal b) {
       return a.CompareTo(b) switch {
         > 0 => LongBrush,
@@ -92,21 +91,21 @@ public partial class OrderBookDisplay : UserControl {
       };
     }
     for (int i = 0; i < 10; i++) {
-      SellingPriceTextBlocks[i].Foreground = colorPicker(context!.SellingPrices[i], context!.PreviousClose);
-      BuyingPriceTextBlocks[i].Foreground = colorPicker(context!.BuyingPrices[i], context!.PreviousClose);
+      if (SellingPriceTextBlocks[i] != null) SellingPriceTextBlocks[i].Foreground = colorPicker(CastedDataContext.SellingPrices[i], CastedDataContext.PreviousClose);
+      if (BuyingPriceTextBlocks[i] != null) BuyingPriceTextBlocks[i].Foreground = colorPicker(CastedDataContext.BuyingPrices[i], CastedDataContext.PreviousClose);
     }
     // 마지막 체결가 표시
-    if (context.LastConclusion == null) {
+    if (CastedDataContext.LastConclusion == null) {
       PART_ConclusionBorder.IsVisible = false;
     }
     else {
-      int index = Array.FindIndex(context.SellingPrices, x => x == context.LastConclusion);
+      int index = Array.FindIndex(CastedDataContext.SellingPrices, x => x == CastedDataContext.LastConclusion);
       if (index >= 0) {
         Grid.SetRow(PART_ConclusionBorder, 9 - index);
         PART_ConclusionBorder.IsVisible = true;
       }
       else {
-        index = Array.FindIndex(context.BuyingPrices, x => x == context.LastConclusion);
+        index = Array.FindIndex(CastedDataContext.BuyingPrices, x => x == CastedDataContext.LastConclusion);
         if (index >= 0) {
           Grid.SetRow(PART_ConclusionBorder, index + 10);
         }

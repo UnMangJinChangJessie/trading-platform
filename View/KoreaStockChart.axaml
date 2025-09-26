@@ -8,6 +8,8 @@
   d:DesignHeight="720" d:DesignWidth="1000"
   x:Class="trading_platform.View.KoreaStockChart"
   x:DataType="vm:MarketData"
+  AttachedToVisualTree="UserControl_AttachedToVisualTree"
+  DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
 >
   <Grid ColumnDefinitions="*,180,180" RowDefinitions="*" Margin="5">
     <Grid
@@ -34,6 +36,7 @@
     </Grid>
     <com:OrderBookDisplay
       Grid.Column="1"
+      DataContext="{Binding $parent[UserControl].DataContext.CurrentOrderBook}"
     />
     <v:Order
       Name="OrderView"

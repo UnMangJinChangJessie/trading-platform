@@ -36,6 +36,8 @@ public partial class MarketData : ObservableObject {
   public partial float PriceEarningsRatio { get; set; } = 0.0F;
   [ObservableProperty]
   public partial float ReturnOnEquity { get; set; } = 0.0F;
+  [ObservableProperty]
+  public partial OrderBook CurrentOrderBook { get; set; } = new();
 
   public MarketData() {
     if (Design.IsDesignMode) {

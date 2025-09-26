@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -39,8 +40,15 @@ public static partial class ApiClient {
       secretkey = AppSecretKey,
     };
     var result = await RequestClient.PostAsJsonAsync("/oauth2/Approval", body);
-    if (!result.IsSuccessStatusCode) return false;
     var responseBody = await result.Content.ReadFromJsonAsync<JsonElement>();
+    if (!result.IsSuccessStatusCode) {
+      Debug.WriteLine(string.Format(
+        "Failed to issue a WebSocket token: [{0}] {1}",
+        responseBody.GetProperty("error_code").GetString(),
+        responseBody.GetProperty("error_description").GetString()
+      ));
+      return false;
+    }
     WebSocketAccessToken = responseBody.GetProperty("approval_key").GetString() ?? "";
     return string.IsNullOrEmpty(WebSocketAccessToken);
   }

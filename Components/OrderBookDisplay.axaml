@@ -9,9 +9,6 @@
   d:DesignHeight="720" d:DesignWidth="200"
   Loaded="UserControl_Loaded"
 >
-  <UserControl.DataContext>
-    <vm:OrderBook />
-  </UserControl.DataContext>
   <ScrollViewer
     Margin="5"
   >

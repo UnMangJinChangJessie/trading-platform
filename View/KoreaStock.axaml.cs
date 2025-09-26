@@ -4,9 +4,6 @@ using trading_platform.KoreaInvestment;
 namespace trading_platform.View;
 
 public partial class KoreaStock : UserControl {
-  private KisWebSocket? PriceWebSocket { get; set; } = null;
-  private KisWebSocket? BiddingWebSocket { get; set; } = null;
-  private KisWebSocket? ConclusionWebSocket { get; set; } = null;
   private ViewModel.MarketData? CastedDataContext => DataContext as ViewModel.MarketData;
   public KoreaStock() {
     InitializeComponent();

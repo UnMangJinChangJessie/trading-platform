@@ -30,11 +30,11 @@ public class TimeToStringConverter : JsonConverter<TimeOnly> {
   public override TimeOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
     return TimeOnly.ParseExact(
       reader.GetString() ?? "000000",
-      "hhmmss",
+      "HHmmss",
       CultureInfo.CreateSpecificCulture("ko-KR")
     );
   }
   public override void Write(Utf8JsonWriter writer, TimeOnly value, JsonSerializerOptions options) {
-    writer.WriteStringValue(value.ToString("hhmmss"));
+    writer.WriteStringValue(value.ToString("HHmmss"));
   }
 }

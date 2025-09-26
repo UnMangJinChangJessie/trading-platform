@@ -15,10 +15,5 @@ public partial class MainWindow : Window {
     if (!loadedKrx) {
       Debug.WriteLine("Failed to fetch KRX listings data.");
     }
-    if (File.Exists("kis-developers-key.json")) {
-      var json = await JsonSerializer.DeserializeAsync<JsonElement>(File.OpenRead("kis-developers-key.json"));
-      if (json.TryGetProperty("public_key", out var pubKey)) ApiClient.AppPublicKey = pubKey.GetString() ?? "";
-      if (json.TryGetProperty("secret_key", out var secretKey)) ApiClient.AppSecretKey = secretKey.GetString() ?? "";
-    }
   }
 }

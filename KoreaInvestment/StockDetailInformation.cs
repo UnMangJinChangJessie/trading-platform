@@ -26,68 +26,68 @@ public class StockDetailInformation {
   [JsonPropertyName("elw_pblc_yn")]
   public required bool HasEquityLinkedWarrant { get; init; }
   [JsonPropertyName("stck_prpr")]
-  public required decimal Close { get; init; }
+  public required ulong Close { get; init; }
   [JsonPropertyName("prdy_vrss")]
-  public required decimal PriceChange { get; init; }
+  public required long PriceChange { get; init; }
   [JsonPropertyName("prdy_vrss_sign")]
   public required PriceChangeSign PriceChangeSign { get; init; }
   [JsonPropertyName("prdy_ctrt")]
   public required float ChangeRate { get; init; }
   [JsonPropertyName("acml_tr_pbmn")]
-  public required decimal Amount { get; init; }
+  public required ulong Amount { get; init; }
   [JsonPropertyName("acml_vol")]
-  public required decimal Volume { get; init; }
+  public required ulong Volume { get; init; }
   [JsonPropertyName("prdy_vrss_vol_rate")]
   public required float VolumeRatio { get; init; }
   [JsonPropertyName("stck_oprc")]
-  public required decimal Open { get; init; }
+  public required ulong Open { get; init; }
   [JsonPropertyName("stck_hgpr")]
-  public required decimal High { get; init; }
+  public required ulong High { get; init; }
   [JsonPropertyName("stck_lwpr")]
-  public required decimal Low { get; init; }
+  public required ulong Low { get; init; }
   [JsonPropertyName("stck_mxpr")]
-  public required decimal UpperLimit { get; init; }
+  public required ulong UpperLimit { get; init; }
   [JsonPropertyName("stck_llam")]
-  public required decimal LowerLimit { get; init; }
+  public required ulong LowerLimit { get; init; }
   [JsonPropertyName("stck_sdpr")]
-  public required decimal StandardPrice { get; init; }
+  public required ulong StandardPrice { get; init; }
   [JsonPropertyName("wghn_avrg_stck_prc")]
   public required decimal WeightedAveragePrice { get; init; }
   [JsonPropertyName("hts_frgn_ehrt")]
   public required float ForeignExhaustRate { get; init; }
   [JsonPropertyName("frgn_ntby_qty")]
-  public required decimal ForeignNetBuyVolume { get; init; }
+  public required ulong ForeignNetBuyVolume { get; init; }
   [JsonPropertyName("pgtr_ntby_qty")]
-  public required decimal ProgramNetBuyVolume { get; init; }
+  public required ulong ProgramNetBuyVolume { get; init; }
   [JsonPropertyName("pvt_scnd_dmrs_prc")]
-  public required decimal PivotSecondResistance { get; init; }
+  public required ulong PivotSecondResistance { get; init; }
   [JsonPropertyName("pvt_frst_dmrs_prc")]
-  public required decimal PivotFirstResistance { get; init; }
+  public required ulong PivotFirstResistance { get; init; }
   [JsonPropertyName("pvt_pont_val")]
-  public required decimal PivotPoint { get; init; }
+  public required ulong PivotPoint { get; init; }
   [JsonPropertyName("pvt_frst_dmsp_prc")]
-  public required decimal PivotFirstSupport { get; init; }
+  public required ulong PivotFirstSupport { get; init; }
   [JsonPropertyName("pvt_scnd_dmsp_prc")]
-  public required decimal PivotSecondSupport { get; init; }
+  public required ulong PivotSecondSupport { get; init; }
   [JsonPropertyName("dmrs_val")]
-  public required decimal DeMarkResistance { get; init; }
+  public required ulong DeMarkResistance { get; init; }
   [JsonPropertyName("dmsp_val")]
-  public required decimal DeMarkSupport { get; init; }
+  public required ulong DeMarkSupport { get; init; }
   [JsonPropertyName("cpfn")]
-  public required decimal CapitalFoundation { get; init; }
+  public required ulong CapitalFoundation { get; init; }
   [JsonPropertyName("rstc_wdth_prc")]
-  public required decimal RestrictionWidth { get; init; }
+  public required ulong RestrictionWidth { get; init; }
   [JsonPropertyName("stck_fcam")]
-  public required decimal FaceValue { get; init; }
+  public required ulong FaceValue { get; init; }
   [JsonPropertyName("stck_sspr")]
-  public required decimal SubstitutePrice { get; init; }
+  public required ulong SubstitutePrice { get; init; }
   [JsonPropertyName("aspr_unit")]
-  public required decimal AskingPriceUnit { get; init; }
+  public required ulong AskingPriceUnit { get; init; }
   [JsonPropertyName("hts_deal_qty_unit_val")]
-  public required decimal TradingUnit { get; init; }
+  public required ulong TradingUnit { get; init; }
   [JsonPropertyName("lstn_stcn")]
-  public required decimal ListedStocks { get; init; }
-  public decimal MarketCapitalization => ListedStocks * Close;
+  public required ulong ListedStocks { get; init; }
+  public ulong MarketCapitalization => ListedStocks * Close;
   [JsonPropertyName("per")]
   public required float PriceEarningsRate { get; init; }
   [JsonPropertyName("pbr")]
@@ -101,37 +101,37 @@ public class StockDetailInformation {
   [JsonPropertyName("bps")]
   public required float BookValuePerShare { get; init; }
   [JsonPropertyName("d250_hgpr")]
-  public required decimal High250Day { get; init; }
+  public required ulong High250Day { get; init; }
   [JsonPropertyName("d250_hgpr_date")]
   public required DateOnly High250DayDate { get; init; }
   [JsonPropertyName("d250_hgpr_vrss_prpr_rate")]
   public required float High250DayRate { get; init; }
   [JsonPropertyName("d250_lwpr")]
-  public required decimal Low250Day { get; init; }
+  public required ulong Low250Day { get; init; }
   [JsonPropertyName("d250_lwpr_date")]
   public required DateOnly Low250DayDate { get; init; }
   [JsonPropertyName("d250_lwpr_vrss_prpr_rate")]
   public required float Low250DayRate { get; init; }
   [JsonPropertyName("stck_dryy_hgpr")]
-  public required decimal HighYear { get; init; }
+  public required ulong HighYear { get; init; }
   [JsonPropertyName("dryy_hgpr_vrss_prpr_rate")]
   public required float HighYearRate { get; init; }
   [JsonPropertyName("dryy_hgpr_date")]
   public required DateOnly HighYearDate { get; init; }
   [JsonPropertyName("stck_dryy_lwpr")]
-  public required decimal LowYear { get; init; }
+  public required ulong LowYear { get; init; }
   [JsonPropertyName("dryy_lwpr_vrss_prpr_rate")]
   public required float LowYearRate { get; init; }
   [JsonPropertyName("dryy_lwpr_date")]
   public required DateOnly LowYearDate { get; init; }
   [JsonPropertyName("w52_hgpr")]
-  public required decimal High52Week { get; init; }
+  public required ulong High52Week { get; init; }
   [JsonPropertyName("w52_hgpr_vrss_prpr_ctrt")]
   public required float High52WeekRate { get; init; }
   [JsonPropertyName("w52_hgpr_date")]
   public required DateOnly High52WeekDate { get; init; }
   [JsonPropertyName("w52_lwpr")]
-  public required decimal Low52Week { get; init; }
+  public required ulong Low52Week { get; init; }
   [JsonPropertyName("w52_lwpr_vrss_prpr_ctrt")]
   public required float Low52WeekRate { get; init; }
   [JsonPropertyName("w52_lwpr_date")]
@@ -149,13 +149,13 @@ public class StockDetailInformation {
   // [JsonPropertyName("apprch_rate")]
   // public required float ApproachRate { get; init; } // What is this?
   [JsonPropertyName("frgn_hldn_qty")]
-  public required decimal ForeignHoldingQuantity { get; init; }
+  public required ulong ForeignHoldingQuantity { get; init; }
   [JsonPropertyName("vi_cls_code")]
   public required bool Interrupted { get; init; }
   [JsonPropertyName("ovtm_vi_cls_code"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public bool? AfterMarketVolatilityInterrupt { get; init; }
   [JsonPropertyName("last_ssts_cntg_qty")]
-  public required decimal ShortSellingQuantity { get; init; }
+  public required ulong ShortSellingQuantity { get; init; }
   [JsonPropertyName("invt_caful_yn")]
   public required bool MarketWarning { get; init; }
   [JsonPropertyName("mrkt_warn_cls_code")]
