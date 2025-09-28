@@ -49,5 +49,28 @@ public static partial class StockMarketInformation {
       }
       return true;
     }
+    public static KRXStockInformation? SearchByTicker(string ticker) {
+      return Data.AsParallel().Where(x => x.Ticker == ticker).FirstOrDefault();
+    }
+    public static decimal GetTickIncrement(decimal val) => val switch {
+      < 0 => 0,
+      < 2_000 => Math.Floor(val) + 1,
+      < 5_000 => (Math.Floor(val / 5) + 1) * 5,
+      < 20_000 => (Math.Floor(val / 10) + 1) * 10,
+      < 50_000 => (Math.Floor(val / 50) + 1) * 50,
+      < 200_000 => (Math.Floor(val / 100) + 1) * 100,
+      < 500_000 => (Math.Floor(val / 500) + 1) * 500,
+      _ => (Math.Floor(val / 1_000) + 1) * 1_000
+    };
+    public static decimal GetTickDecrement(decimal val) => val switch {
+      > 500_000 => (Math.Ceiling(val / 1_000) - 1) * 1_000,
+      > 200_000 => (Math.Ceiling(val / 500) - 1) * 500,
+      > 50_000 => (Math.Ceiling(val / 100) - 1) * 100,
+      > 20_000 => (Math.Ceiling(val / 50) - 1) * 50,
+      > 5_000 => (Math.Ceiling(val / 10) - 1) * 10,
+      > 2_000 => (Math.Ceiling(val / 5) - 1) * 5,
+      > 0 => (Math.Ceiling(val) - 1) * 5,
+      _ => 0
+    };
   }
 }

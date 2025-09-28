@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -6,6 +7,7 @@ using Avalonia.Media;
 namespace trading_platform.Components;
 
 public partial class OrderBookQuantityBlock : UserControl {
+  private ViewModel.KoreaInvestment.StockOrderBook? CastedDataContext => DataContext as ViewModel.KoreaInvestment.StockOrderBook;
   /// <summary>
   /// IsSelling StyledProperty definition
   /// indicates if the quantity block indicates selling ones.
@@ -80,6 +82,35 @@ public partial class OrderBookQuantityBlock : UserControl {
     get => this.GetValue(ShortColorProperty);
     set => SetValue(ShortColorProperty, value);
   }
+  /// <summary>
+  /// NeutralColor StyledProperty definition
+  /// indicates neutral(i.e. previous close is current close) brush.
+  /// </summary>
+  public static readonly StyledProperty<IBrush> NeutralColorProperty =
+    AvaloniaProperty.Register<OrderBookQuantityBlock, IBrush>(nameof(NeutralColor));
+  /// <summary>
+  /// Gets or sets the NeutralColor property. This StyledProperty
+  /// indicates neutral(i.e. previous close is current close) brush.
+  /// </summary>
+  public IBrush NeutralColor {
+    get => GetValue(NeutralColorProperty);
+    set => SetValue(NeutralColorProperty, value);
+  }
+  /// <summary>
+  /// Quantity StyledProperty definition
+  /// indicates quantity.
+  /// </summary>
+  public static readonly StyledProperty<decimal> QuantityProperty =
+    AvaloniaProperty.Register<OrderBookQuantityBlock, decimal>(nameof(Quantity));
+  /// <summary>
+  /// Gets or sets the Quantity property. This StyledProperty
+  /// indicates quantity.
+  /// </summary>
+  public decimal Quantity {
+    get => GetValue(QuantityProperty);
+    set => SetValue(QuantityProperty, value);
+  }
+
   public OrderBookQuantityBlock() {
     InitializeComponent();
   }
@@ -89,16 +120,15 @@ public partial class OrderBookQuantityBlock : UserControl {
     PART_Rectangle.HorizontalAlignment = IsSelling ? Avalonia.Layout.HorizontalAlignment.Right : Avalonia.Layout.HorizontalAlignment.Left;
     PART_Rectangle.Fill = IsSelling ? ShortColor : LongColor;
     PART_Rectangle.Height = Bounds.Height * 0.95;
-    var context = DataContext as ViewModel.OrderBook;
-    DataContextChanged += UpdateBar;
-    UpdateBar(sender, args);
   }
-  public void UpdateBar(object? sender, EventArgs args) {
+  public void UpdateBar(object? sender, PropertyChangedEventArgs args) {
     var boundWidth = Bounds.Width;
-    if (DataContext is not ViewModel.OrderBook context) return;
-    var percentage = IsSelling ? context.SellingVisualBarRatio(OrderViewIndex) : context.BuyingVisualBarRatio(OrderViewIndex);
+    if (CastedDataContext == null) return;
+    var maxQuantity = CastedDataContext.HighestQuantity;
+    double percentage;
+    if (maxQuantity == 0) percentage = 0;
+    else percentage = (double)(Quantity / maxQuantity);
     PART_Rectangle.Width = percentage * boundWidth;
-    var quantity = IsSelling ? context!.SellingQuantities[OrderViewIndex] : context!.BuyingQuantities[OrderViewIndex];
-    PART_TextBlock.Text = string.Format($"{{0:F{DecimalPointCount}}}", quantity);
+    PART_TextBlock.Text = Quantity.ToString($"F{DecimalPointCount}");
   }
 }

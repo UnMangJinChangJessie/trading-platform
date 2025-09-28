@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -13,7 +14,7 @@ public partial class OrderBookDisplay : UserControl {
   private readonly TextBlock[] BuyingPriceTextBlocks = new TextBlock[10];
   private readonly OrderBookQuantityBlock[] SellingQuantityBlocks = new OrderBookQuantityBlock[10];
   private readonly OrderBookQuantityBlock[] BuyingQuantityBlocks = new OrderBookQuantityBlock[10];
-  private ViewModel.OrderBook? CastedDataContext => DataContext as ViewModel.OrderBook;
+  private ViewModel.KoreaInvestment.StockOrderBook? CastedDataContext => DataContext as ViewModel.KoreaInvestment.StockOrderBook;
   /// <summary>
   /// LongBrush StyledProperty definition
   /// indicates long brush.
@@ -52,65 +53,77 @@ public partial class OrderBookDisplay : UserControl {
   /// Gets or sets the NeutralBrush property. This StyledProperty
   /// indicates neutral(i.e. previous close == current price) brush.
   /// </summary>
-  public IBrush? NeutralBrush
-  {
+  public IBrush? NeutralBrush {
     get => GetValue(NeutralBrushProperty);
     set => SetValue(NeutralBrushProperty, value);
   }
+  /// <summary>
+  /// PriceDecimalPoint StyledProperty definition
+  /// indicates the digits under the fraction point of prices.
+  /// </summary>
+  public static readonly StyledProperty<int> PriceDecimalPointProperty =
+    AvaloniaProperty.Register<OrderBookDisplay, int>(nameof(PriceDecimalPoint));
+  /// <summary>
+  /// Gets or sets the PriceDecimalPoint property. This StyledProperty
+  /// indicates the digits under the fraction point of prices.
+  /// </summary>
+  public int PriceDecimalPoint {
+    get => this.GetValue(PriceDecimalPointProperty);
+    set => SetValue(PriceDecimalPointProperty, value);
+  }
+  /// <summary>
+  /// QuantityDecimalPoint StyledProperty definition
+  /// indicates the digits under the fraction points of quantities.
+  /// </summary>
+  public static readonly StyledProperty<int> QuantityDecimalPointProperty =
+    AvaloniaProperty.Register<OrderBookDisplay, int>(nameof(QuantityDecimalPoint));
+  /// <summary>
+  /// Gets or sets the QuantityDecimalPoint property. This StyledProperty
+  /// indicates the digits under the fraction points of quantities.
+  /// </summary>
+  public int QuantityDecimalPoint {
+    get => this.GetValue(QuantityDecimalPointProperty);
+    set => SetValue(QuantityDecimalPointProperty, value);
+  }
+
+
 
   public OrderBookDisplay() {
     InitializeComponent();
-    DataContextChanged += UpdateColours;
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
-    LongBrush = new SolidColorBrush(Colors.Pink);
-    ShortBrush = new SolidColorBrush(Colors.SkyBlue);
-    NeutralBrush = new SolidColorBrush(Colors.Black);
+    LongBrush ??= new SolidColorBrush(Colors.Pink);
+    ShortBrush ??= new SolidColorBrush(Colors.SkyBlue);
+    NeutralBrush ??= new SolidColorBrush(Colors.Black);
+  }
+  public void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     var blocks = PART_Grid.Children.OfType<TextBlock>();
     foreach (var block in blocks) {
       int rowIdx = Grid.GetRow(block);
       int viewIdx = Math.Abs(rowIdx - 9) + (rowIdx < 10 ? 0 : -1);
-      TextBlock[] controls = rowIdx < 10 ? SellingPriceTextBlocks : BuyingPriceTextBlocks;
+      TextBlock[] controls = rowIdx < 10 ? ref SellingPriceTextBlocks : ref BuyingPriceTextBlocks;
       controls[viewIdx] = block;
     }
     var quantities = PART_Grid.Children.OfType<OrderBookQuantityBlock>();
     foreach (var block in quantities) {
       int rowIdx = Grid.GetRow(block);
       int viewIdx = Math.Abs(rowIdx - 9) + (rowIdx < 10 ? 0 : -1);
-      OrderBookQuantityBlock[] controls = rowIdx < 10 ? SellingQuantityBlocks : BuyingQuantityBlocks;
+      OrderBookQuantityBlock[] controls = rowIdx < 10 ? ref SellingQuantityBlocks : ref BuyingQuantityBlocks;
       controls[viewIdx] = block;
     }
   }
-  public void UpdateColours(object? sender, EventArgs args) {
+  public void UpdatePriceBlocks(object? sender, PropertyChangedEventArgs args) {
     if (CastedDataContext == null) return;
-    IBrush? colorPicker(decimal a, decimal b) {
-      return a.CompareTo(b) switch {
+    IBrush? PickColor(decimal price, decimal close) {
+      return (price - close) switch {
         > 0 => LongBrush,
         < 0 => ShortBrush,
         0 => NeutralBrush
       };
     }
     for (int i = 0; i < 10; i++) {
-      if (SellingPriceTextBlocks[i] != null) SellingPriceTextBlocks[i].Foreground = colorPicker(CastedDataContext.SellingPrices[i], CastedDataContext.PreviousClose);
-      if (BuyingPriceTextBlocks[i] != null) BuyingPriceTextBlocks[i].Foreground = colorPicker(CastedDataContext.BuyingPrices[i], CastedDataContext.PreviousClose);
-    }
-    // 마지막 체결가 표시
-    if (CastedDataContext.LastConclusion == null) {
-      PART_ConclusionBorder.IsVisible = false;
-    }
-    else {
-      int index = Array.FindIndex(CastedDataContext.SellingPrices, x => x == CastedDataContext.LastConclusion);
-      if (index >= 0) {
-        Grid.SetRow(PART_ConclusionBorder, 9 - index);
-        PART_ConclusionBorder.IsVisible = true;
-      }
-      else {
-        index = Array.FindIndex(CastedDataContext.BuyingPrices, x => x == CastedDataContext.LastConclusion);
-        if (index >= 0) {
-          Grid.SetRow(PART_ConclusionBorder, index + 10);
-        }
-      }
-      PART_ConclusionBorder.IsVisible = index >= 0;
+      TextElement.SetForeground(SellingPriceTextBlocks[i], PickColor(CastedDataContext.AskPrice[i].Value, 0.0M));
+      TextElement.SetForeground(BuyingPriceTextBlocks[i], PickColor(CastedDataContext.BidPrice[i].Value, 0.0M));
     }
   }
 }

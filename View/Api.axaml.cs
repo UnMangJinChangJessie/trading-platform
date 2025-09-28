@@ -2,7 +2,7 @@ using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using trading_platform.KoreaInvestment;
+using trading_platform.Model.KoreaInvestment;
 
 namespace trading_platform.View;
 
@@ -24,7 +24,6 @@ public partial class Api : UserControl {
     AppSecretKey.Text = ApiClient.AppSecretKey;
     AccessKeyTextBox.Text = ApiClient.AccessToken;
     AccessKeyExpireTextBox.Text = ApiClient.AccessTokenExpire.ToString("yyyy-MM-ddThh:mm:sszzz");
-    WebSocketAccessKeyTextBox.Text = ApiClient.WebSocketAccessToken;
   }
   private void AppPublicKey_TextChanged(object? sender, RoutedEventArgs args) {
     ApiClient.AppPublicKey = AppPublicKey.Text ?? "";
@@ -39,10 +38,6 @@ public partial class Api : UserControl {
       AccessKeyTextBox.Text = ApiClient.AccessToken;
       AccessKeyExpireTextBox.Text = ApiClient.AccessTokenExpire.ToString("yyyy-MM-ddThh:mm:sszzz");
     }
-    success = await ApiClient.IssueWebSocketToken();
-    if (success) {
-      WebSocketAccessKeyTextBox.Text = ApiClient.WebSocketAccessToken;
-    }
   }
   private async void RevokeButton_Click(object? sender, RoutedEventArgs args) {
     var success = await ApiClient.RevokeToken();
@@ -54,6 +49,5 @@ public partial class Api : UserControl {
   private void RevealButton_Click(object? sender, RoutedEventArgs args) {
     if (sender == null) return;
     AccessKeyTextBox.RevealPassword = !AccessKeyTextBox.RevealPassword;
-    WebSocketAccessKeyTextBox.RevealPassword = !WebSocketAccessKeyTextBox.RevealPassword;
   }
 }

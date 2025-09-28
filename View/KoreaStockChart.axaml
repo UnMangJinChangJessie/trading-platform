@@ -3,11 +3,12 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:v="using:trading_platform.View"
-  xmlns:vm="using:trading_platform.ViewModel"
+  xmlns:vm="using:trading_platform.ViewModel.KoreaInvestment"
   xmlns:com="using:trading_platform.Components"
   d:DesignHeight="720" d:DesignWidth="1000"
   x:Class="trading_platform.View.KoreaStockChart"
-  x:DataType="vm:MarketData"
+  x:DataType="vm:StockMarketData"
+  x:Name="ControlRoot"
   AttachedToVisualTree="UserControl_AttachedToVisualTree"
   DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
 >
@@ -17,7 +18,7 @@
       ColumnDefinitions="*" RowDefinitions="Auto, 100, *, Auto"
     >
       <StackPanel Grid.Row="0" Orientation="Horizontal" FlowDirection="LeftToRight">
-        <TextBox Name="TickerTextBox" Watermark="종목코드" Text="{Binding Ticker}" Width="200" Padding="2.5" >
+        <TextBox Name="TickerTextBox" Watermark="종목코드" Width="200" Padding="2.5" >
           <TextBox.InnerRightContent>
             <Button Click="TickerInquireButton_Click">조회</Button>
           </TextBox.InnerRightContent>
@@ -25,18 +26,19 @@
       </StackPanel>
       <com:PriceDisplay
         Name="PriceDisplay"
-        DataContext="{Binding $parent[UserControl].DataContext}"
+        DataContext="{Binding #ControlRoot.DataContext}"
         Grid.Row="1"
       />
       <com:CandlestickChart
         Name="OHLCChart"
+        DataContext="{Binding #ControlRoot.DataContext}"
         Grid.Row="2"
         VerticalAlignment="Stretch"
       />
     </Grid>
     <com:OrderBookDisplay
+      Name="OrderBookDisplayView"
       Grid.Column="1"
-      DataContext="{Binding $parent[UserControl].DataContext.CurrentOrderBook}"
     />
     <v:Order
       Name="OrderView"

@@ -4,11 +4,17 @@
   xmlns:com="using:trading_platform.Components"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:vm="using:trading_platform.ViewModel"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
   x:Class="trading_platform.Components.OrderBookDisplay"
-  x:DataType="vm:OrderBook"
+  x:DataType="vmkis:StockOrderBook"
+  x:Name="UserControlRoot"
   d:DesignHeight="720" d:DesignWidth="200"
   Loaded="UserControl_Loaded"
+  AttachedToVisualTree="UserControl_AttachedToVisualTree"
 >
+  <UserControl.DataContext>
+    <vmkis:StockOrderBook />
+  </UserControl.DataContext>
   <ScrollViewer
     Margin="5"
   >
@@ -20,224 +26,264 @@
       <!-- 매도 수량 -->
       <com:OrderBookQuantityBlock 
         Grid.Row="0" Grid.Column="0"
+        Quantity="{Binding AskQuantity[9].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="9"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="1" Grid.Column="0"
+        Quantity="{Binding AskQuantity[8].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="8"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="2" Grid.Column="0"
+        Quantity="{Binding AskQuantity[7].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="7"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="3" Grid.Column="0"
+        Quantity="{Binding AskQuantity[6].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="6"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="4" Grid.Column="0"
+        Quantity="{Binding AskQuantity[5].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="5"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="5" Grid.Column="0"
+        Quantity="{Binding AskQuantity[4].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="4"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="6" Grid.Column="0"
+        Quantity="{Binding AskQuantity[3].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="3"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="7" Grid.Column="0"
+        Quantity="{Binding AskQuantity[2].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="2"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="8" Grid.Column="0"
+        Quantity="{Binding AskQuantity[1].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="1"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="9" Grid.Column="0"
+        Quantity="{Binding AskQuantity[0].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="True"
         OrderViewIndex="0"
       />
       <!-- 매도 호가 -->
       <TextBlock
         Grid.Row="0" Grid.Column="1"
-        Text="{Binding SellingPrices[9]}"
+        Text="{Binding AskPrice[9].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="1" Grid.Column="1"
-        Text="{Binding SellingPrices[8]}"
+        Text="{Binding AskPrice[8].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="2" Grid.Column="1"
-        Text="{Binding SellingPrices[7]}"
+        Text="{Binding AskPrice[7].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="3" Grid.Column="1"
-        Text="{Binding SellingPrices[6]}"
+        Text="{Binding AskPrice[6].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="4" Grid.Column="1"
-        Text="{Binding SellingPrices[5]}"
+        Text="{Binding AskPrice[5].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="5" Grid.Column="1"
-        Text="{Binding SellingPrices[4]}"
+        Text="{Binding AskPrice[4].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="6" Grid.Column="1"
-        Text="{Binding SellingPrices[3]}"
+        Text="{Binding AskPrice[3].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="7" Grid.Column="1"
-        Text="{Binding SellingPrices[2]}"
+        Text="{Binding AskPrice[2].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="8" Grid.Column="1"
-        Text="{Binding SellingPrices[1]}"
+        Text="{Binding AskPrice[1].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="9" Grid.Column="1"
-        Text="{Binding SellingPrices[0]}"
+        Text="{Binding AskPrice[0].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <!-- 매수 호가 -->
       <TextBlock
         Grid.Row="10" Grid.Column="1"
-        Text="{Binding BuyingPrices[0]}"
+        Text="{Binding BidPrice[0].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="11" Grid.Column="1"
-        Text="{Binding BuyingPrices[1]}"
+        Text="{Binding BidPrice[1].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="12" Grid.Column="1"
-        Text="{Binding BuyingPrices[2]}"
+        Text="{Binding BidPrice[2].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="13" Grid.Column="1"
-        Text="{Binding BuyingPrices[3]}"
+        Text="{Binding BidPrice[3].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="14" Grid.Column="1"
-        Text="{Binding BuyingPrices[4]}"
+        Text="{Binding BidPrice[4].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="15" Grid.Column="1"
-        Text="{Binding BuyingPrices[5]}"
+        Text="{Binding BidPrice[5].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="16" Grid.Column="1"
-        Text="{Binding BuyingPrices[6]}"
+        Text="{Binding BidPrice[6].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="17" Grid.Column="1"
-        Text="{Binding BuyingPrices[7]}"
+        Text="{Binding BidPrice[7].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="18" Grid.Column="1"
-        Text="{Binding BuyingPrices[8]}"
+        Text="{Binding BidPrice[8].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <TextBlock
         Grid.Row="19" Grid.Column="1"
-        Text="{Binding BuyingPrices[9]}"
+        Text="{Binding BidPrice[9].Value}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />
       <!-- 매수 수량 -->
       <com:OrderBookQuantityBlock 
         Grid.Row="10" Grid.Column="2"
+        Quantity="{Binding BidQuantity[0].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="0"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="11" Grid.Column="2"
+        Quantity="{Binding BidQuantity[1].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="1"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="12" Grid.Column="2"
+        Quantity="{Binding BidQuantity[2].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="2"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="13" Grid.Column="2"
+        Quantity="{Binding BidQuantity[3].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="3"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="14" Grid.Column="2"
+        Quantity="{Binding BidQuantity[4].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="4"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="15" Grid.Column="2"
+        Quantity="{Binding BidQuantity[5].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="5"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="16" Grid.Column="2"
+        Quantity="{Binding BidQuantity[6].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="6"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="17" Grid.Column="2"
+        Quantity="{Binding BidQuantity[7].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="7"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="18" Grid.Column="2"
+        Quantity="{Binding BidQuantity[8].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="8"
       />
       <com:OrderBookQuantityBlock 
         Grid.Row="19" Grid.Column="2"
+        Quantity="{Binding BidQuantity[9].Value}"
+        DecimalPointCount="{Binding #UserControlRoot.QuantityDecimalPoint}"
         IsSelling="False"
         OrderViewIndex="9"
       />

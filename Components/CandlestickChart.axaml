@@ -5,8 +5,11 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
   xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+  xmlns:vm="using:trading_platform.ViewModel"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
   x:Class="trading_platform.Components.CandlestickChart"
+  x:DataType="vm:MarketData"
+  Loaded="UserControl_Loaded"
 >
   <ScottPlot:AvaPlot
     Name="PriceChart"

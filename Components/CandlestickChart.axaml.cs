@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using ScottPlot;
 
 namespace trading_platform.Components;
@@ -20,17 +21,19 @@ public partial class CandlestickChart : UserControl {
     get => this.GetValue(ZoomSensitivityProperty);
     set => SetValue(ZoomSensitivityProperty, value);
   }
-  public List<OHLC> CandlesticksSource { get; private set; } = [];
+  private ScottPlot.Plottables.OhlcPlot? OHLCChart { get; set; }
+  private List<OHLC> OHLCChartSource { get; set; } = [];
+  private ViewModel.MarketData? CastedDataContext => DataContext as ViewModel.MarketData;
 
   private double BottomLimitRateStart { get; set; } = 0.0;
   private double BottomLimitRateEnd { get; set; } = 1.0;
   public CandlestickChart() {
     InitializeComponent();
-    // 디버그 전용 파일 불러오기
-    if (Design.IsDesignMode) {
-      CandlesticksSource = Generate.RandomOHLCs(250 * 3, DateTime.Today);
-    }
-    var ohlc = PriceChart.Plot.Add.OHLC(CandlesticksSource);
+  }
+  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+    if (CastedDataContext == null) return;
+    OHLCChartSource = [.. CastedDataContext.PriceChart.Select(x => x.Value.ToScottPlotOHLC())];
+    OHLCChart = PriceChart.Plot.Add.OHLC(OHLCChartSource);
     PriceChart.Plot.Font.Set("Gowun Dodum");
     PriceChart.Plot.Axes.ContinuouslyAutoscale = true;
     PriceChart.Plot.Axes.ContinuousAutoscaleAction = PriceChart_ContinuousAutoscale;
@@ -41,48 +44,61 @@ public partial class CandlestickChart : UserControl {
     // 현재 창에 맞는 색으로 설정
     PriceChart.Plot.FigureBackground.Color = new Color(System.Drawing.Color.Transparent);
     PriceChart.Plot.DataBackground.Color = Color.FromARGB(0x00000000U);
-    ohlc.RisingStyle.Color = Colors.LightPink;
-    ohlc.FallingStyle.Color = Colors.LightBlue;
+    OHLCChart.RisingStyle.Color = Colors.LightPink;
+    OHLCChart.FallingStyle.Color = Colors.LightBlue;
+    CastedDataContext.PriceChart.CollectionChanged += (sender, args) => {
+      if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add) {
+
+      }
+      else if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove) {
+        foreach (var candle in args.OldItems!) {
+          OHLCChartSource.RemoveAll();
+        }
+      }
+      else if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset) {
+        OHLCChartSource.Clear();
+      }
+    };
   }
   public void PriceChart_ContinuousAutoscale(RenderPack rp) {
-    if (CandlesticksSource.Count == 0) return;
+    if (OHLCChartSource.Count == 0) return;
     var plot = rp.Plot;
     if (plot == null) return;
     var dataLimits = plot.Axes.GetDataLimits();
     var limits = plot.Axes.GetLimits();
     var (leftCoordinate, rightCoordinate) = (
-      (limits.Left - dataLimits.Left) / dataLimits.XRange.Length * CandlesticksSource.Count,
-      (limits.Right - dataLimits.Left) / dataLimits.XRange.Length * CandlesticksSource.Count
+      (limits.Left - dataLimits.Left) / dataLimits.XRange.Length * OHLCChartSource.Count,
+      (limits.Right - dataLimits.Left) / dataLimits.XRange.Length * OHLCChartSource.Count
     );
-    leftCoordinate = Math.Clamp(leftCoordinate, -10, CandlesticksSource.Count);
-    rightCoordinate = Math.Clamp(rightCoordinate, leftCoordinate + 10, CandlesticksSource.Count + 10);
+    leftCoordinate = Math.Clamp(leftCoordinate, -10, OHLCChartSource.Count);
+    rightCoordinate = Math.Clamp(rightCoordinate, leftCoordinate + 10, OHLCChartSource.Count + 10);
     plot.Axes.SetLimitsX(
-      leftCoordinate / CandlesticksSource.Count * dataLimits.XRange.Length + dataLimits.Left,
-      rightCoordinate / CandlesticksSource.Count * dataLimits.XRange.Length + dataLimits.Left
+      leftCoordinate / OHLCChartSource.Count * dataLimits.XRange.Length + dataLimits.Left,
+      rightCoordinate / OHLCChartSource.Count * dataLimits.XRange.Length + dataLimits.Left
     );
     var dataIndexRange = new System.Range(
-      (int)Math.Floor(Math.Clamp(leftCoordinate, 0, CandlesticksSource.Count - 1)),
-      (int)Math.Ceiling(Math.Clamp(rightCoordinate, 0, CandlesticksSource.Count - 1)));
+      (int)Math.Floor(Math.Clamp(leftCoordinate, 0, OHLCChartSource.Count - 1)),
+      (int)Math.Ceiling(Math.Clamp(rightCoordinate, 0, OHLCChartSource.Count - 1)));
     if (dataIndexRange.Start.Value == dataIndexRange.End.Value) return;
     if (dataIndexRange.Start.Value + 1 == dataIndexRange.End.Value) return;
-    double min = CandlesticksSource[dataIndexRange].Min(x => x.Low);
-    double max = CandlesticksSource[dataIndexRange].Max(x => x.High);
+    double min = OHLCChartSource[dataIndexRange].Min(x => x.Low);
+    double max = OHLCChartSource[dataIndexRange].Max(x => x.High);
     double diff = max - min;
     min -= diff / 18;
     max += diff / 18;
     plot.Axes.SetLimitsY(min, max);
   }
   public void UpdateClose(double value) {
-    if (CandlesticksSource.Count == 0) return;
-    var candle = CandlesticksSource[^1];
+    if (OHLCChartSource.Count == 0) return;
+    var candle = OHLCChartSource[^1];
     candle.Close = value;
     candle.Low = Math.Min(value, candle.Low);
     candle.High = Math.Max(value, candle.High);
   }
   public void AddCandle(double open, double high, double low, double close) {
-    CandlesticksSource.Add(new(open, high, low, close));
+    OHLCChartSource.Add(new(open, high, low, close));
   }
   public void AddCandle(OHLC ohlc) {
-    CandlesticksSource.Add(ohlc);
+    OHLCChartSource.Add(ohlc);
   }
 }

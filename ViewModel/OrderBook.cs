@@ -1,44 +1,28 @@
 using System.ComponentModel;
-using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.ViewModel;
 
-public partial class OrderBook : ObservableObject {
+public abstract partial class OrderBook : ObservableObject {
   [ObservableProperty]
-  public partial decimal[] SellingPrices { get; set; } = new decimal[10];
+  public partial TimeOnly ConclusionTime { get; protected set; } = TimeOnly.MinValue;
   [ObservableProperty]
-  public partial decimal[] BuyingPrices { get; set; } = new decimal[10];
-  [ObservableProperty]
-  public partial decimal[] SellingQuantities { get; set; } = new decimal[10];
-  [ObservableProperty]
-  public partial decimal[] BuyingQuantities { get; set; } = new decimal[10];
-  [ObservableProperty]
-  public partial decimal Volume { get; set; } = 0.0M;
-  [ObservableProperty]
-  public partial decimal PreviousClose { get; set; } = 0.0M;
-  [ObservableProperty]
-  public partial decimal? LastConclusion { get; set; } = null;
-  public double SellingVisualBarRatio(int idx) {
-    decimal max = Math.Max(SellingQuantities.Max(), BuyingQuantities.Max());
-    if (max == 0) return 0.0;
-    else return (double)(SellingQuantities[idx] / max);
+  public partial string Ticker { get; protected set; } = "";
+  public List<Reactive<decimal>> AskPrice { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
+  public List<Reactive<decimal>> BidPrice { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
+  public List<Reactive<decimal>> AskQuantity { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
+  public List<Reactive<decimal>> BidQuantity { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
+  public bool RealTimeRefresh { get; protected set; } = false;
+
+  public abstract ValueTask<bool> RequestRefreshAsync(string ticker);
+  public async Task RefreshAsync(string ticker) {
+    await RequestRefreshAsync(ticker);
   }
-  public double BuyingVisualBarRatio(int idx) {
-    decimal max = Math.Max(SellingQuantities.Max(), BuyingQuantities.Max());
-    if (max == 0) return 0.0;
-    else return (double)(BuyingQuantities[idx] / max);
+  public abstract ValueTask<bool> RequestRefreshRealTimeAsync(string ticker);
+  public async Task StartRefreshRealTimeAsync(string ticker) {
+    if (RealTimeRefresh && ticker == Ticker) return;
+    await EndRefreshRealTimeAsync();
+    await RequestRefreshRealTimeAsync(ticker);
   }
-  public OrderBook() {
-    if (Design.IsDesignMode) SetupDesignTimeData();
-    // if (true) SetupDesignTimeData();
-  }
-  private void SetupDesignTimeData() {
-    for (int i = 0; i < 10; i++) {
-      (SellingPrices[i], SellingQuantities[i]) = (450.00M + 0.05M * i, Random.Shared.Next(1, 10));
-      (BuyingPrices[i], BuyingQuantities[i]) = (450.00M - 0.05M * (i + 1), Random.Shared.Next(1, 10));
-      PreviousClose = 450.00M + 0.05M * Random.Shared.Next(-5, 5);
-      LastConclusion = 450.00M + 0.05M * Random.Shared.Next(-1, 2);
-    }
-  }
+  public abstract Task EndRefreshRealTimeAsync();
 }

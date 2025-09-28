@@ -1,10 +1,5 @@
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using Avalonia.Data.Converters;
 using CommunityToolkit.Mvvm.ComponentModel;
-using trading_platform.KoreaInvestment;
+using trading_platform.Model.KoreaInvestment;
 
 namespace trading_platform.ViewModel;
 

@@ -8,8 +8,9 @@
   d:DesignHeight="36" d:DesignWidth="200"
   x:Class="trading_platform.Components.OrderBookQuantityBlock"
   Loaded="UserControl_Loaded"
-  x:DataType="vm:OrderBook"
+  x:DataType="vm:KoreaInvestment.StockOrderBook"
   DataContext="{Binding $parent[com:OrderBookDisplay].DataContext}"
+  x:Name="ControlRoot"
 >
   <Panel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
     <Rectangle
@@ -18,8 +19,10 @@
     />
     <TextBlock 
       Name="PART_TextBlock"
+      Text="{Binding Path=#ControlRoot.Quantity}"
       HorizontalAlignment="Center"
       VerticalAlignment="Center"
-    />
+    >
+    </TextBlock>
   </Panel>
 </UserControl>

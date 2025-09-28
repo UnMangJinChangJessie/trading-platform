@@ -52,6 +52,7 @@
       AllowSpin="True"
       InnerLeftContent="주문단가"
       Name="UnitPriceNumericUpDown"
+      Spinned="UnitPriceSpinner_ValueChanged"
       Value="{Binding UnitPrice}"
     />
     <NumericUpDown
@@ -65,6 +66,7 @@
       Value="{Binding StopLossPrice}"
       InnerLeftContent="손실제한가격"
       AllowSpin="True"
+      Spinned="StopLossPriceSpinner_ValueChanged"
       Name="StopLossNumericUpDown"
       HorizontalAlignment="Stretch"
     />

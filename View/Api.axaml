@@ -58,8 +58,6 @@
       <TextBox Grid.Row="0" Grid.Column="1" IsReadOnly="True" Name="AccessKeyTextBox" HorizontalAlignment="Stretch" PasswordChar="*" Margin="0,10,0,0" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="접속 토큰 만료 시각" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,10,10,0" />
       <TextBox Grid.Row="1" Grid.Column="1" IsReadOnly="True" Name="AccessKeyExpireTextBox" HorizontalAlignment="Stretch" Margin="0,10,0,0" />
-      <TextBlock Grid.Row="2" Grid.Column="0" Text="WebSocket 접속 토큰" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,10,10,0" />
-      <TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Name="WebSocketAccessKeyTextBox" HorizontalAlignment="Stretch" Margin="0,10,0,0" PasswordChar="*" />
       <Button Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Click="RevealButton_Click" Margin="0,10,0,0">
         접근 토큰 공개/비공개
       </Button>
