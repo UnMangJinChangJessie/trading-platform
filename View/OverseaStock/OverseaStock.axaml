@@ -1,15 +1,10 @@
-<UserControl
+<UserControl 
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:components="using:trading_platform.Components"
-  xmlns:v="using:trading_platform.View"
-  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
-  xmlns:forms="using:trading_platform.Forms"
-  mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
-  x:Class="trading_platform.View.KoreaStock"
-  x:DataType="vmkis:StockMarketData"
+  mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+  x:Class="trading_platform.View.OverseaStock"
   x:Name="ControlRoot"
 >
   <UserControl.DataContext>
@@ -17,7 +12,7 @@
   </UserControl.DataContext>
   <TabControl>
     <TabItem Header="차트/주문">
-      <v:KoreaStockChart
+      <v:OverseaStockChart
         Name="PART_StockChartAndOrder" 
         DataContext="{Binding #ControlRoot.DataContext}"
       />

@@ -6,10 +6,10 @@ using static trading_platform.Model.StockMarketInformation;
 
 namespace trading_platform.ViewModel.KoreaInvestment;
 
-public partial class StockOrderBook : OrderBook {
+public partial class OverseaStockOrderBook : OrderBook {
   [ObservableProperty]
   public partial decimal HighestQuantity { get; private set; } = 0;
-  public StockOrderBook() {
+  public OverseaStockOrderBook() {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
       if (args.TransactionId == "H0UNASP0") return;
       if (args.Message.Count == 0) return;
@@ -30,12 +30,6 @@ public partial class StockOrderBook : OrderBook {
         BidQuantity[i].Value = Random.Shared.Next(1, 50 - 5 * i);
       }
       HighestQuantity = Math.Max(AskQuantity.Max(x => x.Value), BidQuantity.Max(x => x.Value));
-      for (int i = 0; i < 10; i++) {
-        OnPropertyChanged($"AskPrice[{i}]");
-        OnPropertyChanged($"BidPrice[{i}]");
-        OnPropertyChanged($"AskQuantity[{i}]");
-        OnPropertyChanged($"BidQuantity[{i}]");
-      }
     }
   }
   public override async ValueTask<bool> RequestRefreshAsync(string ticker) {

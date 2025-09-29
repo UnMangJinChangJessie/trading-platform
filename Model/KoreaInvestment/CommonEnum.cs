@@ -121,19 +121,23 @@ public enum CandlePeriod {
   [JsonStringEnumMemberName("Y")] Yearly,
 }
 [JsonConverter(typeof(JsonStringEnumConverter))]
+[Flags]
 public enum Exchange {
-  [JsonStringEnumMemberName("J")] KoreaExchange,
-  [JsonStringEnumMemberName("NX")] NexTrade,
-  [JsonStringEnumMemberName("UN")] DomesticUnified,
-  [JsonStringEnumMemberName("NAS")] Nasdaq,
-  [JsonStringEnumMemberName("NYS")] NewYorkStockExchange,
-  [JsonStringEnumMemberName("AMS")] NyseAmerican,
-  [JsonStringEnumMemberName("HKS")] HongKong,
-  [JsonStringEnumMemberName("SHS")] Shanghai,
-  [JsonStringEnumMemberName("SZS")] Shenzhen,
-  [JsonStringEnumMemberName("TSE")] Tokyo,
-  [JsonStringEnumMemberName("HNX")] Hanoi,
-  [JsonStringEnumMemberName("HSX")] HoChiMinh,
+  [JsonStringEnumMemberName("J")] KoreaExchange = 1,
+  [JsonStringEnumMemberName("NX")] NexTrade = 2,
+  [JsonStringEnumMemberName("UN")] DomesticUnified = KoreaExchange | NexTrade,
+  [JsonStringEnumMemberName("NAS")] Nasdaq = 1 << 2,
+  [JsonStringEnumMemberName("NYS")] NewYorkStockExchange = 1 << 3,
+  [JsonStringEnumMemberName("AMS")] NyseAmerican = 1 << 4,
+  UnitedStates = Nasdaq | NewYorkStockExchange | NyseAmerican,
+  [JsonStringEnumMemberName("HKS")] HongKong = 1 << 5,
+  [JsonStringEnumMemberName("SHS")] Shanghai = 1 << 6,
+  [JsonStringEnumMemberName("SZS")] Shenzhen = 1 << 7,
+  China = Shanghai | Shenzhen,
+  [JsonStringEnumMemberName("TSE")] Tokyo = 1 << 8,
+  [JsonStringEnumMemberName("HNX")] Hanoi = 1 << 9,
+  [JsonStringEnumMemberName("HSX")] HoChiMinh = 1 << 10,
+  Vietnam = Hanoi | HoChiMinh,
 }
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Modification {

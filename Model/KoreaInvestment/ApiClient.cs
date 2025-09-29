@@ -18,7 +18,7 @@ public static partial class ApiClient {
   public static DateTime AccessTokenExpire { get; private set; } = DateTime.UnixEpoch;
   private readonly static HttpClient RequestClient = new() {
     BaseAddress = BuildApiBaseAddress(),
-    Timeout = TimeSpan.FromSeconds(5)
+    Timeout = TimeSpan.FromSeconds(10)
   };
   private readonly static JsonSerializerOptions JsonSerializerOption = new() {
     NumberHandling = JsonNumberHandling.AllowReadingFromString,

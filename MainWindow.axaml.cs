@@ -15,5 +15,9 @@ public partial class MainWindow : Window {
     if (!loadedKrx) {
       Debug.WriteLine("Failed to fetch KRX listings data.");
     }
+    var loadedOversea = await Model.StockMarketInformation.OverseaStock.Load();
+    if (!loadedOversea) {
+      Debug.WriteLine("Failed to fetch oversea listings data.");
+    }
   }
 }

@@ -14,7 +14,7 @@ public partial class ApiClient {
   public static class KisWebSocket {
     public static string AccessToken { get; private set; } = "";
     public static CancellationTokenSource Cancellation { get; } = new();
-    private static ClientWebSocket Client { get; } = new() { };
+    private static ClientWebSocket Client { get; set; } = new() { };
     private static Task? PollingTask { get; set; } = null;
     private static readonly Lock SubscriptionsLock = new();
     private static List<WebSocketSubscription> Subscriptions { get; set; } = [];
@@ -40,9 +40,10 @@ public partial class ApiClient {
       ArrayBufferWriter<byte> writer = new();
       try {
         while (Client.State == WebSocketState.Open) {
+          writer.Clear();
           if (Cancellation.Token.IsCancellationRequested) break;
           do {
-            receiveResult = await Client.ReceiveAsync(buffer, Cancellation.Token);
+            receiveResult = await Client.ReceiveAsync(buffer, CancellationToken.None);
             writer.Write(buffer.AsSpan()[..receiveResult.Count]);
           }
           while (!receiveResult.EndOfMessage);
@@ -56,7 +57,6 @@ public partial class ApiClient {
           }
           if (message[0] == '{') {
             var subscriptionSuccess = ParseResponseJson(message);
-            if (!subscriptionSuccess) Close();
           }
           else {
             var tokens = message.Split('|');
@@ -78,7 +78,7 @@ public partial class ApiClient {
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
       }
-      await Client.CloseAsync(WebSocketCloseStatus.Empty, ":3", Cancellation.Token);
+      await Client.CloseAsync(WebSocketCloseStatus.Empty, ":3", CancellationToken.None);
     }
     private static List<string[]> ParseTransactionData(IEnumerable<WebSocketSubscription> possibleSubscriptions, string input, bool encrypted, int rowCount) {
       if (encrypted) {
@@ -108,48 +108,59 @@ public partial class ApiClient {
       return result;
     }
     private static bool ParseResponseJson(string input) {
-      var node = JsonSerializer.Deserialize<JsonNode>(input);
-      var responseCode = node?["body"]?["msg_cd"]?.GetValue<string>();
-      var responseMessage = node?["body"]?["msg1"]?.GetValue<string>();
-      var iv = node?["body"]?["output"]?["iv"]?.GetValue<string>();
-      var key = node?["body"]?["output"]?["key"]?.GetValue<string>();
-      var transId = node?["header"]?["tr_id"]?.GetValue<string>();
-      var transKey = node?["header"]?["tr_key"]?.GetValue<string>();
-      Debug.WriteLine($"[{responseCode}] {responseMessage}");
-      if (responseCode == "OPSP0000" || responseCode == "OPSP8996") { // SUBSCRIBE SUCCESS or ALREADY IN USE appkey
-        Aes? encryption = null;
-        if (!string.IsNullOrEmpty(iv) && !string.IsNullOrEmpty(key)) {
-          encryption = Aes.Create();
-          encryption.KeySize = 256;
-          byte[] paddedIv = new byte[16];
-          byte[] rawIv = Convert.FromBase64String(iv);
-          rawIv.CopyTo(paddedIv, 0);
-          encryption.IV = paddedIv;
-          encryption.Key = Convert.FromBase64String(key);
+      try {
+        var node = JsonSerializer.Deserialize<JsonNode>(input);
+        var responseCode = node?["body"]?["msg_cd"]?.GetValue<string>();
+        var responseMessage = node?["body"]?["msg1"]?.GetValue<string>();
+        var iv = node?["body"]?["output"]?["iv"]?.GetValue<string>();
+        var key = node?["body"]?["output"]?["key"]?.GetValue<string>();
+        var transId = node?["header"]?["tr_id"]?.GetValue<string>();
+        var transKey = node?["header"]?["tr_key"]?.GetValue<string>();
+        Debug.WriteLine($"[{responseCode}] {responseMessage}");
+        if (responseCode == "OPSP0000" || responseCode == "OPSP8996") { // SUBSCRIBE SUCCESS || ALREADY IN USE appkey
+          Aes? encryption = null;
+          if (!string.IsNullOrEmpty(iv) && !string.IsNullOrEmpty(key)) {
+            encryption = Aes.Create();
+            encryption.KeySize = 256;
+            byte[] paddedIv = new byte[16];
+            byte[] rawIv = Convert.FromBase64String(iv);
+            rawIv.CopyTo(paddedIv, 0);
+            encryption.IV = paddedIv;
+            encryption.Key = Convert.FromBase64String(key);
+          }
+          lock (SubscriptionsLock) {
+            Subscriptions.Add((transId, transKey, encryption)!);
+          }
         }
-        lock (SubscriptionsLock) {
-          Subscriptions.Add((transId, transKey, encryption)!);
+        else if (responseCode == "OPSP0001") {
+          lock (SubscriptionsLock) {
+            Subscriptions.RemoveAll(x => x.TransactionId == transId && x.TransactionKey == transKey);
+          }
         }
+        return responseCode == "OPSP0000" || responseCode == "OPSP0001" || responseCode == "OPSP8996";
       }
-      else if (responseCode == "OPSP0001") {
-        lock (SubscriptionsLock) {
-          Subscriptions.RemoveAll(x => x.TransactionId == transId && x.TransactionKey == transKey);
-        }
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+        return false;
       }
-      return responseCode == "OPSP0000" || responseCode == "OPSP0001" || responseCode == "OPSP8996";
     }
 
     public static async ValueTask<bool> Connect() {
       if (Client.State == WebSocketState.Open) return true;
-      if (Client.State == WebSocketState.Aborted) return true;
-      Client.Options.KeepAliveInterval = TimeSpan.FromSeconds(10);
-      Client.Options.KeepAliveTimeout = TimeSpan.FromSeconds(5);
+      if (Client.State == WebSocketState.Aborted) {
+        // 소켓이 죽었으므로 CancellationTokenSource와 소켓을 다시 생성
+        Client.Dispose();
+        Client = new();
+        Cancellation.TryReset();
+      }
+      Client.Options.KeepAliveInterval = TimeSpan.FromSeconds(0);
+      Client.Options.KeepAliveTimeout = TimeSpan.FromSeconds(0);
       var token = await IssueWebSocketToken();
       if (token == null) return false;
       AccessToken = token;
       Uri uri = new($"ws://ops.koreainvestment.com:{(Simulation ? 31000 : 21000)}");
       try {
-        await Client.ConnectAsync(uri, Cancellation.Token);
+        await Client.ConnectAsync(uri, CancellationToken.None);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
@@ -171,7 +182,7 @@ public partial class ApiClient {
         }
       }
       try {
-        await Client.SendAsync(RequestJsonString(true, id, key), WebSocketMessageType.Text, true, Cancellation.Token);
+        await Client.SendAsync(RequestJsonString(true, id, key), WebSocketMessageType.Text, true, CancellationToken.None);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
@@ -181,7 +192,7 @@ public partial class ApiClient {
       if (!Subscriptions.Where(x => (x.TransactionId, x.TransactionKey) == (id, key)).Any()) return;
       if (Client.State != WebSocketState.Open) return;
       try {
-        await Client.SendAsync(RequestJsonString(false, id, key), WebSocketMessageType.Text, true, Cancellation.Token);
+        await Client.SendAsync(RequestJsonString(false, id, key), WebSocketMessageType.Text, true, CancellationToken.None);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
