@@ -9,13 +9,18 @@ namespace trading_platform.View;
 
 public partial class KoreaStockChart : UserControl {
   private ViewModel.MarketData? CastedDataContext => DataContext as ViewModel.MarketData;
+  private static readonly OrderMethod[] ALLOWED_ORDER_METHODS = [
+    OrderMethod.Limit, OrderMethod.Market, OrderMethod.ConditionalLimit, OrderMethod.BestOffer, OrderMethod.TopPriority
+  ];
   public KoreaStockChart() {
     InitializeComponent();
     var orderContext = OrderView.DataContext as ViewModel.Order;
-    orderContext?.MethodsAllowed = [
-      OrderMethod.Limit, OrderMethod.Market, OrderMethod.ConditionalLimit, OrderMethod.BestOffer,
-    ];
-    CastedDataContext?.PropertyChanged += OnDataContextChanged;
+    if (orderContext != null) {
+      orderContext.MethodsAllowed.Clear();
+      foreach (var item in ALLOWED_ORDER_METHODS) orderContext.MethodsAllowed.Add(item);
+    }
+    if (CastedDataContext == null) return;
+    CastedDataContext.PropertyChanged += OnDataContextChanged;
     OrderView.UnitPriceChanged += (sender, args) => {
       var castedSender = sender as NumericUpDown;
       if (castedSender == null) return;
@@ -39,7 +44,7 @@ public partial class KoreaStockChart : UserControl {
   }
   private void OnDataContextChanged(object? sender, PropertyChangedEventArgs args) {
     var orderContext = OrderView.DataContext as ViewModel.Order;
-    orderContext?.Ticker = CastedDataContext?.Ticker ?? "";
+    if (orderContext?.Ticker != null) orderContext.Ticker = CastedDataContext?.Ticker ?? "";
   }
   public async void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;
@@ -53,9 +58,9 @@ public partial class KoreaStockChart : UserControl {
   }
   public async void UserControl_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;
-    await CastedDataContext.EndRefreshRealTimeAsync();
+    await CastedDataContext.EndRefreshRealTimeAsync(CastedDataContext.Ticker);
     if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.StockOrderBook orderContext) {
-      await orderContext.EndRefreshRealTimeAsync();
+      await orderContext.EndRefreshRealTimeAsync(orderContext.Ticker);
     }
   }
   public async void TickerInquireButton_Click(object? sender, RoutedEventArgs args) {

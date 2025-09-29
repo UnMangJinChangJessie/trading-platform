@@ -3,13 +3,20 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.Model;
 
-public class OHLC<T> where T : INumber<T> {
-  public DateTime DateTime { get; set; }
-  public TimeSpan TimeSpan { get; set; }
-  public T Open { get; set; } = default!;
-  public T High { get; set; } = default!;
-  public T Low { get; set; } = default!;
-  public T Close { get; set; } = default!;
+public partial class OHLC<T> : ObservableObject
+where T : INumber<T> {
+  [ObservableProperty]
+  public partial DateTime DateTime { get; set; }
+  [ObservableProperty]
+  public partial TimeSpan TimeSpan { get; set; }
+  [ObservableProperty]
+  public partial T Open { get; set; } = default!;
+  [ObservableProperty]
+  public partial T High { get; set; } = default!;
+  [ObservableProperty]
+  public partial T Low { get; set; } = default!;
+  [ObservableProperty]
+  public partial T Close { get; set; } = default!;
 
   public OHLC() {
     DateTime = DateTime.UnixEpoch;

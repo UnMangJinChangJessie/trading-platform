@@ -3,7 +3,7 @@ namespace trading_platform.Model.KoreaInvestment;
 using System.Text.Json.Serialization;
 
 public class StockBasicInformation {
-  [JsonPropertyName("prdy_yrss")]
+  [JsonPropertyName("prdy_vrss")]
   public required decimal PriceChange { get; init; }
   [JsonPropertyName("prdy_vrss_sign")]
   public required PriceChangeSign PriceChangeSign;
@@ -60,6 +60,6 @@ public class StockBasicInformation {
   public required float EarningsPerShare { get; init; }
   [JsonPropertyName("pbr")]
   public required float PriceBookValueRatio{ get; init; }
-  [JsonPropertyName("itewhol_loan_rmnd_ratem")]
+  [JsonPropertyName("itewhol_loan_rmnd_ratem name")]
   public required float LoanRemainderRate { get; init; }
 }

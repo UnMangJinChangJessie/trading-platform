@@ -21,8 +21,8 @@ public abstract partial class OrderBook : ObservableObject {
   public abstract ValueTask<bool> RequestRefreshRealTimeAsync(string ticker);
   public async Task StartRefreshRealTimeAsync(string ticker) {
     if (RealTimeRefresh && ticker == Ticker) return;
-    await EndRefreshRealTimeAsync();
+    await EndRefreshRealTimeAsync(ticker);
     await RequestRefreshRealTimeAsync(ticker);
   }
-  public abstract Task EndRefreshRealTimeAsync();
+  public abstract Task EndRefreshRealTimeAsync(string ticker);
 }

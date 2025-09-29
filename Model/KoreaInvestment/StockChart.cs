@@ -4,7 +4,7 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public class StockChart {
   [JsonPropertyName("stck_bsop_date"), JsonConverter(typeof(DateToStringConverter))]
-  public required DateOnly N { get; init; }
+  public required DateOnly Date { get; init; }
   [JsonPropertyName("stck_clpr")]
   public required decimal Close { get; init; }
   [JsonPropertyName("stck_oprc")]

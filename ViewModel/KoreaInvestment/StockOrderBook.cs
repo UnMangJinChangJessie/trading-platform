@@ -7,11 +7,21 @@ using static trading_platform.Model.StockMarketInformation;
 namespace trading_platform.ViewModel.KoreaInvestment;
 
 public partial class StockOrderBook : OrderBook {
-  private KisWebSocket Socket { get; set; } = new();
   [ObservableProperty]
   public partial decimal HighestQuantity { get; private set; } = 0;
   public StockOrderBook() {
-    Socket.OnMessage += OnPropertyChanged;
+    ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
+      if (args.TransactionId == "H0UNASP0") return;
+      if (args.Message.Count == 0) return;
+      for (int i = 0; i < 10; i++) {
+        AskPrice[i].Value = decimal.Parse(args.Message[^1][3 + i]);
+        BidPrice[i].Value = decimal.Parse(args.Message[^1][13 + i]);
+        AskQuantity[i].Value = decimal.Parse(args.Message[^1][23 + i]);
+        BidQuantity[i].Value = decimal.Parse(args.Message[^1][33 + i]);
+      }
+      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][2], "hhmmss");
+      HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
+    };
     if (Design.IsDesignMode) {
       for (int i = 0; i < 10; i++) {
         AskPrice[i].Value = 450.00M + i * 0.05M;
@@ -26,23 +36,6 @@ public partial class StockOrderBook : OrderBook {
         OnPropertyChanged($"AskQuantity[{i}]");
         OnPropertyChanged($"BidQuantity[{i}]");
       }
-    }
-  }
-  public void OnPropertyChanged(object? sender, string key, List<string[]> tokens) {
-    if (tokens.Count == 0) return;
-    for (int i = 0; i < 10; i++) {
-      AskPrice[i].Value = decimal.Parse(tokens[^1][3 + i]);
-      BidPrice[i].Value = decimal.Parse(tokens[^1][13 + i]);
-      AskQuantity[i].Value = decimal.Parse(tokens[^1][23 + i]);
-      BidQuantity[i].Value = decimal.Parse(tokens[^1][33 + i]);
-    }
-    ConclusionTime = TimeOnly.ParseExact(tokens[^1][2], "hhmmss");
-    HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
-    for (int i = 0; i < 10; i++) {
-      OnPropertyChanged($"AskPrice[{i}]");
-      OnPropertyChanged($"BidPrice[{i}]");
-      OnPropertyChanged($"AskQuantity[{i}]");
-      OnPropertyChanged($"BidQuantity[{i}]");
     }
   }
   public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
@@ -104,11 +97,12 @@ public partial class StockOrderBook : OrderBook {
   }
   public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
     if (KRXStock.SearchByTicker(ticker) is null) return false;
-    RealTimeRefresh = await Socket.StartReceivingAsync("/tryitout/H0UNASP0", "H0UNASP0", ticker);
+    await ApiClient.KisWebSocket.Subscribe("H0UNASP0", ticker);
+    RealTimeRefresh = true;
     return RealTimeRefresh;
   }
-  public override async Task EndRefreshRealTimeAsync() {
-    await Socket.StopReceivingAsync();
+  public override async Task EndRefreshRealTimeAsync(string ticker) {
+    await ApiClient.KisWebSocket.Unsubscribe("HOUNASP0", ticker);
     RealTimeRefresh = false;
   }
 }

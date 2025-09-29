@@ -9,193 +9,214 @@ using System.Text.Json.Nodes;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class KisWebSocket : IDisposable {
-  public string AccessToken { get; private set; } = "";
-  public string TransactionId { get; private set; } = "";
-  public string TransactionKey { get; private set; } = "";
-  public delegate void MessageEventHandler(object? sender, string transId, List<string[]> messages);
-  public event MessageEventHandler OnMessage;
-  public CancellationTokenSource Cancellation { get; init; } = new();
-  private ClientWebSocket Client { get; init; } = new() {};
-  private Task? PollingTask { get; set; } = null;
-  private readonly Lock WebSocketCountLock = new();
-  private static int WebSocketCount { get; set; } = 0;
-  private Aes Aes { get; set; } = Aes.Create();
-  private byte[] RequestJsonString => JsonSerializer.SerializeToUtf8Bytes(new {
-    header = new {
-      approval_key = AccessToken,
-      custtype = ApiClient.Personal ? "P" : "B",
-      tr_type = "1",
-      content_type = "utf-8"
-    },
-    body = new {
-      input = new {
-        tr_id = TransactionId,
-        tr_key = TransactionKey,
+using WebSocketSubscription = (string TransactionId, string TransactionKey, Aes? Encryption);
+public partial class ApiClient {
+  public static class KisWebSocket {
+    public static string AccessToken { get; private set; } = "";
+    public static CancellationTokenSource Cancellation { get; } = new();
+    private static ClientWebSocket Client { get; } = new() { };
+    private static Task? PollingTask { get; set; } = null;
+    private static readonly Lock SubscriptionsLock = new();
+    private static List<WebSocketSubscription> Subscriptions { get; set; } = [];
+    private static byte[] RequestJsonString(bool subscribe, string transId, string transKey) => JsonSerializer.SerializeToUtf8Bytes(new {
+      header = new {
+        approval_key = AccessToken,
+        custtype = Personal ? "P" : "B",
+        tr_type = subscribe ? "1" : "2",
+        content_type = "utf-8"
       },
-    },
-  });
-  public KisWebSocket() {
-    OnMessage = default!;
-    Client.Options.KeepAliveInterval = TimeSpan.FromSeconds(10);
-    Client.Options.KeepAliveTimeout = TimeSpan.FromSeconds(5);
-  }
-  public async ValueTask<bool> ConnectAsync(string relUri, string id, string key) {
-    if (Client.State != WebSocketState.None && Client.State != WebSocketState.Closed) return false;
-    // Issue a token
-    var accessToken = await ApiClient.IssueWebSocketToken();
-    if (accessToken == null) return false;
-    AccessToken = accessToken;
-    TransactionId = id;
-    TransactionKey = key;
-    // Connect WebSocket
-    Uri baseUri = new($"ws://ops.koreainvestment.com:{(ApiClient.Simulation ? 31000 : 21000)}");
-    try {
-      await Client.ConnectAsync(uri: new(baseUri, relUri), Cancellation.Token);
-    }
-    catch (TaskCanceledException) {
-      return false;
-    }
-    byte[] requestBytes = RequestJsonString;
-    byte[] buffer = new byte[1024];
-    ArrayBufferWriter<byte> writer = new();
-    WebSocketReceiveResult requestReceiveResult;
-    do {
-      try {
-        await Client.SendAsync(requestBytes, WebSocketMessageType.Text, true, Cancellation.Token);
-        requestReceiveResult = await Client.ReceiveAsync(buffer, Cancellation.Token);
-      }
-      catch (TaskCanceledException) {
-        return false;
-      }
-      if (requestReceiveResult.CloseStatus.HasValue) {
-        Debug.WriteLine($"Failed to register a WebSocket to the remote server: {requestReceiveResult.CloseStatusDescription}");
-        return false;
-      }
-      writer.Write(buffer.AsSpan()[..requestReceiveResult.Count]);
-    }
-    while (!requestReceiveResult.EndOfMessage);
-    JsonNode? requestReceiveJson = JsonSerializer.Deserialize<JsonNode>(writer.WrittenSpan);
-    if (requestReceiveJson == null) return false;
-    string? message;
-    string? messageCode;
-    try {
-      var responseBodyJson = requestReceiveJson["body"];
-      message = responseBodyJson?["msg1"]?.GetValue<string>();
-      messageCode = responseBodyJson?["msg_cd"]?.GetValue<string>();
-      var encrypted = responseBodyJson?["output"];
-      if (encrypted != null) {
-        var ivBytes = Convert.FromBase64String(encrypted?["iv"]?.GetValue<string>() ?? "");
-        var keyBytes = Convert.FromBase64String(encrypted?["key"]?.GetValue<string>() ?? "");
-        if (ivBytes.Length == 16 && keyBytes.Length == 32) {
-          Aes.KeySize = 256;
-          Aes.Key = keyBytes;
-          Aes.IV = ivBytes;
-        }
-      }
-    }
-    catch (JsonException ex) {
-      Debug.WriteLine($"Failed to manipulating JSON object: {ex.Message}\n{ex.StackTrace}");
-      return false;
-    }
-    if (message?.Trim() != "SUBSCRIBE SUCCESS") {
-      Debug.WriteLine($"Failed to establish WebSocket Connection: [{messageCode}] {message}\n");
-      return false;
-    }
-    return true;
-  }
-  public async ValueTask<bool> StartReceivingAsync(string relUri, string id, string key) {
-    if (PollingTask != null) return false;
-    lock (WebSocketCountLock) {
-      if (WebSocketCount >= 41) return false;
-    }
-    if (Client.State != WebSocketState.Open && !await ConnectAsync(relUri, id, key)) return false;
-    PollingTask = Task.Run(async () => {
-      lock (WebSocketCountLock) {
-        WebSocketCount++;
-      }
-      var buffer = new byte[4 * 1024]; // 4 KiB
-      ArrayBufferWriter<byte> writer = new(4 * 1024);
+      body = new {
+        input = new {
+          tr_id = transId,
+          tr_key = transKey,
+        },
+      },
+    });
+    public static event EventHandler<(string TransactionId, List<string[]> Message)> MessageReceived;
+
+    private static async Task PollReceivedMessage() {
       WebSocketReceiveResult receiveResult;
-      while (Client.State == WebSocketState.Open && Cancellation.Token.IsCancellationRequested) {
-        try {
+      byte[] buffer = new byte[1024 * 4];
+      ArrayBufferWriter<byte> writer = new();
+      try {
+        while (Client.State == WebSocketState.Open) {
+          if (Cancellation.Token.IsCancellationRequested) break;
           do {
             receiveResult = await Client.ReceiveAsync(buffer, Cancellation.Token);
-            if (receiveResult.CloseStatus.HasValue) {
-              Debug.WriteLine(receiveResult.CloseStatusDescription);
-              return;
-            }
             writer.Write(buffer.AsSpan()[..receiveResult.Count]);
           }
           while (!receiveResult.EndOfMessage);
-          string rawMessage = Encoding.UTF8.GetString(writer.WrittenSpan);
-          var (transId, messages) = SplitWebSocketMessage(rawMessage);
-          OnMessage?.Invoke(this, transId, messages);
-          writer.Clear();
+          // WebSocket 서버에서 보내는 메시지의 경우 subscribe가 성공했음을 알리는 JSON 혹은 실시간 데이터만이 주어진다.
+          // 실시간 데이터의 가장 앞 글자는 암호화 여부를 나타내는 0/1이 있으므로,
+          // '{'로 시작하면 JSON으로 간주하고 그렇지 않으면 데이터로 간주한다.
+          string message = Encoding.UTF8.GetString(writer.WrittenSpan);
+          if (receiveResult.MessageType == WebSocketMessageType.Close) {
+            Debug.WriteLine($"[{nameof(KisWebSocket)}.{nameof(PollReceivedMessage)}] Connection closed: {receiveResult.CloseStatusDescription}");
+            break;
+          }
+          if (message[0] == '{') {
+            var subscriptionSuccess = ParseResponseJson(message);
+            if (!subscriptionSuccess) Close();
+          }
+          else {
+            var tokens = message.Split('|');
+            bool encrypted = tokens[0] != "0";
+            string transId = tokens[1];
+            int rowCount = int.Parse(tokens[2]);
+            string rawData = tokens[3];
+            var subscription = Subscriptions.Where(x => x.TransactionId == transId);
+            var result = ParseTransactionData(
+              subscription,
+              input: rawData,
+              encrypted,
+              rowCount
+            );
+            MessageReceived?.Invoke(null, (TransactionId: transId, Message: result));
+          }
+        }
+      }
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+      }
+      await Client.CloseAsync(WebSocketCloseStatus.Empty, ":3", Cancellation.Token);
+    }
+    private static List<string[]> ParseTransactionData(IEnumerable<WebSocketSubscription> possibleSubscriptions, string input, bool encrypted, int rowCount) {
+      if (encrypted) {
+        byte[] bytes = Convert.FromBase64String(input);
+        try {
+          var encryption = possibleSubscriptions.Single().Encryption;
+          byte[] decrypted = encryption!.DecryptCbc(bytes.AsSpan(), encryption.IV);
+          input = Encoding.UTF8.GetString(decrypted);
         }
         catch (Exception ex) {
           ExceptionHandler.PrintExceptionMessage(ex);
+          return [];
         }
       }
-      lock (WebSocketCountLock) {
-          WebSocketCount--;
+      var dataTokens = input.Split('^');
+      var itemCount = dataTokens.Length / rowCount;
+      List<string[]> result = [];
+      try {
+        for (int i = 0; i < rowCount; i++) {
+          result.Add(dataTokens[(rowCount * i)..(rowCount * (i + itemCount))]);
         }
-    }, Cancellation.Token);
-    return true;
-  }
-  private (string TransactionId, List<string[]> Messages) SplitWebSocketMessage(string content) {
-    if (string.IsNullOrEmpty(content)) return ("", []);
-    var tokens = content.Split('|');
-    if (tokens.Length != 4) return ("", []);
-    var encryption = tokens[0] != "0";
-    var transId = tokens[1];
-    var recordCount = int.Parse(tokens[2]);
-    var contentTokens = (encryption ? Encoding.UTF8.GetString(Aes.DecryptCbc(Convert.FromBase64String(tokens[3]), Aes.IV)) : tokens[3]).Split('^');
-    var propertyCount = contentTokens.Length / recordCount;
-    var message = new List<string[]>();
-    for (int i = 0; i < recordCount; i++) {
-      var line = new string[propertyCount];
-      for (int j = 0; j < propertyCount; j++) {
-        line[j] = contentTokens[propertyCount * i + j];
       }
-      message.Add(line);
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+        return [];
+      }
+      return result;
     }
-    return (transId, message);
-  }
-  public async Task StopReceivingAsync() {
-    if (PollingTask == null) return;
-    Cancellation.Cancel();
-    try { await PollingTask; }
-    catch (TaskCanceledException) { }
-    PollingTask = null;
-  }
-  async void IDisposable.Dispose() {
-    GC.SuppressFinalize(this);
-    await StopReceivingAsync();
-  }
-}
+    private static bool ParseResponseJson(string input) {
+      var node = JsonSerializer.Deserialize<JsonNode>(input);
+      var responseCode = node?["body"]?["msg_cd"]?.GetValue<string>();
+      var responseMessage = node?["body"]?["msg1"]?.GetValue<string>();
+      var iv = node?["body"]?["output"]?["iv"]?.GetValue<string>();
+      var key = node?["body"]?["output"]?["key"]?.GetValue<string>();
+      var transId = node?["header"]?["tr_id"]?.GetValue<string>();
+      var transKey = node?["header"]?["tr_key"]?.GetValue<string>();
+      Debug.WriteLine($"[{responseCode}] {responseMessage}");
+      if (responseCode == "OPSP0000" || responseCode == "OPSP8996") { // SUBSCRIBE SUCCESS or ALREADY IN USE appkey
+        Aes? encryption = null;
+        if (!string.IsNullOrEmpty(iv) && !string.IsNullOrEmpty(key)) {
+          encryption = Aes.Create();
+          encryption.KeySize = 256;
+          byte[] paddedIv = new byte[16];
+          byte[] rawIv = Convert.FromBase64String(iv);
+          rawIv.CopyTo(paddedIv, 0);
+          encryption.IV = paddedIv;
+          encryption.Key = Convert.FromBase64String(key);
+        }
+        lock (SubscriptionsLock) {
+          Subscriptions.Add((transId, transKey, encryption)!);
+        }
+      }
+      else if (responseCode == "OPSP0001") {
+        lock (SubscriptionsLock) {
+          Subscriptions.RemoveAll(x => x.TransactionId == transId && x.TransactionKey == transKey);
+        }
+      }
+      return responseCode == "OPSP0000" || responseCode == "OPSP0001" || responseCode == "OPSP8996";
+    }
 
-public partial class ApiClient {
+    public static async ValueTask<bool> Connect() {
+      if (Client.State == WebSocketState.Open) return true;
+      if (Client.State == WebSocketState.Aborted) return true;
+      Client.Options.KeepAliveInterval = TimeSpan.FromSeconds(10);
+      Client.Options.KeepAliveTimeout = TimeSpan.FromSeconds(5);
+      var token = await IssueWebSocketToken();
+      if (token == null) return false;
+      AccessToken = token;
+      Uri uri = new($"ws://ops.koreainvestment.com:{(Simulation ? 31000 : 21000)}");
+      try {
+        await Client.ConnectAsync(uri, Cancellation.Token);
+      }
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+        return false;
+      }
+      PollingTask = Task.Run(PollReceivedMessage);
+      return Client.State == WebSocketState.Open;
+    }
+
+    public static async Task Subscribe(string id, string key) {
+      lock (SubscriptionsLock) {
+        if (Subscriptions.Where(x => (x.TransactionId, x.TransactionKey) == (id, key)).Any()) return;
+        if (Subscriptions.Count >= 41) return;
+      }
+      if (Client.State != WebSocketState.Open) {
+        if (!await Connect()) {
+          Debug.WriteLine($"[{nameof(KisWebSocket)}] Failed to connect the shared WebSocket.");
+          return;
+        }
+      }
+      try {
+        await Client.SendAsync(RequestJsonString(true, id, key), WebSocketMessageType.Text, true, Cancellation.Token);
+      }
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+      }
+    }
+    public static async Task Unsubscribe(string id, string key) {
+      if (!Subscriptions.Where(x => (x.TransactionId, x.TransactionKey) == (id, key)).Any()) return;
+      if (Client.State != WebSocketState.Open) return;
+      try {
+        await Client.SendAsync(RequestJsonString(false, id, key), WebSocketMessageType.Text, true, Cancellation.Token);
+      }
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+      }
+    }
+    public static void Close() {
+      Cancellation.Cancel();
+    }
+  }
   public static async Task<string?> IssueWebSocketToken() {
     var body = new {
       grant_type = "client_credentials",
       appkey = AppPublicKey,
       secretkey = AppSecretKey,
     };
-    var result = await RequestClient.PostAsJsonAsync("/oauth2/Approval", body);
-    var responseBody = await result.Content.ReadFromJsonAsync<JsonNode>();
-    if (responseBody == null) {
-      Debug.WriteLine("Failed to get response from the server: [{0}] {1}", args: [result.StatusCode, result.ReasonPhrase]);
+    try {
+      var result = await RequestClient.PostAsJsonAsync("/oauth2/Approval", body);
+      var responseBody = await result.Content.ReadFromJsonAsync<JsonNode>();
+      if (responseBody == null) {
+        Debug.WriteLine("Failed to get response from the server: [{0}] {1}", args: [result.StatusCode, result.ReasonPhrase]);
+        return null;
+      }
+      if (!result.IsSuccessStatusCode) {
+        Debug.WriteLine(
+          "Failed to issue a WebSocket token: [{0}] {1}",
+          responseBody["error_code"]?.GetValue<string>(),
+          responseBody["error_description"]?.GetValue<string>()
+        );
+        return null;
+      }
+      return responseBody["approval_key"]?.GetValue<string>();
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
       return null;
     }
-    if (!result.IsSuccessStatusCode) {
-      Debug.WriteLine(
-        "Failed to issue a WebSocket token: [{0}] {1}",
-        responseBody["error_code"]?.GetValue<string>(),
-        responseBody["error_description"]?.GetValue<string>()
-      );
-      return null;
-    }
-    return responseBody["approval_key"]?.GetValue<string>();
   }
 }

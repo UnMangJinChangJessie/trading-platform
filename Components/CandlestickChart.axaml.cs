@@ -1,7 +1,9 @@
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ScottPlot;
+using trading_platform.ViewModel;
 
 namespace trading_platform.Components;
 
@@ -18,12 +20,12 @@ public partial class CandlestickChart : UserControl {
   /// indicates how fast the plot zooms in/out during pointer scrolls.
   /// </summary>
   public double ZoomSensitivity {
-    get => this.GetValue(ZoomSensitivityProperty);
+    get => GetValue(ZoomSensitivityProperty);
     set => SetValue(ZoomSensitivityProperty, value);
   }
   private ScottPlot.Plottables.OhlcPlot? OHLCChart { get; set; }
   private List<OHLC> OHLCChartSource { get; set; } = [];
-  private ViewModel.MarketData? CastedDataContext => DataContext as ViewModel.MarketData;
+  private MarketData? CastedDataContext => DataContext as MarketData;
 
   private double BottomLimitRateStart { get; set; } = 0.0;
   private double BottomLimitRateEnd { get; set; } = 1.0;
@@ -32,7 +34,7 @@ public partial class CandlestickChart : UserControl {
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
-    OHLCChartSource = [.. CastedDataContext.PriceChart.Select(x => x.Value.ToScottPlotOHLC())];
+    OHLCChartSource = [.. CastedDataContext.PriceChart.Select(x => x.ToScottPlotOHLC())];
     OHLCChart = PriceChart.Plot.Add.OHLC(OHLCChartSource);
     PriceChart.Plot.Font.Set("Gowun Dodum");
     PriceChart.Plot.Axes.ContinuouslyAutoscale = true;
@@ -46,17 +48,18 @@ public partial class CandlestickChart : UserControl {
     PriceChart.Plot.DataBackground.Color = Color.FromARGB(0x00000000U);
     OHLCChart.RisingStyle.Color = Colors.LightPink;
     OHLCChart.FallingStyle.Color = Colors.LightBlue;
-    CastedDataContext.PriceChart.CollectionChanged += (sender, args) => {
-      if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add) {
-
-      }
-      else if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove) {
-        foreach (var candle in args.OldItems!) {
-          OHLCChartSource.RemoveAll();
-        }
-      }
-      else if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset) {
+    CastedDataContext.ChartChanging += (sender, args) => {
+      if (args.UpdateType == MarketData.CandleUpdate.Clear) {
         OHLCChartSource.Clear();
+      }
+      else if (args.UpdateType == MarketData.CandleUpdate.InsertBegin) {
+        OHLCChartSource.Insert(0, args.Candle!.ToScottPlotOHLC());
+      }
+      else if (args.UpdateType == MarketData.CandleUpdate.InsertEnd) {
+        OHLCChartSource.Insert(0, args.Candle!.ToScottPlotOHLC());
+      }
+      else if (args.UpdateType == MarketData.CandleUpdate.UpdateLast) {
+        OHLCChartSource[^1] = args.Candle!.ToScottPlotOHLC();
       }
     };
   }
