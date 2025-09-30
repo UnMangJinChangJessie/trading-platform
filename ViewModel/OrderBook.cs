@@ -10,13 +10,19 @@ public abstract partial class OrderBook : ObservableObject {
   [ObservableProperty]
   public partial string Ticker { get; protected set; } = "";
   [ObservableProperty]
-  public partial decimal CurrentClose { get; protected set; }
+  public partial decimal CurrentClose { get; set; }
   [ObservableProperty]
-  public partial decimal PreviousClose { get; protected set; }
+  public partial decimal PreviousClose { get; set; }
   public List<Reactive<decimal>> AskPrice { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
   public List<Reactive<decimal>> BidPrice { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
   public List<Reactive<decimal>> AskQuantity { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
   public List<Reactive<decimal>> BidQuantity { get; protected set; } = [..Enumerable.Repeat(0, 10).Select(_ => new Reactive<decimal>(0.0M))];
+  [ObservableProperty]
+  public partial decimal? IntermediatePrice { get; protected set; }
+  [ObservableProperty]
+  public partial decimal? IntermediateAskQuantity { get; protected set; }
+  [ObservableProperty]
+  public partial decimal? IntermediateBidQuantity { get; protected set; }
   public bool RealTimeRefresh { get; protected set; } = false;
 
   public abstract ValueTask<bool> RequestRefreshAsync(string ticker);

@@ -16,6 +16,7 @@
     <Rectangle
       Name="PART_Rectangle"
       VerticalAlignment="Center" 
+      Width="{Binding #ControlRoot.BarWidth, Mode = OneWay}"
     />
     <TextBlock 
       Name="PART_TextBlock"

@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 
 namespace trading_platform.Model.KoreaInvestment;
 
@@ -111,7 +112,7 @@ public partial class ApiClient {
       }
       return result;
     }
-    private static bool ParseResponseJson(string input) {
+    private static async ValueTask<bool> ParseResponseJson(string input) {
       try {
         var node = JsonSerializer.Deserialize<JsonNode>(input);
         var responseCode = node?["body"]?["msg_cd"]?.GetValue<string>();
@@ -120,6 +121,12 @@ public partial class ApiClient {
         var key = node?["body"]?["output"]?["key"]?.GetValue<string>();
         var transId = node?["header"]?["tr_id"]?.GetValue<string>();
         var transKey = node?["header"]?["tr_key"]?.GetValue<string>();
+        // Ping-Pong request, sends pong.
+        // According to the API refs, we just send the JSON back.
+        if (transId == "PINGPONG") {
+          await Client.SendAsync(Encoding.UTF8.GetBytes(input), WebSocketMessageType.Text, true, CancellationToken.None);
+          return true;
+        }
         Debug.WriteLine($"[{responseCode}] {responseMessage}");
         if (responseCode == "OPSP0000" || responseCode == "OPSP0002") { // SUBSCRIBE SUCCESS || ALREADY IN SUBSCRIBE
           Aes? encryption = null;

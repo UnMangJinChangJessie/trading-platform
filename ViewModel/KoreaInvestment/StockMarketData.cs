@@ -22,6 +22,7 @@ public class StockMarketData : MarketData {
       CurrentLow = decimal.Parse(args.Message[^1][9]);
       CurrentVolume = decimal.Parse(args.Message[^1][13]);
       CurrentAmount = decimal.Parse(args.Message[^1][14]);
+      PreviousClose = -decimal.Parse(args.Message[^1][4]) + CurrentClose;
       if (
         TimeOnly.TryParseExact(args.Message[^1][1], "HHmmss", out var time) &&
         DateOnly.TryParseExact(args.Message[^1][33], "yyyyMMdd", out var date)

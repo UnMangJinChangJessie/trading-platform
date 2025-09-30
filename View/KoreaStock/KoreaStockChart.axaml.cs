@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using trading_platform.Model;
 using trading_platform.Model.KoreaInvestment;
+using trading_platform.ViewModel;
 
 namespace trading_platform.View;
 
@@ -19,7 +20,8 @@ public partial class KoreaStockChart : UserControl {
       orderContext.MethodsAllowed.Clear();
       foreach (var item in ALLOWED_ORDER_METHODS) orderContext.MethodsAllowed.Add(item);
     }
-    if (CastedDataContext == null) return;
+  }
+  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     CastedDataContext.PropertyChanged += OnDataContextChanged;
     OrderView.UnitPriceChanged += (sender, args) => {
       var castedSender = sender as NumericUpDown;
@@ -44,7 +46,14 @@ public partial class KoreaStockChart : UserControl {
   }
   private void OnDataContextChanged(object? sender, PropertyChangedEventArgs args) {
     var orderContext = OrderView.DataContext as ViewModel.Order;
+    var orderBookContext = OrderBookDisplayView.DataContext as OrderBook;
     if (orderContext?.Ticker != null) orderContext.Ticker = CastedDataContext?.Ticker ?? "";
+    if (args.PropertyName == nameof(CastedDataContext.PreviousClose)) {
+      orderBookContext?.PreviousClose = CastedDataContext?.PreviousClose ?? 0;
+    }
+    if (args.PropertyName == nameof(CastedDataContext.CurrentClose)) {
+      orderBookContext?.CurrentClose = CastedDataContext?.CurrentClose ?? 0;
+    }
   }
   public async void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;

@@ -11,6 +11,7 @@
   x:Name="ControlRoot"
   AttachedToVisualTree="UserControl_AttachedToVisualTree"
   DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
+  Loaded="UserControl_Loaded"
 >
   <Grid ColumnDefinitions="*,180,180" RowDefinitions="*" Margin="5">
     <Grid

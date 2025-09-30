@@ -4,7 +4,7 @@ using trading_platform.Model.KoreaInvestment;
 
 namespace trading_platform.View;
 
-public partial class Order : UserControl, IDataContextIsMarketData {
+public partial class Order : UserControl {
   public Order() {
     InitializeComponent();
   }

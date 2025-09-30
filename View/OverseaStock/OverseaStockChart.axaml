@@ -9,6 +9,7 @@
   mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="720"
   x:Class="trading_platform.View.OverseaStockChart"
   x:Name="ControlRoot"
+  x:DataType="vmkis:OverseaStockMarketData"
   AttachedToVisualTree="UserControl_AttachedToVisualTree"
   DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
 >
@@ -40,6 +41,8 @@
     </Grid>
     <com:OrderBookDisplay
       Name="OrderBookDisplayView"
+      PriceDecimalPoint="{Binding DecimalDigitCount}"
+      QuantityDecimalPoint="0"
       Grid.Column="1"
     />
     <v:Order

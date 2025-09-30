@@ -10,6 +10,8 @@ namespace trading_platform.ViewModel.KoreaInvestment;
 public partial class OverseaStockMarketData : MarketData {
   private Exchange CurrentExchange { get; set; } = Exchange.None;
   [ObservableProperty]
+  public partial int DecimalDigitCount { get; private set; } = 0;
+  [ObservableProperty]
   public partial float EarningsPerShare { get; private set; } = 0.0F;
   [ObservableProperty]
   public partial float PriceBookValueRate { get; private set; } = 0.0F;
@@ -58,6 +60,7 @@ public partial class OverseaStockMarketData : MarketData {
   public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
     var exchange = StockMarketInformation.OverseaStock.GetExchange(ticker[..3]);
     if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is not OverseaStockInformation stockInformation) return false;
+    DecimalDigitCount = stockInformation.DecimalDigitCount;
     ClearChart();
     var inquireFrom = DateOnly.FromDateTime(DateTime.Today.AddYears(-5));
     var inquireTo = DateOnly.FromDateTime(DateTime.Today);
@@ -90,6 +93,7 @@ public partial class OverseaStockMarketData : MarketData {
     var exchange = StockMarketInformation.OverseaStock.GetExchange(ticker[..3]);
     if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is not OverseaStockInformation information) return false;
     CurrentExchange = information.Exchange;
+    DecimalDigitCount = information.DecimalDigitCount;
     Ticker = ticker[3..];
     await ApiClient.KisWebSocket.Subscribe("HDFSCNT0", $"D{CurrentExchange.GetCode()}{ticker[3..]}");
     return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open;

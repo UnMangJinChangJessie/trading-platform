@@ -5,6 +5,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace trading_platform.Components;
@@ -86,8 +87,6 @@ public partial class OrderBookDisplay : UserControl {
     set => SetValue(QuantityDecimalPointProperty, value);
   }
 
-
-
   public OrderBookDisplay() {
     InitializeComponent();
   }
@@ -95,24 +94,25 @@ public partial class OrderBookDisplay : UserControl {
     LongBrush ??= new SolidColorBrush(Colors.Pink);
     ShortBrush ??= new SolidColorBrush(Colors.SkyBlue);
     NeutralBrush ??= new SolidColorBrush(Colors.Black);
+    CastedDataContext.PropertyChanged += (sender, args) => {
+      Dispatcher.UIThread.Post(UpdatePriceBlocks);
+    };
   }
   public void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     var blocks = PART_Grid.Children.OfType<TextBlock>();
     foreach (var block in blocks) {
       int rowIdx = Grid.GetRow(block);
-      int viewIdx = Math.Abs(rowIdx - 9) + (rowIdx < 10 ? 0 : -1);
-      TextBlock[] controls = rowIdx < 10 ? ref SellingPriceTextBlocks : ref BuyingPriceTextBlocks;
-      controls[viewIdx] = block;
+      if (0 <= rowIdx && rowIdx < 10) SellingPriceTextBlocks[9 - rowIdx] = block;
+      else if (11 <= rowIdx && rowIdx <= 20) BuyingPriceTextBlocks[rowIdx - 11] = block;
     }
     var quantities = PART_Grid.Children.OfType<OrderBookQuantityBlock>();
     foreach (var block in quantities) {
       int rowIdx = Grid.GetRow(block);
-      int viewIdx = Math.Abs(rowIdx - 9) + (rowIdx < 10 ? 0 : -1);
-      OrderBookQuantityBlock[] controls = rowIdx < 10 ? ref SellingQuantityBlocks : ref BuyingQuantityBlocks;
-      controls[viewIdx] = block;
+      if (0 <= rowIdx && rowIdx < 10) SellingQuantityBlocks[9 - rowIdx] = block;
+      else if (11 <= rowIdx && rowIdx <= 20) BuyingQuantityBlocks[rowIdx - 11] = block;
     }
   }
-  public void UpdatePriceBlocks(object? sender, PropertyChangedEventArgs args) {
+  public void UpdatePriceBlocks() {
     if (CastedDataContext == null) return;
     IBrush? PickColor(decimal price, decimal close) {
       return (price - close) switch {
@@ -121,9 +121,21 @@ public partial class OrderBookDisplay : UserControl {
         0 => NeutralBrush
       };
     }
+    bool foundConclusionPrice = false;
     for (int i = 0; i < 10; i++) {
-      TextElement.SetForeground(SellingPriceTextBlocks[i], PickColor(CastedDataContext.AskPrice[i].Value, 0.0M));
-      TextElement.SetForeground(BuyingPriceTextBlocks[i], PickColor(CastedDataContext.BidPrice[i].Value, 0.0M));
+      TextElement.SetForeground(SellingPriceTextBlocks[i], PickColor(CastedDataContext.AskPrice[i].Value, CastedDataContext.PreviousClose));
+      TextElement.SetForeground(BuyingPriceTextBlocks[i], PickColor(CastedDataContext.BidPrice[i].Value, CastedDataContext.PreviousClose));
+      if (CastedDataContext.AskPrice[i].Value == CastedDataContext.CurrentClose) {
+        Grid.SetRow(PART_ConclusionBorder, 9 - i);
+        foundConclusionPrice = true;
+        PART_ConclusionBorder.BorderBrush = TextElement.GetForeground(SellingPriceTextBlocks[i]);
+      }
+      else if (CastedDataContext.BidPrice[i].Value == CastedDataContext.CurrentClose) {
+        Grid.SetRow(PART_ConclusionBorder, 11 + i);
+        PART_ConclusionBorder.BorderBrush = TextElement.GetForeground(BuyingPriceTextBlocks[i]);
+        foundConclusionPrice = true;
+      }
     }
+    PART_ConclusionBorder.IsVisible = foundConclusionPrice;
   }
 }

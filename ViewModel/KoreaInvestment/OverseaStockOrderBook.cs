@@ -16,18 +16,19 @@ public partial class OverseaStockOrderBook : OrderBook {
       if (args.TransactionId == "HDFSASP0" || args.TransactionId == "HDFSASP1") return;
       if (args.Message.Count == 0) return;
       if (args.Message[^1][4] != Ticker) return;
-      BidPrice[0].Value = decimal.Parse(args.Message[^1][14]);
-      AskPrice[0].Value = decimal.Parse(args.Message[^1][15]);
-      BidQuantity[0].Value = decimal.Parse(args.Message[^1][16]);
-      AskQuantity[0].Value = decimal.Parse(args.Message[^1][17]);
+      BidPrice[0].Value = decimal.Parse(args.Message[^1][11]);
+      AskPrice[0].Value = decimal.Parse(args.Message[^1][12]);
+      BidQuantity[0].Value = decimal.Parse(args.Message[^1][13]);
+      AskQuantity[0].Value = decimal.Parse(args.Message[^1][14]);
       for (int i = 1; i < 10; i++) {
         AskPrice[i].Value = 0;
         BidPrice[i].Value = 0;
         AskQuantity[i].Value = 0;
         BidQuantity[i].Value = 0;
       }
-      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][9], "HHmmss");
+      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][6], "HHmmss");
       HighestQuantity = Math.Max(BidQuantity[0].Value, AskQuantity[0].Value);
+      OnPropertyChanged(propertyName: null);
     };
     if (Design.IsDesignMode) {
       for (int i = 0; i < 10; i++) {
@@ -41,7 +42,7 @@ public partial class OverseaStockOrderBook : OrderBook {
   }
   public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
     var exchange = StockMarketInformation.OverseaStock.GetExchange(ticker[..3]);
-    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is null) return false;
+    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is not OverseaStockInformation information) return false;
     var (status, result) = await Model.KoreaInvestment.OverseaStock.InquireOrderBook(new() {
       ExchangeCode = Exchange.DomesticUnified,
       Ticker = ticker[3..]

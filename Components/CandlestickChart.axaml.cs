@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using ScottPlot;
 using trading_platform.ViewModel;
 
@@ -61,6 +62,7 @@ public partial class CandlestickChart : UserControl {
       else if (args.UpdateType == MarketData.CandleUpdate.UpdateLast) {
         OHLCChartSource[^1] = args.Candle!.ToScottPlotOHLC();
       }
+      Dispatcher.UIThread.Post(() => { PriceChart.Refresh(); });
     };
   }
   public void PriceChart_ContinuousAutoscale(RenderPack rp) {
@@ -98,10 +100,10 @@ public partial class CandlestickChart : UserControl {
     candle.Low = Math.Min(value, candle.Low);
     candle.High = Math.Max(value, candle.High);
   }
-  public void AddCandle(double open, double high, double low, double close) {
-    OHLCChartSource.Add(new(open, high, low, close));
-  }
-  public void AddCandle(OHLC ohlc) {
-    OHLCChartSource.Add(ohlc);
-  }
+  // public void AddCandle(double open, double high, double low, double close) {
+  //   OHLCChartSource.Add(new(open, high, low, close));
+  // }
+  // public void AddCandle(OHLC ohlc) {
+  //   OHLCChartSource.Add(ohlc);
+  // }
 }

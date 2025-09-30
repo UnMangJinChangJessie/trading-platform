@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace trading_platform.Components;
 
@@ -100,16 +101,19 @@ public partial class OrderBookQuantityBlock : UserControl {
   /// Quantity StyledProperty definition
   /// indicates quantity.
   /// </summary>
-  public static readonly StyledProperty<decimal> QuantityProperty =
-    AvaloniaProperty.Register<OrderBookQuantityBlock, decimal>(nameof(Quantity));
+  public static readonly StyledProperty<decimal?> QuantityProperty =
+    AvaloniaProperty.Register<OrderBookQuantityBlock, decimal?>(nameof(Quantity));
   /// <summary>
   /// Gets or sets the Quantity property. This StyledProperty
   /// indicates quantity.
   /// </summary>
-  public decimal Quantity {
+  public decimal? Quantity {
     get => GetValue(QuantityProperty);
     set => SetValue(QuantityProperty, value);
   }
+  public double BarWidth => CastedDataContext != null ? (
+    CastedDataContext.HighestQuantity == 0 ? 0.0 : (double)((Quantity ?? 0) / CastedDataContext.HighestQuantity) * Bounds.Width * 0.95
+  ) : 0.0;
 
   public OrderBookQuantityBlock() {
     InitializeComponent();
@@ -120,17 +124,9 @@ public partial class OrderBookQuantityBlock : UserControl {
     PART_Rectangle.HorizontalAlignment = IsSelling ? Avalonia.Layout.HorizontalAlignment.Right : Avalonia.Layout.HorizontalAlignment.Left;
     PART_Rectangle.Fill = IsSelling ? ShortColor : LongColor;
     PART_Rectangle.Height = Bounds.Height * 0.95;
-    CastedDataContext.PropertyChanged += UpdateBar;
-  }
-  public void UpdateBar(object? sender, PropertyChangedEventArgs args) {
-    if (args.PropertyName != null) return;
-    var boundWidth = Bounds.Width;
-    if (CastedDataContext == null) return;
-    var maxQuantity = CastedDataContext.HighestQuantity;
-    double percentage;
-    if (maxQuantity == 0) percentage = 0;
-    else percentage = (double)(Quantity / maxQuantity);
-    PART_Rectangle.Width = percentage * boundWidth;
-    PART_TextBlock.Text = Quantity.ToString($"F{DecimalPointCount}");
+    CastedDataContext.PropertyChanged += (sender, args) => {
+      // Schedule a resize of the bar.
+      Dispatcher.UIThread.Post(() => { PART_Rectangle.Width = BarWidth; });
+    };
   }
 }
