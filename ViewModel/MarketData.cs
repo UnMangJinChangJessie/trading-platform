@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using trading_platform.Model.KoreaInvestment;
 
 namespace trading_platform.ViewModel;
 
@@ -36,8 +37,6 @@ public abstract partial class MarketData : ObservableObject {
   public partial string Ticker { get; protected set; } = "";
   [ObservableProperty]
   public partial string Name { get; protected set; } = "";
-  [ObservableProperty]
-  public partial bool RealTimeRefresh { get; protected set; } = false;
 
   public event EventHandler<(CandleUpdate UpdateType, Model.OHLC<decimal>? Candle, Reactive<decimal>? Volume, Reactive<decimal>? Amount)> ChartChanging;
 
@@ -73,8 +72,8 @@ public abstract partial class MarketData : ObservableObject {
   }
   public abstract ValueTask<bool> RequestRefreshRealTimeAsync(string ticker);
   public async Task StartRefreshRealTimeAsync(string ticker) {
-    if (RealTimeRefresh && ticker == Ticker) return;
-    await EndRefreshRealTimeAsync(ticker);
+    if (!await ApiClient.KisWebSocket.Connect()) return;
+    if (ApiClient.KisWebSocket.ClientState != System.Net.WebSockets.WebSocketState.Open) return; 
     await RequestRefreshRealTimeAsync(ticker);
   }
   public abstract Task EndRefreshRealTimeAsync(string ticker);

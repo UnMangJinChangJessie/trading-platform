@@ -120,8 +120,10 @@ public partial class OrderBookQuantityBlock : UserControl {
     PART_Rectangle.HorizontalAlignment = IsSelling ? Avalonia.Layout.HorizontalAlignment.Right : Avalonia.Layout.HorizontalAlignment.Left;
     PART_Rectangle.Fill = IsSelling ? ShortColor : LongColor;
     PART_Rectangle.Height = Bounds.Height * 0.95;
+    CastedDataContext.PropertyChanged += UpdateBar;
   }
   public void UpdateBar(object? sender, PropertyChangedEventArgs args) {
+    if (args.PropertyName != null) return;
     var boundWidth = Bounds.Width;
     if (CastedDataContext == null) return;
     var maxQuantity = CastedDataContext.HighestQuantity;

@@ -25,6 +25,21 @@ public static partial class StockMarketInformation {
     public required int OfferQuantityUnit { get; set; }
   }
   public static class OverseaStock {
+    public static Exchange GetExchange(string input) => input switch {
+      "NAS" => Exchange.Nasdaq,
+      "NYS" => Exchange.NewYorkStockExchange,
+      "AMS" => Exchange.NyseAmerican,
+      "USA" => Exchange.UnitedStates,
+      "SHS" => Exchange.Shanghai,
+      "SZS" => Exchange.Shenzhen,
+      "CHN" => Exchange.China,
+      "HKS" => Exchange.HongKong,
+      "TSE" => Exchange.Tokyo,
+      "HNX" => Exchange.Hanoi,
+      "HSX" => Exchange.HoChiMinh,
+      "VNM" => Exchange.Vietnam,
+      _ => throw new ArgumentException($"Invalid exchange code '{input}'")
+    };
     public static readonly List<OverseaStockInformation> Data = [];
     public static async Task<bool> Load() {
       Data.Clear();
@@ -41,15 +56,16 @@ public static partial class StockMarketInformation {
       reader = new(stream, Encoding.GetEncoding("euc-kr"));
       while ((line = reader.ReadLine()) != null) {
         var token = line.Split('\t');
-        Data.Add(new() {
+        var item = new OverseaStockInformation() {
           Ticker = token[4].Trim(),
           Name = token[7].Trim(),
-          Exchange = KoreaInvestment.Exchange.Nasdaq,
-          DecimalDigitCount = int.Parse(token[9].Trim()),
-          BidQuantityUnit = int.Parse(token[17].Trim()),
-          OfferQuantityUnit = int.Parse(token[18].Trim()),
-          Currency = "USD"
-        });
+          Exchange = GetExchange(token[2].Trim()),
+          DecimalDigitCount = int.Parse(token[10].Trim()),
+          BidQuantityUnit = int.Parse(token[13].Trim()),
+          OfferQuantityUnit = int.Parse(token[14].Trim()),
+          Currency = token[9].Trim()
+        };
+        Data.Add(item);
       }
     }
     private static async Task<bool> LoadAmerican(HttpClient client) {
@@ -63,12 +79,12 @@ public static partial class StockMarketInformation {
       var nyseZip = new ZipArchive(nyseResp);
       var amexZip = new ZipArchive(amexResp);
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-      ParseLine(nasdaqZip.GetEntry("nasmst.cod")!.Open());
-      ParseLine(nyseZip.GetEntry("nysmst.cod")!.Open());
-      ParseLine(amexZip.GetEntry("amsmst.cod")!.Open());
+      ParseLine(nasdaqZip.GetEntry("NASMST.COD")!.Open());
+      ParseLine(nyseZip.GetEntry("NYSMST.COD")!.Open());
+      ParseLine(amexZip.GetEntry("AMSMST.COD")!.Open());
       return true;
     }
     public static OverseaStockInformation? SearchByTicker(Exchange exchange, string ticker) =>
-      Data.AsParallel().Where(x => x.Exchange == exchange && x.Ticker == ticker).FirstOrDefault();
+      Data.AsParallel().Where(x => (x.Exchange & exchange) != Exchange.None && x.Ticker == ticker).FirstOrDefault();
   }
 }

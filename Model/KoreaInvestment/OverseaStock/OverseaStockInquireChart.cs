@@ -12,10 +12,10 @@ public class OverseaStockInquireChartQueries {
 }
 public class OverseaStockInquireChartResult : KisReturnMessage {
   [JsonPropertyName("output2")]
-  public IEnumerable<StockChart>? Chart { get; init; }
+  public IEnumerable<OverseaStockChart>? Chart { get; init; }
 }
 public static partial class OverseaStock {
-  public static async Task<(HttpStatusCode StatusCode, OverseaStockInquireChartResult? Result)> InquireOverseaStockChart(OverseaStockInquireChartQueries queries) {
+  public static async Task<(HttpStatusCode StatusCode, OverseaStockInquireChartResult? Result)> InquireStockChart(OverseaStockInquireChartQueries queries) {
     return await ApiClient.Request<object, OverseaStockInquireChartResult>(
       transId: "HHDFS76240000",
       method: HttpMethod.Get,

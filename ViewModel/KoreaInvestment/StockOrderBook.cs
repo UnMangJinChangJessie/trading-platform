@@ -11,16 +11,18 @@ public partial class StockOrderBook : OrderBook {
   public partial decimal HighestQuantity { get; private set; } = 0;
   public StockOrderBook() {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
-      if (args.TransactionId == "H0UNASP0") return;
+      if (args.TransactionId != "H0UNASP0") return;
       if (args.Message.Count == 0) return;
+      if (args.Message[^1][0] != Ticker) return;
       for (int i = 0; i < 10; i++) {
         AskPrice[i].Value = decimal.Parse(args.Message[^1][3 + i]);
         BidPrice[i].Value = decimal.Parse(args.Message[^1][13 + i]);
         AskQuantity[i].Value = decimal.Parse(args.Message[^1][23 + i]);
         BidQuantity[i].Value = decimal.Parse(args.Message[^1][33 + i]);
       }
-      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][2], "hhmmss");
+      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][1], "HHmmss");
       HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
+      OnPropertyChanged(propertyName: null);
     };
     if (Design.IsDesignMode) {
       for (int i = 0; i < 10; i++) {
@@ -30,12 +32,6 @@ public partial class StockOrderBook : OrderBook {
         BidQuantity[i].Value = Random.Shared.Next(1, 50 - 5 * i);
       }
       HighestQuantity = Math.Max(AskQuantity.Max(x => x.Value), BidQuantity.Max(x => x.Value));
-      for (int i = 0; i < 10; i++) {
-        OnPropertyChanged($"AskPrice[{i}]");
-        OnPropertyChanged($"BidPrice[{i}]");
-        OnPropertyChanged($"AskQuantity[{i}]");
-        OnPropertyChanged($"BidQuantity[{i}]");
-      }
     }
   }
   public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
@@ -87,10 +83,12 @@ public partial class StockOrderBook : OrderBook {
     BidQuantity[9].Value = result.Output?.BidQuantity_10 ?? 0;
     HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
     ConclusionTime = result.Output?.Time ?? TimeOnly.MinValue;
+    OnPropertyChanged(propertyName: null);
     return true;
   }
   public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
     if (KRXStock.SearchByTicker(ticker) is null) return false;
+    Ticker = ticker;
     await ApiClient.KisWebSocket.Subscribe("H0UNASP0", ticker);
     RealTimeRefresh = true;
     return RealTimeRefresh;

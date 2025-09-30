@@ -19,6 +19,6 @@ public class OverseaStockChart {
   public required decimal Amount { get; init; }
   [JsonPropertyName("sign")]
   public required PriceChangeSign PriceChangeSign { get; init; }
-  [JsonPropertyName("sign")]
+  [JsonPropertyName("diff")]
   public required decimal PriceChange { get; init; }
 }

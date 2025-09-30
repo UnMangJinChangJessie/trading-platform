@@ -9,15 +9,17 @@ using System.Text.Json.Nodes;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-using WebSocketSubscription = (string TransactionId, string TransactionKey, Aes? Encryption);
+using Subscription = (string TransactionId, string TransactionKey);
+
 public partial class ApiClient {
   public static class KisWebSocket {
     public static string AccessToken { get; private set; } = "";
     public static CancellationTokenSource Cancellation { get; } = new();
+    public static WebSocketState ClientState => Client.State;
     private static ClientWebSocket Client { get; set; } = new() { };
     private static Task? PollingTask { get; set; } = null;
     private static readonly Lock SubscriptionsLock = new();
-    private static List<WebSocketSubscription> Subscriptions { get; set; } = [];
+    private static Dictionary<Subscription, Aes?> Subscriptions { get; set; } = [];
     private static byte[] RequestJsonString(bool subscribe, string transId, string transKey) => JsonSerializer.SerializeToUtf8Bytes(new {
       header = new {
         approval_key = AccessToken,
@@ -64,27 +66,29 @@ public partial class ApiClient {
             string transId = tokens[1];
             int rowCount = int.Parse(tokens[2]);
             string rawData = tokens[3];
-            var subscription = Subscriptions.Where(x => x.TransactionId == transId);
-            var result = ParseTransactionData(
-              subscription,
-              input: rawData,
-              encrypted,
-              rowCount
-            );
-            MessageReceived?.Invoke(null, (TransactionId: transId, Message: result));
+            var subscriptions = Subscriptions.Keys.Where(x => x.TransactionId == transId);
+            foreach (var subscription in subscriptions) {
+              var result = ParseTransactionData(
+                subscription,
+                input: rawData,
+                encrypted,
+                rowCount
+              );
+              MessageReceived?.Invoke(null, (TransactionId: transId, Message: result));
+            }
           }
         }
+        await Client.CloseAsync(WebSocketCloseStatus.Empty, ":3", CancellationToken.None);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
       }
-      await Client.CloseAsync(WebSocketCloseStatus.Empty, ":3", CancellationToken.None);
     }
-    private static List<string[]> ParseTransactionData(IEnumerable<WebSocketSubscription> possibleSubscriptions, string input, bool encrypted, int rowCount) {
+    private static List<string[]> ParseTransactionData(Subscription subscription, string input, bool encrypted, int rowCount) {
       if (encrypted) {
         byte[] bytes = Convert.FromBase64String(input);
         try {
-          var encryption = possibleSubscriptions.Single().Encryption;
+          var encryption = Subscriptions[subscription]!;
           byte[] decrypted = encryption!.DecryptCbc(bytes.AsSpan(), encryption.IV);
           input = Encoding.UTF8.GetString(decrypted);
         }
@@ -98,7 +102,7 @@ public partial class ApiClient {
       List<string[]> result = [];
       try {
         for (int i = 0; i < rowCount; i++) {
-          result.Add(dataTokens[(rowCount * i)..(rowCount * (i + itemCount))]);
+          result.Add(dataTokens[(itemCount * i)..(itemCount * (i + 1))]);
         }
       }
       catch (Exception ex) {
@@ -117,7 +121,7 @@ public partial class ApiClient {
         var transId = node?["header"]?["tr_id"]?.GetValue<string>();
         var transKey = node?["header"]?["tr_key"]?.GetValue<string>();
         Debug.WriteLine($"[{responseCode}] {responseMessage}");
-        if (responseCode == "OPSP0000" || responseCode == "OPSP8996") { // SUBSCRIBE SUCCESS || ALREADY IN USE appkey
+        if (responseCode == "OPSP0000" || responseCode == "OPSP0002") { // SUBSCRIBE SUCCESS || ALREADY IN SUBSCRIBE
           Aes? encryption = null;
           if (!string.IsNullOrEmpty(iv) && !string.IsNullOrEmpty(key)) {
             encryption = Aes.Create();
@@ -129,15 +133,15 @@ public partial class ApiClient {
             encryption.Key = Convert.FromBase64String(key);
           }
           lock (SubscriptionsLock) {
-            Subscriptions.Add((transId, transKey, encryption)!);
+            if (!Subscriptions.TryAdd((transId!, transKey!), encryption)) Subscriptions[(transId!, transKey!)] = encryption;
           }
         }
-        else if (responseCode == "OPSP0001") {
+        else if (responseCode == "OPSP0001" || responseCode == "OPSP0003") { // UNSUBSCRIBE SUCCESS || UNSUBSCRIBE ERROR(not found!)
           lock (SubscriptionsLock) {
-            Subscriptions.RemoveAll(x => x.TransactionId == transId && x.TransactionKey == transKey);
+            Subscriptions.Remove((transId!, transKey!));
           }
         }
-        return responseCode == "OPSP0000" || responseCode == "OPSP0001" || responseCode == "OPSP8996";
+        return responseCode == "OPSP0000" || responseCode == "OPSP0001" || responseCode == "OPSP0002" || responseCode == "OPSP0003";
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
@@ -172,7 +176,6 @@ public partial class ApiClient {
 
     public static async Task Subscribe(string id, string key) {
       lock (SubscriptionsLock) {
-        if (Subscriptions.Where(x => (x.TransactionId, x.TransactionKey) == (id, key)).Any()) return;
         if (Subscriptions.Count >= 41) return;
       }
       if (Client.State != WebSocketState.Open) {
@@ -189,7 +192,6 @@ public partial class ApiClient {
       }
     }
     public static async Task Unsubscribe(string id, string key) {
-      if (!Subscriptions.Where(x => (x.TransactionId, x.TransactionKey) == (id, key)).Any()) return;
       if (Client.State != WebSocketState.Open) return;
       try {
         await Client.SendAsync(RequestJsonString(false, id, key), WebSocketMessageType.Text, true, CancellationToken.None);

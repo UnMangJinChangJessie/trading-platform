@@ -3,12 +3,15 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:v="using:trading_platform.View"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
   x:Class="trading_platform.View.OverseaStock"
+  x:DataType="vmkis:OverseaStockMarketData"
   x:Name="ControlRoot"
 >
   <UserControl.DataContext>
-    <vmkis:StockMarketData />
+    <vmkis:OverseaStockMarketData />
   </UserControl.DataContext>
   <TabControl>
     <TabItem Header="차트/주문">

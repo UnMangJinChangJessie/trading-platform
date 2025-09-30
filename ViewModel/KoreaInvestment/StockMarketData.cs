@@ -15,6 +15,7 @@ public class StockMarketData : MarketData {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
       if (args.TransactionId != "H0UNCNT0") return;
       if (args.Message.Count == 0) return;
+      if (args.Message[^1][0] != Ticker) return;
       CurrentClose = decimal.Parse(args.Message[^1][2]);
       CurrentOpen = decimal.Parse(args.Message[^1][7]);
       CurrentHigh = decimal.Parse(args.Message[^1][8]);
@@ -22,7 +23,7 @@ public class StockMarketData : MarketData {
       CurrentVolume = decimal.Parse(args.Message[^1][13]);
       CurrentAmount = decimal.Parse(args.Message[^1][14]);
       if (
-        TimeOnly.TryParseExact(args.Message[^1][1], "hhmmss", out var time) &&
+        TimeOnly.TryParseExact(args.Message[^1][1], "HHmmss", out var time) &&
         DateOnly.TryParseExact(args.Message[^1][33], "yyyyMMdd", out var date)
       ) {
         CurrentDateTime = new(date, time);
@@ -89,14 +90,13 @@ public class StockMarketData : MarketData {
 
   public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
     if (KRXStock.SearchByTicker(ticker) is null) return false;
+    Ticker = ticker;
     await ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ticker);
-    RealTimeRefresh = true;
-    return RealTimeRefresh;
+    return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open;
     
   }
 
   public override async Task EndRefreshRealTimeAsync(string ticker) {
     await ApiClient.KisWebSocket.Unsubscribe("H0UNCNT0", ticker);
-    RealTimeRefresh = false;
   }
 }

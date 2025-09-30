@@ -66,9 +66,11 @@ public partial class KoreaStockChart : UserControl {
   public async void TickerInquireButton_Click(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
     string ticker = TickerTextBox.Text ?? "";
+    await CastedDataContext.EndRefreshRealTimeAsync(ticker);
     await CastedDataContext.RefreshAsync(ticker);
     await CastedDataContext.StartRefreshRealTimeAsync(ticker);
     if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.StockOrderBook orderContext) {
+      await CastedDataContext.EndRefreshRealTimeAsync(ticker);
       await orderContext.RefreshAsync(ticker);
       await orderContext.StartRefreshRealTimeAsync(ticker);
     }

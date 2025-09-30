@@ -3,11 +3,11 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:v="using:trading_platform.View"
-  xmlns:vm="using:trading_platform.ViewModel.KoreaInvestment"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
   xmlns:com="using:trading_platform.Components"
   d:DesignHeight="720" d:DesignWidth="1000"
   x:Class="trading_platform.View.KoreaStockChart"
-  x:DataType="vm:StockMarketData"
+  x:DataType="vmkis:StockMarketData"
   x:Name="ControlRoot"
   AttachedToVisualTree="UserControl_AttachedToVisualTree"
   DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
@@ -38,6 +38,8 @@
     </Grid>
     <com:OrderBookDisplay
       Name="OrderBookDisplayView"
+      PriceDecimalPoint="0"
+      QuantityDecimalPoint="0"
       Grid.Column="1"
     />
     <v:Order

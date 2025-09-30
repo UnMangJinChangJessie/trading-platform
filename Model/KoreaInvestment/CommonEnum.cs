@@ -96,6 +96,24 @@ public enum OrderMethod {
   [JsonStringEnumMemberName("24")]
   [Description("중간가(Fill or Kill)")]
   FokIntermediate,
+  [JsonStringEnumMemberName("31")]
+  [Description("장개시시장가")]
+  MarketOnOpen,
+  [JsonStringEnumMemberName("32")]
+  [Description("장개시지정가")]
+  LimitOnOpen,
+  [JsonStringEnumMemberName("33")]
+  [Description("장마감시장가")]
+  MarketOnClose,
+  [JsonStringEnumMemberName("34")]
+  [Description("장마감지정가")]
+  LimitOnClose,
+  [JsonStringEnumMemberName("35")]
+  [Description("시간가중평균가")]
+  TimeWeightedAveragePrice,
+  [JsonStringEnumMemberName("36")]
+  [Description("거래량가중평균가")]
+  VolumeWeightedAveragePrice,
   [JsonStringEnumMemberName("51")] MidMarketHuge,
   [JsonStringEnumMemberName("52")] MidMarketBasket,
   [JsonStringEnumMemberName("62")] PreMarketHuge,
@@ -123,6 +141,7 @@ public enum CandlePeriod {
 [JsonConverter(typeof(JsonStringEnumConverter))]
 [Flags]
 public enum Exchange {
+  None = 0,
   [JsonStringEnumMemberName("J")] KoreaExchange = 1,
   [JsonStringEnumMemberName("NX")] NexTrade = 2,
   [JsonStringEnumMemberName("UN")] DomesticUnified = KoreaExchange | NexTrade,
