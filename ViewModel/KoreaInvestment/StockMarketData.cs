@@ -13,9 +13,10 @@ public class StockMarketData : MarketData {
 
   public StockMarketData() {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
-      if (args.TransactionId != "H0UNCNT0") return;
+      if (args.TransactionId != "H0UNCNT0" || args.TransactionId != "H0STCNT0" || args.TransactionId != "H0NXCNT0") return; // 통합 | KRX | NexTrade
       if (args.Message.Count == 0) return;
       if (args.Message[^1][0] != Ticker) return;
+      // 데이터 순서는 셋 다 동일함.
       CurrentClose = decimal.Parse(args.Message[^1][2]);
       CurrentOpen = decimal.Parse(args.Message[^1][7]);
       CurrentHigh = decimal.Parse(args.Message[^1][8]);
@@ -90,11 +91,12 @@ public class StockMarketData : MarketData {
   }
 
   public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
-    if (KRXStock.SearchByTicker(ticker) is null) return false;
+    if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation information) return false;
     Ticker = ticker;
-    await ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ticker);
+    if (information.Exchange == Exchange.DomesticUnified) await ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ticker);
+    else if (information.Exchange == Exchange.KoreaExchange) await ApiClient.KisWebSocket.Subscribe("H0STCNT0", ticker);
+    else await ApiClient.KisWebSocket.Subscribe("H0NXCNT0", ticker);
     return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open;
-    
   }
 
   public override async Task EndRefreshRealTimeAsync(string ticker) {

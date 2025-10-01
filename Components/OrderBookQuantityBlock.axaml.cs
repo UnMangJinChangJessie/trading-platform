@@ -65,7 +65,7 @@ public partial class OrderBookQuantityBlock : UserControl {
   /// indicates long color.
   /// </summary>
   public IBrush? LongColor {
-    get => this.GetValue(LongColorProperty);
+    get => GetValue(LongColorProperty);
     set => SetValue(LongColorProperty, value);
   }
   /// <summary>
@@ -80,7 +80,7 @@ public partial class OrderBookQuantityBlock : UserControl {
   /// indicates short color.
   /// </summary>
   public IBrush? ShortColor {
-    get => this.GetValue(ShortColorProperty);
+    get => GetValue(ShortColorProperty);
     set => SetValue(ShortColorProperty, value);
   }
   /// <summary>

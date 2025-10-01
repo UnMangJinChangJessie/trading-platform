@@ -1,13 +1,17 @@
 using System.IO.Compression;
 using System.Net;
 using System.Text;
+using trading_platform.Model.KoreaInvestment;
 
 namespace trading_platform.Model;
 
 public static partial class StockMarketInformation {
   private const string KRX_KOSPI_MASTER_URL = "https://new.real.download.dws.co.kr/common/master/kospi_code.mst.zip";
   private const string KRX_KOSDAQ_MASTER_URL = "https://new.real.download.dws.co.kr/common/master/kosdaq_code.mst.zip";
+  private const string NEXTRADE_KOSPI_MASTER_URL = "https://new.real.download.dws.co.kr/common/master/nxt_kospi_code.mst.zip";
+  private const string NEXTRADE_KOSDAQ_MASTER_URL = "https://new.real.download.dws.co.kr/common/master/nxt_kosdaq_code.mst.zip";
   public class KRXStockInformation {
+    public required Exchange Exchange { get; set; }
     public required string Ticker { get; set; }
     public required string Name { get; set; }
     public required string StandardSecuritiesCode { get; set; }
@@ -16,36 +20,65 @@ public static partial class StockMarketInformation {
     public static readonly List<KRXStockInformation> Data = [];
     public static async Task<bool> Load() {
       Data.Clear();
-      // download master zip
-      var client = new HttpClient() {
-        Timeout = TimeSpan.FromSeconds(5.0)
-      };
-      var kospiResp = await client.GetStreamAsync(KRX_KOSPI_MASTER_URL);
-      var kosdaqResp = await client.GetStreamAsync(KRX_KOSDAQ_MASTER_URL);
-      var kospiZip = new ZipArchive(kospiResp);
-      var kosdaqZip = new ZipArchive(kosdaqResp);
-      var kospiEucKr = kospiZip.GetEntry("kospi_code.mst")?.Open();
-      var kosdaqEucKr = kosdaqZip.GetEntry("kosdaq_code.mst")?.Open();
-      if (kospiEucKr == null || kosdaqEucKr == null) return false;
-
-      // the last 228 bytes are reserved for further implementations.
       Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-      StreamReader reader = new(kospiEucKr, Encoding.GetEncoding("euc-kr"));
-      string? line;
-      while ((line = await reader.ReadLineAsync()) != null) {
-        Data.Add(new() {
-          Ticker = line[0..9].Trim(),
-          StandardSecuritiesCode = line[9..21].Trim(),
-          Name = line[21..^228].Trim(),
-        });
+      // the last 228 bytes are reserved for further implementations.
+      if (await LoadMasterFile("./Resources/MasterFiles/KOSPI.txt", KRX_KOSPI_MASTER_URL) is not Stream kospi) return false;
+      using (var reader = new StreamReader(kospi)) {
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null) {
+          Data.Add(new() {
+            Exchange = Exchange.KoreaExchange,
+            Ticker = line[0..9].Trim(),
+            StandardSecuritiesCode = line[9..21].Trim(),
+            Name = line[21..^228].Trim(),
+          });
+        }
       }
-      reader = new(kosdaqEucKr, Encoding.GetEncoding("euc-kr"));
-      while ((line = await reader.ReadLineAsync()) != null) {
-        Data.Add(new() {
-          Ticker = line[0..9].Trim(),
-          StandardSecuritiesCode = line[9..21].Trim(),
-          Name = line[21..^228].Trim(),
-        });
+      if (await LoadMasterFile("./Resources/MasterFiles/KOSDAQ.txt", KRX_KOSDAQ_MASTER_URL) is not Stream kosdaq) return false;
+      using (var reader = new StreamReader(kosdaq)) {
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null) {
+          Data.Add(new() {
+            Exchange = Exchange.KoreaExchange,
+            Ticker = line[0..9].Trim(),
+            StandardSecuritiesCode = line[9..21].Trim(),
+            Name = line[21..^222].Trim(),
+          });
+        }
+      }
+      if (await LoadMasterFile("./Resources/MasterFiles/KOSPI_NEXTRADE.txt", NEXTRADE_KOSPI_MASTER_URL) is not Stream kospiNxt) return false;
+      using (var reader = new StreamReader(kospiNxt)) {
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null) {
+          string ticker = line[0..9].Trim();
+          string securitiesCode = line[9..21].Trim();
+          string name = line[21..^228];
+          var duplicate = Data.Where(x => x.Ticker == ticker).SingleOrDefault();
+          if (duplicate != null) duplicate.Exchange |= Exchange.NexTrade;
+          else Data.Add(new() {
+            Exchange = Exchange.NexTrade,
+            Ticker = ticker,
+            StandardSecuritiesCode = securitiesCode,
+            Name = name
+          });
+        }
+      }
+      if (await LoadMasterFile("./Resources/MasterFiles/KOSDAQ.txt", KRX_KOSDAQ_MASTER_URL) is not Stream kosdaqNxt) return false;
+      using (var reader = new StreamReader(kosdaqNxt)) {
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null) {
+          string ticker = line[0..9].Trim();
+          string securitiesCode = line[9..21].Trim();
+          string name = line[21..^222];
+          var duplicate = Data.Where(x => x.Ticker == ticker).SingleOrDefault();
+          if (duplicate != null) duplicate.Exchange |= Exchange.NexTrade;
+          else Data.Add(new() {
+            Exchange = Exchange.NexTrade,
+            Ticker = ticker,
+            StandardSecuritiesCode = securitiesCode,
+            Name = name
+          });
+        }
       }
       return true;
     }

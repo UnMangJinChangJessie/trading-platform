@@ -11,18 +11,53 @@ public partial class StockOrderBook : OrderBook {
   public partial decimal HighestQuantity { get; private set; } = 0;
   public StockOrderBook() {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
-      if (args.TransactionId != "H0UNASP0") return;
+      if (args.TransactionId != "H0UNASP0" && args.TransactionId != "H0STASP0" && args.TransactionId != "H0NXASP0") return; // 통합 | KRX | NexTrade
       if (args.Message.Count == 0) return;
       if (args.Message[^1][0] != Ticker) return;
-      for (int i = 0; i < 10; i++) {
-        AskPrice[i].Value = decimal.Parse(args.Message[^1][3 + i]);
-        BidPrice[i].Value = decimal.Parse(args.Message[^1][13 + i]);
-        AskQuantity[i].Value = decimal.Parse(args.Message[^1][23 + i]);
-        BidQuantity[i].Value = decimal.Parse(args.Message[^1][33 + i]);
+      if (args.TransactionId == "H0UNASP0" || args.TransactionId == "H0NXASP0") {
+        for (int i = 0; i < 10; i++) {
+          AskPrice[i].Value = decimal.Parse(args.Message[^1][3 + i]);
+          BidPrice[i].Value = decimal.Parse(args.Message[^1][13 + i]);
+          AskQuantity[i].Value = decimal.Parse(args.Message[^1][23 + i]);
+          BidQuantity[i].Value = decimal.Parse(args.Message[^1][33 + i]);
+        }
+        decimal krxIntermediateQuantity = decimal.Parse(args.Message[^1][60]);
+        bool krxIntermediateExists = args.Message[^1][61] != "0";
+        bool krxIntermediateAsking = args.Message[^1][61] == "1";
+        decimal nxtIntermediateQuantity = decimal.Parse(args.Message[^1][63]);
+        bool nxtIntermediateExists = args.Message[^1][64] != "0";
+        bool nxtIntermediateAsking = args.Message[^1][64] == "1";
+        decimal intermediatePrice = decimal.Parse(args.Message[^1][59]);
+        bool intermediateDoesNotExist = !nxtIntermediateExists && !krxIntermediateExists;
+        if (intermediateDoesNotExist) {
+          IntermediatePrice = null;
+          IntermediateAskQuantity = null;
+          IntermediateBidQuantity = null;
+        }
+        else {
+          IntermediatePrice = intermediatePrice;
+          decimal ask = (krxIntermediateAsking ? krxIntermediateQuantity : 0) + (nxtIntermediateAsking ? nxtIntermediateQuantity : 0);
+          decimal bid = (krxIntermediateAsking ? 0 : krxIntermediateQuantity) + (nxtIntermediateAsking ? 0 : nxtIntermediateQuantity);
+          IntermediateAskQuantity = ask == 0 ? null : ask;
+          IntermediateBidQuantity = bid == 0 ? null : bid;
+        }
+        ConclusionTime = TimeOnly.ParseExact(args.Message[^1][1], "HHmmss");
+        HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
+        OnPropertyChanged(propertyName: null);
       }
-      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][1], "HHmmss");
-      HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
-      OnPropertyChanged(propertyName: null);
+      else {
+        for (int i = 0; i < 10; i++) {
+          AskPrice[i].Value = decimal.Parse(args.Message[^1][3 + i]);
+          BidPrice[i].Value = decimal.Parse(args.Message[^1][13 + i]);
+          AskQuantity[i].Value = decimal.Parse(args.Message[^1][23 + i]);
+          BidQuantity[i].Value = decimal.Parse(args.Message[^1][33 + i]);
+        }
+        IntermediatePrice = null;
+        IntermediateAskQuantity = null;
+        IntermediateBidQuantity = null;
+        ConclusionTime = TimeOnly.ParseExact(args.Message[^1][1], "HHmmss");
+        HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
+      }
     };
     if (Design.IsDesignMode) {
       for (int i = 0; i < 10; i++) {

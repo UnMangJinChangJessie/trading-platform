@@ -53,7 +53,7 @@ public static partial class StockMarketInformation {
     private static void ParseLine(Stream stream) {
       string? line;
       StreamReader reader;
-      reader = new(stream, Encoding.GetEncoding("euc-kr"));
+      reader = new(stream, Encoding.UTF8);
       while ((line = reader.ReadLine()) != null) {
         var token = line.Split('\t');
         var item = new OverseaStockInformation() {
@@ -69,19 +69,12 @@ public static partial class StockMarketInformation {
       }
     }
     private static async Task<bool> LoadAmerican(HttpClient client) {
-      var nasdaqResp = await client.GetStreamAsync(NASDAQ_MASTER_URL);
-      var nyseResp = await client.GetStreamAsync(NYSE_MASTER_URL);
-      var amexResp = await client.GetStreamAsync(NYSE_AMERICA_MASTER_URL);
-      if (nasdaqResp == null) return false;
-      if (nyseResp == null) return false;
-      if (amexResp == null) return false;
-      var nasdaqZip = new ZipArchive(nasdaqResp);
-      var nyseZip = new ZipArchive(nyseResp);
-      var amexZip = new ZipArchive(amexResp);
-      Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-      ParseLine(nasdaqZip.GetEntry("NASMST.COD")!.Open());
-      ParseLine(nyseZip.GetEntry("NYSMST.COD")!.Open());
-      ParseLine(amexZip.GetEntry("AMSMST.COD")!.Open());
+      if (await LoadMasterFile("./Resources/MasterFiles/Nasdaq.txt", NASDAQ_MASTER_URL) is not Stream nasdaq) return false;
+      if (await LoadMasterFile("./Resources/MasterFiles/Nyse.txt", NYSE_MASTER_URL) is not Stream nyse) return false;
+      if (await LoadMasterFile("./Resources/MasterFiles/NyseAmerica.txt", NYSE_AMERICA_MASTER_URL) is not Stream amex) return false;
+      ParseLine(nasdaq);
+      ParseLine(nyse);
+      ParseLine(amex);
       return true;
     }
     public static OverseaStockInformation? SearchByTicker(Exchange exchange, string ticker) =>

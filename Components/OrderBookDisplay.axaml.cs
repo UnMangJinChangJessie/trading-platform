@@ -136,6 +136,12 @@ public partial class OrderBookDisplay : UserControl {
         foundConclusionPrice = true;
       }
     }
+    if (CastedDataContext.IntermediatePrice == CastedDataContext.CurrentClose) {
+      Grid.SetRow(PART_ConclusionBorder, 10);
+      TextElement.SetForeground(IntermediatePriceTextBlock, PickColor(CastedDataContext.IntermediatePrice.Value, CastedDataContext.PreviousClose));
+      PART_ConclusionBorder.BorderBrush = TextElement.GetForeground(IntermediatePriceTextBlock);
+      foundConclusionPrice = true;
+    }
     PART_ConclusionBorder.IsVisible = foundConclusionPrice;
   }
 }

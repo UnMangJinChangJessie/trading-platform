@@ -305,7 +305,8 @@
       <TextBlock
         Grid.Row="10" Grid.Column="1"
         Name="IntermediatePriceTextBlock"
-        Text="{Binding IntermediatePrice.Value}"
+        IsVisible="{Binding IntermediatePrice.Value, Converter={x:Static ObjectConverters.IsNotNull}}"
+        Text="{Binding IntermediatePrice.Value, TargetNullValue=''}"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
       />

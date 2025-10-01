@@ -20,7 +20,8 @@
     />
     <TextBlock 
       Name="PART_TextBlock"
-      Text="{Binding Path=#ControlRoot.Quantity}"
+      IsVisible="{Binding #ControlRoot.Quantity, Converter={x:Static ObjectConverters.IsNotNull}}"
+      Text="{Binding Path=#ControlRoot.Quantity, TargetNullValue=''}"
       HorizontalAlignment="Center"
       VerticalAlignment="Center"
     >

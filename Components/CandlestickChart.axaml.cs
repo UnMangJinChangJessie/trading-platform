@@ -50,19 +50,21 @@ public partial class CandlestickChart : UserControl {
     OHLCChart.RisingStyle.Color = Colors.LightPink;
     OHLCChart.FallingStyle.Color = Colors.LightBlue;
     CastedDataContext.ChartChanging += (sender, args) => {
-      if (args.UpdateType == MarketData.CandleUpdate.Clear) {
-        OHLCChartSource.Clear();
-      }
-      else if (args.UpdateType == MarketData.CandleUpdate.InsertBegin) {
-        OHLCChartSource.Insert(0, args.Candle!.ToScottPlotOHLC());
-      }
-      else if (args.UpdateType == MarketData.CandleUpdate.InsertEnd) {
-        OHLCChartSource.Insert(0, args.Candle!.ToScottPlotOHLC());
-      }
-      else if (args.UpdateType == MarketData.CandleUpdate.UpdateLast) {
-        OHLCChartSource[^1] = args.Candle!.ToScottPlotOHLC();
-      }
-      Dispatcher.UIThread.Post(() => { PriceChart.Refresh(); });
+      Dispatcher.UIThread.Post(() => {
+        if (args.UpdateType == MarketData.CandleUpdate.Clear) {
+          OHLCChartSource.Clear();
+        }
+        else if (args.UpdateType == MarketData.CandleUpdate.InsertBegin) {
+          OHLCChartSource.Insert(0, args.Candle!.ToScottPlotOHLC());
+        }
+        else if (args.UpdateType == MarketData.CandleUpdate.InsertEnd) {
+          OHLCChartSource.Insert(0, args.Candle!.ToScottPlotOHLC());
+        }
+        else if (args.UpdateType == MarketData.CandleUpdate.UpdateLast) {
+          OHLCChartSource[^1] = args.Candle!.ToScottPlotOHLC();
+        }
+        PriceChart.Refresh();
+      });
     };
   }
   public void PriceChart_ContinuousAutoscale(RenderPack rp) {

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using trading_platform.Model;
 using trading_platform.Model.KoreaInvestment;
 using trading_platform.ViewModel;
@@ -45,15 +46,17 @@ public partial class KoreaStockChart : UserControl {
     };
   }
   private void OnDataContextChanged(object? sender, PropertyChangedEventArgs args) {
-    var orderContext = OrderView.DataContext as ViewModel.Order;
-    var orderBookContext = OrderBookDisplayView.DataContext as OrderBook;
-    if (orderContext?.Ticker != null) orderContext.Ticker = CastedDataContext?.Ticker ?? "";
-    if (args.PropertyName == nameof(CastedDataContext.PreviousClose)) {
-      orderBookContext?.PreviousClose = CastedDataContext?.PreviousClose ?? 0;
-    }
-    if (args.PropertyName == nameof(CastedDataContext.CurrentClose)) {
-      orderBookContext?.CurrentClose = CastedDataContext?.CurrentClose ?? 0;
-    }
+    Dispatcher.UIThread.Post(() => {
+      var orderContext = OrderView.DataContext as ViewModel.Order;
+      var orderBookContext = OrderBookDisplayView.DataContext as OrderBook;
+      if (orderContext?.Ticker != null) orderContext.Ticker = CastedDataContext?.Ticker ?? "";
+      if (args.PropertyName == nameof(CastedDataContext.PreviousClose)) {
+        orderBookContext?.PreviousClose = CastedDataContext?.PreviousClose ?? 0;
+      }
+      if (args.PropertyName == nameof(CastedDataContext.CurrentClose)) {
+        orderBookContext?.CurrentClose = CastedDataContext?.CurrentClose ?? 0;
+      }
+    });
   }
   public async void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;
