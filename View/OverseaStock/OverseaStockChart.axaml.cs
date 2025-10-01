@@ -32,39 +32,35 @@ public partial class OverseaStockChart : UserControl {
   }
   private void OnDataContextChanged(object? sender, PropertyChangedEventArgs args) {
     var orderContext = OrderView.DataContext as ViewModel.Order;
-    if (orderContext?.Ticker != null) orderContext.Ticker = CastedDataContext?.Ticker ?? "";
+    if (orderContext?.Ticker != null) {
+      orderContext.Ticker = CastedDataContext.Ticker;
+      orderContext.Name = CastedDataContext.Name;
+    }
   }
   public async void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;
     if (TickerExchangeComboBox.SelectedItem is not string selectedCountry) return;
-    string ticker = TickerTextBox.Text ?? "";
     var exchangeCode = GetCountryExchangeCode(selectedCountry);
-    await CastedDataContext.RefreshAsync(exchangeCode + ticker);
-    await CastedDataContext.StartRefreshRealTimeAsync(exchangeCode + ticker);
-    if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.OverseaStockOrderBook orderContext) {
-      await orderContext.RefreshAsync(exchangeCode + ticker);
-      await orderContext.StartRefreshRealTimeAsync(exchangeCode + ticker);
-    }
+    var task_1 = CastedDataContext.RefreshAsync(exchangeCode + CastedDataContext.Ticker);
+    var task_2 = CastedDataContext.StartRefreshRealTimeAsync(exchangeCode + CastedDataContext.Ticker);
+    await task_1;
+    await task_2;
   }
   public async void UserControl_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;
     if (TickerExchangeComboBox.SelectedItem is not string selectedCountry) return;
     var exchangeCode = GetCountryExchangeCode(selectedCountry);
     await CastedDataContext.EndRefreshRealTimeAsync(exchangeCode + CastedDataContext.Ticker);
-    if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.OverseaStockOrderBook orderContext) {
-      await orderContext.EndRefreshRealTimeAsync(exchangeCode + orderContext.Ticker);
-    }
   }
   public async void TickerInquireButton_Click(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
     if (TickerExchangeComboBox.SelectedItem is not string selectedCountry) return;
     string ticker = TickerTextBox.Text ?? "";
     var exchangeCode = GetCountryExchangeCode(selectedCountry);
-    await CastedDataContext.RefreshAsync(exchangeCode + ticker);
-    await CastedDataContext.StartRefreshRealTimeAsync(exchangeCode + ticker);
-    if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.OverseaStockOrderBook orderContext) {
-      await orderContext.RefreshAsync(exchangeCode + ticker);
-      await orderContext.StartRefreshRealTimeAsync(exchangeCode + ticker);
-    }
+    await CastedDataContext.EndRefreshRealTimeAsync(CastedDataContext.Ticker);
+    var task_1 = CastedDataContext.RefreshAsync(exchangeCode + ticker);
+    var task_2 = CastedDataContext.StartRefreshRealTimeAsync(exchangeCode + ticker);
+    await task_1;
+    await task_2;
   }
 }

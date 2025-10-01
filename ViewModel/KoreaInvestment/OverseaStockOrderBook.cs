@@ -9,11 +9,9 @@ namespace trading_platform.ViewModel.KoreaInvestment;
 
 public partial class OverseaStockOrderBook : OrderBook {
   private Exchange CurrentExchange { get; set; } = Exchange.None;
-  [ObservableProperty]
-  public partial decimal HighestQuantity { get; private set; } = 0;
   public OverseaStockOrderBook() {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
-      if (args.TransactionId == "HDFSASP0" || args.TransactionId == "HDFSASP1") return;
+      if (args.TransactionId != "HDFSASP0" && args.TransactionId != "HDFSASP1") return;
       if (args.Message.Count == 0) return;
       if (args.Message[^1][4] != Ticker) return;
       BidPrice[0].Value = decimal.Parse(args.Message[^1][11]);
@@ -26,6 +24,9 @@ public partial class OverseaStockOrderBook : OrderBook {
         AskQuantity[i].Value = 0;
         BidQuantity[i].Value = 0;
       }
+      IntermediatePrice = null;
+      IntermediateAskQuantity = null;
+      IntermediateBidQuantity = null;
       ConclusionTime = TimeOnly.ParseExact(args.Message[^1][6], "HHmmss");
       HighestQuantity = Math.Max(BidQuantity[0].Value, AskQuantity[0].Value);
       OnPropertyChanged(propertyName: null);

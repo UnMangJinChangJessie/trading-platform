@@ -7,8 +7,6 @@ using static trading_platform.Model.StockMarketInformation;
 namespace trading_platform.ViewModel.KoreaInvestment;
 
 public partial class StockOrderBook : OrderBook {
-  [ObservableProperty]
-  public partial decimal HighestQuantity { get; private set; } = 0;
   public StockOrderBook() {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
       if (args.TransactionId != "H0UNASP0" && args.TransactionId != "H0STASP0" && args.TransactionId != "H0NXASP0") return; // 통합 | KRX | NexTrade

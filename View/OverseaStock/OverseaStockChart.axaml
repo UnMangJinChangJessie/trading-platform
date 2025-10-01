@@ -41,7 +41,8 @@
     </Grid>
     <com:OrderBookDisplay
       Name="OrderBookDisplayView"
-      PriceDecimalPoint="{Binding DecimalDigitCount}"
+      DataContext="{Binding CurrentOrderBook}"
+      PriceDecimalPoint="{Binding #ControlRoot.DataContext.DecimalDigitCount}"
       QuantityDecimalPoint="0"
       Grid.Column="1"
     />

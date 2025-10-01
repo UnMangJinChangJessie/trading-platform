@@ -23,6 +23,8 @@ public abstract partial class OrderBook : ObservableObject {
   public partial decimal? IntermediateAskQuantity { get; protected set; }
   [ObservableProperty]
   public partial decimal? IntermediateBidQuantity { get; protected set; }
+  [ObservableProperty]
+  public partial decimal HighestQuantity { get; protected set; } = 0;
   public bool RealTimeRefresh { get; protected set; } = false;
 
   public abstract ValueTask<bool> RequestRefreshAsync(string ticker);

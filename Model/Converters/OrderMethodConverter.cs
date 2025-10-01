@@ -6,5 +6,5 @@ namespace trading_platform.Model;
 
 public static partial class Converters {
   public readonly static FuncValueConverter<KoreaInvestment.OrderMethod, string> OrderMethodConverter =
-    new(x => x.GetType().GetCustomAttribute<DescriptionAttribute>()?.Description ?? x.ToString());
+    new(x => x.GetType().GetField(x.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? x.ToString());
 }

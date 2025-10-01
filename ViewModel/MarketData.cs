@@ -37,6 +37,9 @@ public abstract partial class MarketData : ObservableObject {
   public partial string Ticker { get; protected set; } = "";
   [ObservableProperty]
   public partial string Name { get; protected set; } = "";
+  // Now we are integrating the order book to the market data.
+  [ObservableProperty]
+  public partial OrderBook CurrentOrderBook { get; protected set; }
 
   public event EventHandler<(CandleUpdate UpdateType, Model.OHLC<decimal>? Candle, Reactive<decimal>? Volume, Reactive<decimal>? Amount)> ChartChanging;
 

@@ -15,7 +15,7 @@ public partial class OrderBookDisplay : UserControl {
   private readonly TextBlock[] BuyingPriceTextBlocks = new TextBlock[10];
   private readonly OrderBookQuantityBlock[] SellingQuantityBlocks = new OrderBookQuantityBlock[10];
   private readonly OrderBookQuantityBlock[] BuyingQuantityBlocks = new OrderBookQuantityBlock[10];
-  private ViewModel.KoreaInvestment.StockOrderBook? CastedDataContext => DataContext as ViewModel.KoreaInvestment.StockOrderBook;
+  private ViewModel.OrderBook? CastedDataContext => DataContext as ViewModel.OrderBook;
   /// <summary>
   /// LongBrush StyledProperty definition
   /// indicates long brush.

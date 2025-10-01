@@ -12,6 +12,7 @@ public class StockMarketData : MarketData {
   public float PriceEarningsRate { get; private set; } = 0.0F;
 
   public StockMarketData() {
+    CurrentOrderBook = new StockOrderBook();
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
       if (args.TransactionId != "H0UNCNT0" || args.TransactionId != "H0STCNT0" || args.TransactionId != "H0NXCNT0") return; // 통합 | KRX | NexTrade
       if (args.Message.Count == 0) return;
@@ -50,15 +51,11 @@ public class StockMarketData : MarketData {
       PreviousClose = PriceChart[^2].Close;
     }
   }
-  public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
-    if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation stockInformation) return false;
-    ClearChart();
-    var inquireFrom = DateOnly.FromDateTime(DateTime.Today.AddYears(-5));
-    var inquireTo = DateOnly.FromDateTime(DateTime.Today);
+  private async ValueTask<bool> InquireChart(string ticker, Exchange exchange, DateOnly inquireFrom, DateOnly inquireTo, CandlePeriod period) {
     while (inquireTo >= inquireFrom) {
       var (status, result) = await DomesticStock.InquireStockChart(new() {
         Ticker = ticker,
-        Exchange = Exchange.KoreaExchange,
+        Exchange = exchange,
         From = inquireTo.AddDays(-139), // 봉 최대 100건 조회. 평일 휴일을 고려하지 않을 때 한 번에 최대 100 * 7 / 5 = 140일 조회 가능.
         To = inquireTo,
         CandlePeriod = CandlePeriod.Daily,
@@ -89,17 +86,34 @@ public class StockMarketData : MarketData {
     }
     return true;
   }
-
+  public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
+    if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation stockInformation) return false;
+    ClearChart();
+    var inquireFrom = DateOnly.FromDateTime(DateTime.Today.AddYears(-5));
+    var inquireTo = DateOnly.FromDateTime(DateTime.Today);
+    var task_1 = InquireChart(ticker, stockInformation.Exchange, inquireFrom, inquireTo, CandlePeriod.Daily);
+    var task_2 = CurrentOrderBook.RequestRefreshAsync(ticker);
+    await task_1;
+    await task_2;
+    return true;
+  }
   public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
     if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation information) return false;
     Ticker = ticker;
-    if (information.Exchange == Exchange.DomesticUnified) await ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ticker);
-    else if (information.Exchange == Exchange.KoreaExchange) await ApiClient.KisWebSocket.Subscribe("H0STCNT0", ticker);
-    else await ApiClient.KisWebSocket.Subscribe("H0NXCNT0", ticker);
-    return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open;
+    var task_1 = information.Exchange switch {
+      Exchange.NexTrade => ApiClient.KisWebSocket.Subscribe("H0NXCNT0", ticker),
+      Exchange.KoreaExchange => ApiClient.KisWebSocket.Subscribe("H0STCNT0", ticker),
+      _ => ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ticker),
+    };
+    var task_2 = CurrentOrderBook.RequestRefreshRealTimeAsync(ticker);
+    await task_1;
+    var orderBookSuccess = await task_2;
+    return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open && orderBookSuccess;
   }
-
   public override async Task EndRefreshRealTimeAsync(string ticker) {
-    await ApiClient.KisWebSocket.Unsubscribe("H0UNCNT0", ticker);
+    var task_1 = ApiClient.KisWebSocket.Unsubscribe("H0UNCNT0", ticker);
+    var task_2 = CurrentOrderBook.EndRefreshRealTimeAsync(ticker);
+    await task_1;
+    await task_2;
   }
 }

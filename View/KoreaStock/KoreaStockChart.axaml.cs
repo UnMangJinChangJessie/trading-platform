@@ -12,21 +12,33 @@ namespace trading_platform.View;
 public partial class KoreaStockChart : UserControl {
   private ViewModel.MarketData? CastedDataContext => DataContext as ViewModel.MarketData;
   private static readonly OrderMethod[] ALLOWED_ORDER_METHODS = [
-    OrderMethod.Limit, OrderMethod.Market, OrderMethod.ConditionalLimit, OrderMethod.BestOffer, OrderMethod.TopPriority
+    OrderMethod.Limit,
+    OrderMethod.IocLimit,
+    OrderMethod.FokLimit,
+    OrderMethod.Market,
+    OrderMethod.IocLimit,
+    OrderMethod.FokMarket,
+    OrderMethod.BestOffer,
+    OrderMethod.IocBestOffer,
+    OrderMethod.FokBestOffer,
+    OrderMethod.Intermediate,
+    OrderMethod.IocIntermediate,
+    OrderMethod.FokIntermediate,
+    OrderMethod.ConditionalLimit,
+    OrderMethod.TopPriority,
+    OrderMethod.StopLossLimit
   ];
   public KoreaStockChart() {
     InitializeComponent();
-    var orderContext = OrderView.DataContext as ViewModel.Order;
-    if (orderContext != null) {
-      orderContext.MethodsAllowed.Clear();
-      foreach (var item in ALLOWED_ORDER_METHODS) orderContext.MethodsAllowed.Add(item);
-    }
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     CastedDataContext.PropertyChanged += OnDataContextChanged;
+    if (OrderView.DataContext is ViewModel.Order orderContext) {
+      orderContext.MethodsAllowed.Clear();
+      foreach (var item in ALLOWED_ORDER_METHODS) orderContext.MethodsAllowed.Add(item);
+    }
     OrderView.UnitPriceChanged += (sender, args) => {
-      var castedSender = sender as NumericUpDown;
-      if (castedSender == null) return;
+      if (sender is not NumericUpDown castedSender) return;
       if (!castedSender.Value.HasValue) {
         castedSender.Value = 0;
         return;
@@ -35,8 +47,7 @@ public partial class KoreaStockChart : UserControl {
       else castedSender.Value = StockMarketInformation.KRXStock.GetTickDecrement(castedSender.Value.Value + castedSender.Increment);
     };
     OrderView.StopLossPriceChanged += (sender, args) => {
-      var castedSender = sender as NumericUpDown;
-      if (castedSender == null) return;
+      if (sender is not NumericUpDown castedSender) return;
       if (!castedSender.Value.HasValue) {
         castedSender.Value = 0;
         return;
@@ -48,43 +59,30 @@ public partial class KoreaStockChart : UserControl {
   private void OnDataContextChanged(object? sender, PropertyChangedEventArgs args) {
     Dispatcher.UIThread.Post(() => {
       var orderContext = OrderView.DataContext as ViewModel.Order;
-      var orderBookContext = OrderBookDisplayView.DataContext as OrderBook;
-      if (orderContext?.Ticker != null) orderContext.Ticker = CastedDataContext?.Ticker ?? "";
-      if (args.PropertyName == nameof(CastedDataContext.PreviousClose)) {
-        orderBookContext?.PreviousClose = CastedDataContext?.PreviousClose ?? 0;
-      }
-      if (args.PropertyName == nameof(CastedDataContext.CurrentClose)) {
-        orderBookContext?.CurrentClose = CastedDataContext?.CurrentClose ?? 0;
+      if (orderContext?.Ticker != null) {
+        orderContext.Ticker = CastedDataContext.Ticker;
+        orderContext.Name = CastedDataContext.Name;
       }
     });
   }
   public async void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;
-    string ticker = TickerTextBox.Text ?? "";
-    await CastedDataContext.RefreshAsync(ticker);
-    await CastedDataContext.StartRefreshRealTimeAsync(ticker);
-    if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.StockOrderBook orderContext) {
-      await orderContext.RefreshAsync(ticker);
-      await orderContext.StartRefreshRealTimeAsync(ticker);
-    }
+    var task_1 = CastedDataContext.RefreshAsync(CastedDataContext.Ticker);
+    var task_2 = CastedDataContext.StartRefreshRealTimeAsync(CastedDataContext.Ticker);
+    await task_1;
+    await task_2;
   }
   public async void UserControl_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;
     await CastedDataContext.EndRefreshRealTimeAsync(CastedDataContext.Ticker);
-    if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.StockOrderBook orderContext) {
-      await orderContext.EndRefreshRealTimeAsync(orderContext.Ticker);
-    }
   }
   public async void TickerInquireButton_Click(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
     string ticker = TickerTextBox.Text ?? "";
-    await CastedDataContext.EndRefreshRealTimeAsync(ticker);
-    await CastedDataContext.RefreshAsync(ticker);
-    await CastedDataContext.StartRefreshRealTimeAsync(ticker);
-    if (OrderBookDisplayView.DataContext is ViewModel.KoreaInvestment.StockOrderBook orderContext) {
-      await CastedDataContext.EndRefreshRealTimeAsync(ticker);
-      await orderContext.RefreshAsync(ticker);
-      await orderContext.StartRefreshRealTimeAsync(ticker);
-    }
+    await CastedDataContext.EndRefreshRealTimeAsync(CastedDataContext.Ticker);
+    var task_1 = CastedDataContext.RefreshAsync(ticker);
+    var task_2 = CastedDataContext.StartRefreshRealTimeAsync(ticker);
+    await task_1;
+    await task_2;
   }
 }

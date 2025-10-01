@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -8,7 +7,7 @@ using Avalonia.Threading;
 namespace trading_platform.Components;
 
 public partial class OrderBookQuantityBlock : UserControl {
-  private ViewModel.KoreaInvestment.StockOrderBook? CastedDataContext => DataContext as ViewModel.KoreaInvestment.StockOrderBook;
+  private ViewModel.OrderBook? CastedDataContext => DataContext as ViewModel.OrderBook;
   /// <summary>
   /// IsSelling StyledProperty definition
   /// indicates if the quantity block indicates selling ones.
