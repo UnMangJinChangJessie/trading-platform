@@ -91,7 +91,7 @@ public partial class OverseaStockMarketData : MarketData {
     var inquireFrom = DateOnly.FromDateTime(DateTime.Today.AddYears(-5));
     var inquireTo = DateOnly.FromDateTime(DateTime.Today);
     var task_1 = InquireChart(stockInformation, inquireFrom, inquireTo, CandlePeriod.Daily);
-    var task_2 = CurrentOrderBook.RequestRefreshAsync(ticker);
+    var task_2 = CurrentOrderBook?.RequestRefreshAsync(ticker) ?? new ValueTask<bool>(true);
     return await task_1 && await task_2;
   }
 
@@ -102,7 +102,7 @@ public partial class OverseaStockMarketData : MarketData {
     DecimalDigitCount = information.DecimalDigitCount;
     Ticker = ticker[3..];
     var task_1 = ApiClient.KisWebSocket.Subscribe("HDFSCNT0", $"D{CurrentExchange.GetCode()}{ticker[3..]}");
-    var task_2 = CurrentOrderBook.RequestRefreshRealTimeAsync(ticker);
+    var task_2 = CurrentOrderBook?.RequestRefreshRealTimeAsync(ticker) ?? new ValueTask<bool>(true);
     await task_1;
     var orderBookSuccess = await task_2;
     return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open && orderBookSuccess;
@@ -111,7 +111,7 @@ public partial class OverseaStockMarketData : MarketData {
   public override async Task EndRefreshRealTimeAsync(string ticker) {
     if (CurrentExchange == Exchange.None) return;
     var task_1 = ApiClient.KisWebSocket.Unsubscribe("HDFSCNT0", $"D{CurrentExchange.GetCode()}{ticker[3..]}");
-    var task_2 = CurrentOrderBook.EndRefreshRealTimeAsync(ticker);
+    var task_2 = CurrentOrderBook?.EndRefreshRealTimeAsync(ticker) ?? Task.CompletedTask;
     await task_1;
     await task_2;
   }

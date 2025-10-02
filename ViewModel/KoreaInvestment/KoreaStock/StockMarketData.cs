@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Tmds.DBus.Protocol;
 using trading_platform.Model;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.StockMarketInformation;
@@ -13,11 +12,12 @@ public class StockMarketData : MarketData {
 
   public StockMarketData() {
     CurrentOrderBook = new StockOrderBook();
+    CurrentOrder = new StockOrder();
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
-      if (args.TransactionId != "H0UNCNT0" || args.TransactionId != "H0STCNT0" || args.TransactionId != "H0NXCNT0") return; // 통합 | KRX | NexTrade
+      if (args.TransactionId != "H0UNCNT0" && args.TransactionId != "H0STCNT0" && args.TransactionId != "H0NXCNT0") return; // 통합 | KRX | NexTrade
       if (args.Message.Count == 0) return;
       if (args.Message[^1][0] != Ticker) return;
-      // 데이터 순서는 셋 다 동일함.
+      // 필요한 데이터 순서는 셋 다 동일함.
       CurrentClose = decimal.Parse(args.Message[^1][2]);
       CurrentOpen = decimal.Parse(args.Message[^1][7]);
       CurrentHigh = decimal.Parse(args.Message[^1][8]);
@@ -37,6 +37,8 @@ public class StockMarketData : MarketData {
           UpdateLastCandle(CurrentOpen, CurrentHigh, CurrentLow, CurrentClose, CurrentVolume, CurrentAmount);
         }
       }
+      ChangeDependentValues();
+      Currency = "원";
     };
     // if (true) {
     if (Design.IsDesignMode) {
@@ -84,6 +86,7 @@ public class StockMarketData : MarketData {
       }
       inquireTo = inquireTo.AddDays(-140);
     }
+    ChangeDependentValues();
     return true;
   }
   public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
@@ -92,7 +95,7 @@ public class StockMarketData : MarketData {
     var inquireFrom = DateOnly.FromDateTime(DateTime.Today.AddYears(-5));
     var inquireTo = DateOnly.FromDateTime(DateTime.Today);
     var task_1 = InquireChart(ticker, stockInformation.Exchange, inquireFrom, inquireTo, CandlePeriod.Daily);
-    var task_2 = CurrentOrderBook.RequestRefreshAsync(ticker);
+    var task_2 = CurrentOrderBook?.RequestRefreshAsync(ticker) ?? new ValueTask<bool>(true);
     await task_1;
     await task_2;
     return true;
@@ -105,14 +108,14 @@ public class StockMarketData : MarketData {
       Exchange.KoreaExchange => ApiClient.KisWebSocket.Subscribe("H0STCNT0", ticker),
       _ => ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ticker),
     };
-    var task_2 = CurrentOrderBook.RequestRefreshRealTimeAsync(ticker);
+    var task_2 = CurrentOrderBook?.RequestRefreshRealTimeAsync(ticker) ?? new ValueTask<bool>(false);
     await task_1;
     var orderBookSuccess = await task_2;
     return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open && orderBookSuccess;
   }
   public override async Task EndRefreshRealTimeAsync(string ticker) {
     var task_1 = ApiClient.KisWebSocket.Unsubscribe("H0UNCNT0", ticker);
-    var task_2 = CurrentOrderBook.EndRefreshRealTimeAsync(ticker);
+    var task_2 = CurrentOrderBook?.EndRefreshRealTimeAsync(ticker) ?? Task.CompletedTask;
     await task_1;
     await task_2;
   }

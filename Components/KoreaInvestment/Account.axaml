@@ -1,0 +1,12 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:Class="trading_platform.Components.KoreaInvestment.Account"
+  x:Name="ControlRoot"
+>
+  <Grid ColumnDefinitions="Auto,2*,*" ColumnSpacing="2" Margin="5">
+    <TextBlock Grid.Column="0" Text="계좌번호" VerticalAlignment="Center" />
+    <TextBox Grid.Column="1" Watermark="12345678" Text="{Binding #ControlRoot.AccountBase}" />
+    <TextBox Grid.Column="2" Watermark="90" Text="{Binding #ControlRoot.AccountCode}" />
+  </Grid>
+</UserControl>

@@ -32,6 +32,16 @@ public abstract partial class MarketData : ObservableObject {
   [ObservableProperty]
   public partial decimal PreviousClose { get; protected set; } = 0.0M;
   [ObservableProperty]
+  public partial float OpenChangeRate { get; protected set; } = 0.0F;
+  [ObservableProperty]
+  public partial float HighChangeRate { get; protected set; } = 0.0F;
+  [ObservableProperty]
+  public partial float LowChangeRate { get; protected set; } = 0.0F;
+  [ObservableProperty]
+  public partial float CloseChangeRate { get; protected set; } = 0.0F;
+  [ObservableProperty]
+  public partial decimal Change { get; protected set; } = 0;
+  [ObservableProperty]
   public partial string Currency { get; protected set; } = "";
   [ObservableProperty]
   public partial string Ticker { get; protected set; } = "";
@@ -39,10 +49,27 @@ public abstract partial class MarketData : ObservableObject {
   public partial string Name { get; protected set; } = "";
   // Now we are integrating the order book to the market data.
   [ObservableProperty]
-  public partial OrderBook CurrentOrderBook { get; protected set; }
+  public partial OrderBook? CurrentOrderBook { get; protected set; }
+  [ObservableProperty]
+  public partial Order? CurrentOrder { get; protected set; }
 
   public event EventHandler<(CandleUpdate UpdateType, Model.OHLC<decimal>? Candle, Reactive<decimal>? Volume, Reactive<decimal>? Amount)> ChartChanging;
 
+  protected static float GetChangeRate(decimal from, decimal to) {
+    if (from <= 0) return float.NaN;
+    else return (float)(to - from) / (float)from;
+  }
+  protected void ChangeDependentValues() {
+    OpenChangeRate = GetChangeRate(PreviousClose, CurrentOpen);
+    HighChangeRate = GetChangeRate(PreviousClose, CurrentHigh);
+    LowChangeRate = GetChangeRate(PreviousClose, CurrentLow);
+    CloseChangeRate = GetChangeRate(PreviousClose, CurrentClose);
+    Change = CurrentClose - PreviousClose;
+    CurrentOrderBook?.PreviousClose = PreviousClose;
+    CurrentOrderBook?.CurrentClose = CurrentClose;
+    CurrentOrder?.Name = Name;
+    CurrentOrder?.Ticker = Ticker;
+  }
   protected void ClearChart() {
     ChartChanging?.Invoke(this, (CandleUpdate.Clear, null, null, null));
     PriceChart.Clear();

@@ -5,6 +5,7 @@
   xmlns:v="using:trading_platform.View"
   xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
   xmlns:com="using:trading_platform.Components"
+  xmlns:comkis="using:trading_platform.Components.KoreaInvestment"
   d:DesignHeight="720" d:DesignWidth="1000"
   x:Class="trading_platform.View.KoreaStockChart"
   x:DataType="vmkis:StockMarketData"
@@ -44,9 +45,16 @@
       QuantityDecimalPoint="0"
       Grid.Column="1"
     />
-    <v:Order
-      Name="OrderView"
-      Grid.Column="2"
-    />
+    <StackPanel Grid.Column="2" Orientation="Vertical" >
+      <comkis:Account
+        AccountBase="{Binding ((vmkis:StockOrder)CurrentOrder).AccountBase}"
+        AccountCode="{Binding ((vmkis:StockOrder)CurrentOrder).AccountCode}"
+      />
+      <v:Order
+        Name="OrderView"
+        DataContext="{Binding CurrentOrder}"
+        Grid.Column="2"
+      />
+    </StackPanel>
   </Grid>
 </UserControl>

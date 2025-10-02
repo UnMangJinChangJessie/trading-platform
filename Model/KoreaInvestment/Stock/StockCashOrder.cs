@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class StockCashOrderBody : IAccount, IOrder {
+public class StockCashOrderBody : IAccount {
   [JsonPropertyName("CANO")]
   public required string AccountBase { get; init; }
   [JsonPropertyName("ACNT_PRDT_CD")]
@@ -15,11 +15,11 @@ public class StockCashOrderBody : IAccount, IOrder {
   [JsonPropertyName("ORD_DVSN")]
   public OrderMethod OrderDivision { get; init; }
   [JsonPropertyName("ORD_UNPR"), JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-  public decimal UnitPrice { get; init; }
+  public ulong UnitPrice { get; init; }
   [JsonPropertyName("ORD_QTY"), JsonNumberHandling(JsonNumberHandling.WriteAsString)]
   public ulong Quantity { get; init; }
   [JsonPropertyName("CNDT_PRIC"), JsonNumberHandling(JsonNumberHandling.WriteAsString), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  public decimal? StopLossLimit { get; init; }
+  public ulong? StopLossLimit { get; init; }
   [JsonPropertyName("SLL_TYPE"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public OrderSelling? SellType { get; init; }
   [JsonPropertyName("EXCG_ID_DVSN_CD")]
