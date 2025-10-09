@@ -18,8 +18,16 @@ public static partial class ApiClient {
     var responseBody = await result.Content.ReadFromJsonAsync<JsonElement>();
     AccessToken = responseBody.GetProperty("access_token").GetString() ?? "";
     AccessTokenExpire = DateTime.Now + TimeSpan.FromSeconds(Convert.ToInt32(responseBody.GetProperty("expires_in").GetDouble()));
+    if (PollingTask is not null) {
+      await PollingTaskCancellationToken.CancelAsync();
+      await PollingTask;
+      PollingTaskCancellationToken.TryReset();
+    }
+    PollingTask = Task.Run(PollApiRequest, PollingTaskCancellationToken.Token)
+      .ContinueWith(task => Console.WriteLine($"API polling task terminated: {task.Exception?.Message}"));
     return !string.IsNullOrEmpty(AccessToken);
   }
+
   public static async Task<bool> RevokeToken() {
     var body = new {
       appkey = AppPublicKey,
@@ -30,6 +38,10 @@ public static partial class ApiClient {
     var result = await RequestClient.PostAsJsonAsync("/oauth2/revokeP", body);
     if (!result.IsSuccessStatusCode) {
       return false;
+    }
+    if (PollingTask != null) {
+      await PollingTaskCancellationToken.CancelAsync();
+      await PollingTask;
     }
     return true;
   }

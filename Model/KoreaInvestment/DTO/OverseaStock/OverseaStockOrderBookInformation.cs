@@ -4,11 +4,11 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public class OverseaStockOrderBookInformation {
   [JsonPropertyName("last")]
-  public required decimal CurrentClose { get; init; }
+  public required decimal CurrentClose { get; set; }
   [JsonPropertyName("base")]
-  public required decimal PreviousClose { get; init; }
+  public required decimal PreviousClose { get; set; }
   [JsonPropertyName("dymd")]
-  public required DateOnly CurrentDate { get; init; }
+  public required DateOnly CurrentDate { get; set; }
   [JsonPropertyName("dhms")]
-  public required TimeOnly CurrentTime { get; init; }
+  public required TimeOnly CurrentTime { get; set; }
 }

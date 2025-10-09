@@ -157,6 +157,7 @@ public partial class ApiClient {
     }
 
     public static async ValueTask<bool> Connect() {
+      if (Client.State == WebSocketState.Connecting) SpinWait.SpinUntil(() => Client.State != WebSocketState.Connecting, 5_000);
       if (Client.State == WebSocketState.Open) return true;
       if (Client.State == WebSocketState.Aborted) {
         // 소켓이 죽었으므로 CancellationTokenSource와 소켓을 다시 생성
@@ -178,7 +179,7 @@ public partial class ApiClient {
         return false;
       }
       PollingTask = Task.Run(PollReceivedMessage);
-      return Client.State == WebSocketState.Open;
+      return true;
     }
 
     public static async Task Subscribe(string id, string key) {

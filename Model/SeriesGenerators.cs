@@ -2,7 +2,7 @@ namespace trading_platform.Model;
 
 public static partial class Generators {
   public static class Series {
-    public static OHLC<decimal>[] GenerateBrownianOHLC(
+    public static ChartOHLC[] GenerateBrownianOHLC(
       double start,
       double ratePercent,
       double stdDevPercent,
@@ -11,9 +11,10 @@ public static partial class Generators {
       int count,
       int sampleSize = 30
     ) {
-      var result = new OHLC<decimal>[count];
+      var result = new ChartOHLC[count];
       var time = startDateTime;
       double price = start;
+      var volumes = ScottPlot.Generate.RandomWalk(count, 200_000);
       for (int i = 0; i < count; i++) {
         double open = price;
         double high = price;
@@ -33,8 +34,8 @@ public static partial class Generators {
           Math.Round((decimal)low, 2),
           Math.Round((decimal)price, 2)
         ) {
-          DateTime = time,
-          TimeSpan = interval
+          Volume = (int)volumes[i],
+          Date = time
         };
         time += interval;
       }

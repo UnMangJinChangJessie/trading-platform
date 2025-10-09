@@ -4,7 +4,8 @@ using trading_platform.Model.KoreaInvestment;
 
 namespace trading_platform.ViewModel;
 
-public abstract partial class OrderBook : ObservableObject {
+public abstract partial class OrderBook : ObservableObject, IRefresh, IRefreshRealtime {
+  public readonly static Dictionary<string, object> NullArguments = [];
   [ObservableProperty]
   public partial TimeOnly ConclusionTime { get; protected set; } = TimeOnly.MinValue;
   [ObservableProperty]
@@ -27,15 +28,7 @@ public abstract partial class OrderBook : ObservableObject {
   public partial decimal HighestQuantity { get; protected set; } = 0;
   public bool RealTimeRefresh { get; protected set; } = false;
 
-  public abstract ValueTask<bool> RequestRefreshAsync(string ticker);
-  public async Task RefreshAsync(string ticker) {
-    await RequestRefreshAsync(ticker);
-  }
-  public abstract ValueTask<bool> RequestRefreshRealTimeAsync(string ticker);
-  public async Task StartRefreshRealTimeAsync(string ticker) {
-    if (!await ApiClient.KisWebSocket.Connect()) return;
-    if (ApiClient.KisWebSocket.ClientState != System.Net.WebSockets.WebSocketState.Open) return; 
-    await RequestRefreshRealTimeAsync(ticker);
-  }
-  public abstract Task EndRefreshRealTimeAsync(string ticker);
+  public abstract Task RefreshAsync(IDictionary<string, object> args);
+  public abstract Task StartRefreshRealtimeAsync(IDictionary<string, object> args);
+  public abstract Task EndRefreshRealtimeAsync(IDictionary<string, object> args);
 }

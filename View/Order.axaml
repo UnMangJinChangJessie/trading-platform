@@ -10,7 +10,7 @@
   x:DataType="vm:Order"
 >
   <StackPanel >
-    <TextBlock Classes="h1" HorizontalAlignment="Center" >
+    <TextBlock Classes="h1" HorizontalAlignment="Center" TextWrapping="Wrap" >
       <Run>
         <Run.Text>
           <MultiBinding StringFormat="{}{0}({1}) 주문">

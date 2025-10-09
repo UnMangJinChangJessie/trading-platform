@@ -5,15 +5,32 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
   xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+  xmlns:m="using:trading_platform.Model"
+  xmlns:mcharts="using:trading_platform.Model.Charts"
   xmlns:vm="using:trading_platform.ViewModel"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
   x:Class="trading_platform.Components.CandlestickChart"
-  x:DataType="vm:MarketData"
+  x:DataType="mcharts:CandlestickChartData"
   Loaded="UserControl_Loaded"
+  AttachedToVisualTree="UserControl_AttachedToVisualTree"
+  DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
 >
-  <ScottPlot:AvaPlot
-    Name="PriceChart"
-    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-  >
-  </ScottPlot:AvaPlot>
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" FlowDirection="LeftToRight" >
+      <TextBlock Text="캔들 기간" VerticalAlignment="Center" />
+      <ComboBox
+        ItemsSource="{Binding AvailableCandlePeriod}"
+        SelectedItem="{Binding Span}"
+        Margin="5,0,0,0"
+      />
+      <TextBlock Text="조회 기간" Margin="5,0,0,0" VerticalAlignment="Center" />
+      <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateStart}" Margin="5,0,0,0" />
+      <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateEnd}" Margin="2,0,0,0" />
+    </StackPanel>
+    <ScottPlot:AvaPlot
+      Name="PriceChart"
+      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+    >
+    </ScottPlot:AvaPlot>
+  </DockPanel>
 </UserControl>

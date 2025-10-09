@@ -1,4 +1,5 @@
 
+using System.Text.Json;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using trading_platform.Model;
@@ -13,7 +14,7 @@ public partial class OverseaStockOrderBook : OrderBook {
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
       if (args.TransactionId != "HDFSASP0" && args.TransactionId != "HDFSASP1") return;
       if (args.Message.Count == 0) return;
-      if (args.Message[^1][4] != Ticker) return;
+      if (args.Message[^1][1] != Ticker) return;
       BidPrice[0].Value = decimal.Parse(args.Message[^1][11]);
       AskPrice[0].Value = decimal.Parse(args.Message[^1][12]);
       BidQuantity[0].Value = decimal.Parse(args.Message[^1][13]);
@@ -27,7 +28,7 @@ public partial class OverseaStockOrderBook : OrderBook {
       IntermediatePrice = null;
       IntermediateAskQuantity = null;
       IntermediateBidQuantity = null;
-      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][6], "HHmmss");
+      ConclusionTime = TimeOnly.ParseExact(args.Message[^1][4], "HHmmss");
       HighestQuantity = Math.Max(BidQuantity[0].Value, AskQuantity[0].Value);
       OnPropertyChanged(propertyName: null);
     };
@@ -41,15 +42,16 @@ public partial class OverseaStockOrderBook : OrderBook {
       HighestQuantity = Math.Max(AskQuantity.Max(x => x.Value), BidQuantity.Max(x => x.Value));
     }
   }
-  public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
-    var exchange = StockMarketInformation.OverseaStock.GetExchange(ticker[..3]);
-    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is not OverseaStockInformation information) return false;
-    var (status, result) = await Model.KoreaInvestment.OverseaStock.InquireOrderBook(new() {
-      ExchangeCode = Exchange.DomesticUnified,
-      Ticker = ticker[3..]
-    });
-    if (status != System.Net.HttpStatusCode.OK || result == null) return false;
-    AskPrice[0].Value = result.OrderBook?.FirstAskPrice ?? 0;
+  private void OnReceiveMessage(string jsonString) {
+    OverseaStockOrderBookResult result;
+    try {
+      result = JsonSerializer.Deserialize<OverseaStockOrderBookResult>(jsonString, ApiClient.JsonSerializerOption);
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
+      return;
+    }
+    AskPrice[0].Value = result!.OrderBook?.FirstAskPrice ?? 0;
     BidPrice[0].Value = result.OrderBook?.FirstBidPrice ?? 0;
     AskQuantity[0].Value = result.OrderBook?.FirstAskQuantity ?? 0;
     BidQuantity[0].Value = result.OrderBook?.FirstBidQuantity ?? 0;
@@ -57,18 +59,27 @@ public partial class OverseaStockOrderBook : OrderBook {
     ConclusionTime = result.Information?.CurrentTime ?? TimeOnly.MinValue;
     CurrentClose = result.Information?.CurrentClose ?? 0;
     PreviousClose = result.Information?.PreviousClose ?? 0;
-    return true;
   }
-  public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
-    var exchange = StockMarketInformation.OverseaStock.GetExchange(ticker[..3]);
-    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is not OverseaStockInformation information) return false;
+  public override async Task RefreshAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("exchange", out var exchangeObject) || exchangeObject is not Exchange exchange) return;
+    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
+    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker) is not OverseaStockInformation information) return;
+    Model.KoreaInvestment.OverseaStock.GetOrderBook(new() {
+      ExchangeCode = information.Exchange,
+      Ticker = information.Ticker
+    }, OnReceiveMessage);
+  }
+  public override async Task StartRefreshRealtimeAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("exchange", out var exchangeObject) || exchangeObject is not Exchange exchange) return;
+    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
+    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker) is not OverseaStockInformation information) return;
     CurrentExchange = information.Exchange;
-    Ticker = ticker[3..];
-    await ApiClient.KisWebSocket.Subscribe("HDFSASP0", $"D{CurrentExchange.GetCode()}{ticker}");
+    Ticker = information.Ticker;
+    await ApiClient.KisWebSocket.Subscribe("HDFSASP0", $"D{CurrentExchange.GetCode()}{Ticker}");
     RealTimeRefresh = true;
-    return RealTimeRefresh;
   }
-  public override async Task EndRefreshRealTimeAsync(string ticker) {
-    await ApiClient.KisWebSocket.Unsubscribe("HDFSASP0", $"D{CurrentExchange.GetCode()}{ticker}");
+  public override async Task EndRefreshRealtimeAsync(IDictionary<string, object> args) {
+    if (CurrentExchange == Exchange.None) return;
+    await ApiClient.KisWebSocket.Unsubscribe("HDFSASP0", $"D{CurrentExchange.GetCode()}{Ticker}");
   }
 }

@@ -4,94 +4,94 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public class StockBalance {
   [JsonPropertyName("pdno")]
-  public required string Ticker { get; init; }
+  public required string Ticker { get; set; }
   [JsonPropertyName("pdrt_name")]
-  public required string TickerName { get; init; }
+  public required string TickerName { get; set; }
   [JsonPropertyName("trad_dvsn_name")]
-  public required string PositionName { get; init; }
+  public required string PositionName { get; set; }
   [JsonPropertyName("bfdy_buy_qty")]
-  public required ulong YesterdayBuyQuantity { get; init; }
+  public required ulong YesterdayBuyQuantity { get; set; }
   [JsonPropertyName("bfdy_sll_qty")]
-  public required ulong YesterdaySellQuantity { get; init; }
+  public required ulong YesterdaySellQuantity { get; set; }
   [JsonPropertyName("thdt_sll_qty")]
-  public required ulong TodaySellQuantity { get; init; }
+  public required ulong TodaySellQuantity { get; set; }
   [JsonPropertyName("thdt_buy_qty")]
-  public required ulong TodayBuyQuantity { get; init; }
+  public required ulong TodayBuyQuantity { get; set; }
   [JsonPropertyName("hldg_qty")]
-  public required ulong Quantity { get; init; }
+  public required ulong Quantity { get; set; }
   [JsonPropertyName("ord_psbl_qty")]
-  public required ulong OrderableQuantity { get; init; }
+  public required ulong OrderableQuantity { get; set; }
   [JsonPropertyName("pchs_avg_pric")]
-  public required decimal AverageUnitPrice { get; init; }
+  public required decimal AverageUnitPrice { get; set; }
   [JsonPropertyName("pchs_amt")]
-  public required decimal PositionAmount { get; init; }
+  public required decimal PositionAmount { get; set; }
   [JsonPropertyName("prpr")]
-  public required decimal CurrentPrice { get; init; }
+  public required decimal CurrentPrice { get; set; }
   [JsonPropertyName("evlu_amt")]
-  public required decimal EvaluationAmount { get; init; }
+  public required decimal EvaluationAmount { get; set; }
   [JsonPropertyName("evlu_pfls_amt")]
-  public required decimal ProfitLoss { get; init; }
+  public required decimal ProfitLoss { get; set; }
   [JsonPropertyName("evlu_pfls_rt")]
-  public required float ProfitLossRate { get; init; }
+  public required float ProfitLossRate { get; set; }
   [JsonPropertyName("loandt"), JsonConverter(typeof(DateToStringConverter))]
-  public required DateOnly LoanDate { get; init; }
+  public required DateOnly LoanDate { get; set; }
   [JsonPropertyName("loan_amt")]
-  public required decimal LoanAmount { get; init; }
+  public required decimal LoanAmount { get; set; }
   [JsonPropertyName("stck_loan_unpr")]
-  public required decimal StockLoanUnitPrice { get; init; }
+  public required decimal StockLoanUnitPrice { get; set; }
   [JsonPropertyName("expd_dt"), JsonConverter(typeof(DateToStringConverter))]
-  public required DateOnly ExpiresAt { get; init; }
+  public required DateOnly ExpiresAt { get; set; }
   [JsonPropertyName("bdfy_cprs_icdc")]
-  public required decimal ChangeAmount { get; init; }
+  public required decimal ChangeAmount { get; set; }
   [JsonPropertyName("sbst_pric")]
-  public required decimal SubstituteUnitPrice { get; init; }
+  public required decimal SubstituteUnitPrice { get; set; }
 }
 
 public class AccountBalance {
   [JsonPropertyName("dnca_tot_amt")]
-  public required decimal TotalAmount { get; init; }
+  public required decimal TotalAmount { get; set; }
   [JsonPropertyName("nxdy_excc_amt")]
-  public required decimal TomorrowAmount { get; init; }
+  public required decimal TomorrowAmount { get; set; }
   [JsonPropertyName("prvs_rcdl_excc_amt")]
-  public required decimal OvermorrowAmount { get; init; }
+  public required decimal OvermorrowAmount { get; set; }
   [JsonPropertyName("cma_evlu_amt")]
-  public required decimal CashManagementAccountAmount { get; init; }
+  public required decimal CashManagementAccountAmount { get; set; }
   [JsonPropertyName("bfdy_buy_amt")]
-  public required decimal PreviousBuyAmount { get; init; }
+  public required decimal PreviousBuyAmount { get; set; }
   [JsonPropertyName("thdt_buy_amt")]
-  public required decimal TodayBuyAmount { get; init; }
+  public required decimal TodayBuyAmount { get; set; }
   [JsonPropertyName("nxdy_auto_rdpt_amt")]
-  public required decimal TomorrowPaybackAmount { get; init; }
+  public required decimal TomorrowPaybackAmount { get; set; }
   [JsonPropertyName("bfdy_sll_amt")]
-  public required decimal YesterdaySellAmount { get; init; }
+  public required decimal YesterdaySellAmount { get; set; }
   [JsonPropertyName("thdy_sll_amt")]
-  public required decimal TodaySellAmount { get; init; }
+  public required decimal TodaySellAmount { get; set; }
   [JsonPropertyName("d2_auto_rdpt_amt")]
-  public required decimal OvermorrowPaybackAmount { get; init; }
+  public required decimal OvermorrowPaybackAmount { get; set; }
   [JsonPropertyName("bfdy_tlex_amt")]
-  public required decimal YesterdayFee { get; init; }
+  public required decimal YesterdayFee { get; set; }
   [JsonPropertyName("thdt_tlex_amt")]
-  public required decimal TodayFee { get; init; }
+  public required decimal TodayFee { get; set; }
   [JsonPropertyName("tot_loan_amt")]
-  public required decimal TotalLoanAmount { get; init; }
+  public required decimal TotalLoanAmount { get; set; }
   [JsonPropertyName("scts_evlu_amt")]
-  public required decimal SecuritiesEvaluationAmount { get; init; }
+  public required decimal SecuritiesEvaluationAmount { get; set; }
   [JsonPropertyName("tot_evlu_amt")]
-  public required decimal TotalEvaluationAmount { get; init; }
+  public required decimal TotalEvaluationAmount { get; set; }
   [JsonPropertyName("nass_amt")]
-  public required decimal NetAssetAmount { get; init; }
+  public required decimal NetAssetAmount { get; set; }
   [JsonPropertyName("fncg_gld_auto_rdpt_yn")]
-  public required bool LoanAutoRepay { get; init; }
+  public required bool LoanAutoRepay { get; set; }
   [JsonPropertyName("pchs_amt_smtl_amt")]
-  public required decimal NetLongAmount { get; init; }
+  public required decimal NetLongAmount { get; set; }
   [JsonPropertyName("evlu_amt_smtl_amt")]
-  public required decimal NetEvaluationAmount { get; init; }
+  public required decimal NetEvaluationAmount { get; set; }
   [JsonPropertyName("evlu_pfls_smtl_amt")]
-  public required decimal NetProfitLossAmount { get; init; }
+  public required decimal NetProfitLossAmount { get; set; }
   [JsonPropertyName("tot_stln_slng_chgs")]
-  public required decimal NetLoanLiquidationAmount { get; init; }
+  public required decimal NetLoanLiquidationAmount { get; set; }
   [JsonPropertyName("bfdy_tot_asst_evlu_amt")]
-  public required decimal YesterdayNetAssetAmount { get; init; }
+  public required decimal YesterdayNetAssetAmount { get; set; }
   [JsonPropertyName("asst_icdc_amt")]
-  public required decimal AssetChangeAmount { get; init; }
+  public required decimal AssetChangeAmount { get; set; }
 }

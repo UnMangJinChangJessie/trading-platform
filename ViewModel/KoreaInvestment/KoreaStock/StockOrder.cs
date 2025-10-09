@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.ViewModel.KoreaInvestment;
 
-public partial class StockOrder : ViewModel.Order {
+public partial class StockOrder : Order, IAccount {
   [ObservableProperty]
   public partial string AccountBase { get; set; } = "";
   [ObservableProperty]
@@ -27,9 +27,9 @@ public partial class StockOrder : ViewModel.Order {
       Model.KoreaInvestment.OrderMethod.StopLossLimit
     };
   }
-  public override async ValueTask<bool> Long() {
-    if (SelectedMethod == null) return false;
-    var (_, body) = await Model.KoreaInvestment.DomesticStock.OrderCash(new() {
+  public override async Task Long() {
+    if (SelectedMethod == null) return;
+    Model.KoreaInvestment.DomesticStock.OrderCash(new() {
       AccountBase = AccountBase,
       AccountCode = AccountCode,
       Position = Model.KoreaInvestment.OrderPosition.Buy,
@@ -38,12 +38,12 @@ public partial class StockOrder : ViewModel.Order {
       Quantity = (ulong)Quantity,
       OrderDivision = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
       StopLossLimit = (ulong?)StopLossPrice
-    });
-    return body?.ReturnCode == 0;
+    }, null);
+    await Task.CompletedTask;
   }
-  public override async ValueTask<bool> Short() {
-    if (SelectedMethod == null) return false;
-    var (_, body) = await Model.KoreaInvestment.DomesticStock.OrderCash(new() {
+  public override async Task Short() {
+    if (SelectedMethod == null) return;
+    Model.KoreaInvestment.DomesticStock.OrderCash(new() {
       AccountBase = AccountBase,
       AccountCode = AccountCode,
       SellType = Model.KoreaInvestment.OrderSelling.Ordinary,
@@ -53,7 +53,7 @@ public partial class StockOrder : ViewModel.Order {
       Quantity = (ulong)Quantity,
       OrderDivision = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
       StopLossLimit = (ulong?)StopLossPrice
-    });
-    return body?.ReturnCode == 0;
+    }, null);
+    await Task.CompletedTask;
   }
 }

@@ -22,6 +22,6 @@ public abstract partial class Order : ObservableObject {
   [ObservableProperty]
   public partial decimal StopLossPrice { get; set; } = 0.0M;
 
-  public abstract ValueTask<bool> Long();
-  public abstract ValueTask<bool> Short();
+  public abstract Task Long();
+  public abstract Task Short();
 }

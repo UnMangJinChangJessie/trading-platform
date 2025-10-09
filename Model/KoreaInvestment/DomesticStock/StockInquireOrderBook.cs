@@ -14,15 +14,13 @@ public class StockInquireOrderBookResult : KisReturnMessage {
 }
 
 public static partial class DomesticStock {
-  public static async ValueTask<(HttpStatusCode StatusCode, StockInquireOrderBookResult? Result)> InquireOrderBook(StockInquireOrderBookQueries queries) =>
-    await ApiClient.Request<object, StockInquireOrderBookResult>(
-      "FHKST01010200", HttpMethod.Get,
-      "/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn",
-      null,
-      new Dictionary<string, string>() {
+  public static readonly Action<StockInquireOrderBookQueries, Action<string>?> GetOrderBook = (queries, cb) =>
+    ApiClient.PushRequest(
+      "FHKST01010200", 
+      callback: cb,
+      queries: new Dictionary<string, string>() {
         ["FID_COND_MRKT_DIV_CODE"] = queries.MarketClassification.GetCode(),
         ["FID_INPUT_ISCD"] = queries.Ticker
-      },
-      null
+      }
     );
 }

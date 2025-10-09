@@ -1,7 +1,9 @@
+using System.Text.Json;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Tmds.DBus.Protocol;
 using trading_platform.Model;
+using trading_platform.Model.Charts;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.StockMarketInformation;
 
@@ -20,6 +22,14 @@ public partial class OverseaStockMarketData : MarketData {
 
   public OverseaStockMarketData() {
     CurrentOrderBook = new OverseaStockOrderBook();
+    CurrentOrder = new OverseaStockOrder();
+    PriceChart.AvailableCandlePeriod = [
+      CandlestickChartData.CandlePeriod.Daily,
+      CandlestickChartData.CandlePeriod.Weekly,
+      CandlestickChartData.CandlePeriod.Monthly,
+      CandlestickChartData.CandlePeriod.Yearly,
+    ];
+    PriceChart.Span = CandlestickChartData.CandlePeriod.Daily;
     ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
       if (args.TransactionId != "HDFSCNT0") return;
       if (args.Message.Count == 0) return;
@@ -30,88 +40,105 @@ public partial class OverseaStockMarketData : MarketData {
       CurrentClose = decimal.Parse(args.Message[^1][11]);
       CurrentVolume = decimal.Parse(args.Message[^1][20]);
       CurrentAmount = decimal.Parse(args.Message[^1][21]);
-      PreviousClose = -decimal.Parse(args.Message[^1][13]) + CurrentClose;
+      PreviousClose = (args.Message[^1][12] == "5" || args.Message[^1][12] == "4" ? 1 : -1) * decimal.Parse(args.Message[^1][13]) + CurrentClose;
       if (
-        TimeOnly.TryParseExact(args.Message[^1][7], "HHmmss", out var time) &&
-        DateOnly.TryParseExact(args.Message[^1][8], "yyyyMMdd", out var date)
+        DateOnly.TryParseExact(args.Message[^1][4], "yyyyMMdd", out var date) &&
+        TimeOnly.TryParseExact(args.Message[^1][5], "HHmmss", out var time)
       ) {
         CurrentDateTime = new(date, time);
-        if (PriceChart.Count == 0 || date != DateOnly.FromDateTime(PriceChart[^1].DateTime)) {
-          InsertCandleEnd(CurrentOpen, CurrentHigh, CurrentLow, CurrentClose, CurrentVolume, CurrentAmount, CurrentDateTime.Date, TimeSpan.FromDays(1));
-        }
-        else {
-          UpdateLastCandle(CurrentOpen, CurrentHigh, CurrentLow, CurrentClose, CurrentVolume, CurrentAmount);
-        }
-      }
-    };
-    
-    if (Design.IsDesignMode) {
-      var generated = Generators.Series.GenerateBrownianOHLC(24600.0, 0.01, 0.15, TimeSpan.FromDays(1), DateTime.Today, 300);
-      PriceChart = [.. generated];
-      CurrentClose = PriceChart[^1].Close;
-      CurrentHigh = PriceChart[^1].High;
-      CurrentLow = PriceChart[^1].Low;
-      CurrentOpen = PriceChart[^1].Open;
-      Currency = "pt";
-      Name = "NASDAQ 100";
-      PreviousClose = PriceChart[^2].Close;
-    }
-  }
-  private async ValueTask<bool> InquireChart(OverseaStockInformation information, DateOnly inquireFrom, DateOnly inquireTo, CandlePeriod period) {
-    Ticker = information.Ticker;
-    Name = information.Name;
-    while (inquireTo >= inquireFrom) {
-      var (status, result) = await Model.KoreaInvestment.OverseaStock.InquireStockChart(new() {
-        Ticker = information.Ticker,
-        Exchange = information.Exchange,
-        EndDate = inquireTo,
-        CandlePeriod = CandlePeriod.Daily,
-        Adjusted = true
-      });
-      if (status != System.Net.HttpStatusCode.OK || result == null) return false;
-      if (result.Chart == null) return false;
-      foreach (var candle in result.Chart) {
-        InsertCandleBegin(
-          candle.Open, candle.High, candle.Low, candle.Close,
-          candle.Volume, candle.Amount,
-          candle.Date.ToDateTime(TimeOnly.MinValue), TimeSpan.FromDays(1)
+        PriceChart.InsertCandle(
+          new(CurrentOpen, CurrentHigh, CurrentLow, CurrentClose) {
+            Volume = CurrentVolume,
+            Amount = CurrentAmount,
+            Date = CurrentDateTime
+          }
         );
       }
-      if (!result.Chart.Any()) break;
-      inquireTo = result.Chart.Last()!.Date.AddDays(-1);
+      ChangeDependentValues();
+    };
+
+    if (Design.IsDesignMode) {
+      var generated = Generators.Series.GenerateBrownianOHLC(24600.0, 0.01, 0.15, TimeSpan.FromDays(1), DateTime.Today, 300);
+      PriceChart.InsertCandleRange(generated);
+      CurrentClose = PriceChart[0]!.Close;
+      CurrentHigh = PriceChart[0]!.High;
+      CurrentLow = PriceChart[0]!.Low;
+      CurrentOpen = PriceChart[0]!.Open;
+      Currency = "pt";
+      Name = "NASDAQ 100";
+      PreviousClose = PriceChart[1]!.Close;
     }
-    return true;
   }
-  // 종목명 앞에 거래소 코드 세 글자를 작성해주세요.
-  public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
-    var exchange = StockMarketInformation.OverseaStock.GetExchange(ticker[..3]);
-    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is not OverseaStockInformation stockInformation) return false;
-    DecimalDigitCount = stockInformation.DecimalDigitCount;
-    ClearChart();
-    var inquireFrom = DateOnly.FromDateTime(DateTime.Today.AddYears(-5));
-    var inquireTo = DateOnly.FromDateTime(DateTime.Today);
-    var task_1 = InquireChart(stockInformation, inquireFrom, inquireTo, CandlePeriod.Daily);
-    var task_2 = CurrentOrderBook?.RequestRefreshAsync(ticker) ?? new ValueTask<bool>(true);
-    return await task_1 && await task_2;
+  private void OnReceiveData(string jsonString) {
+    OverseaStockInquireChartResult result;
+    try {
+      result = JsonSerializer.Deserialize<OverseaStockInquireChartResult>(jsonString, ApiClient.JsonSerializerOption);
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
+      return;
+    }
+    if (result!.Chart != null) foreach (var candle in result!.Chart) {
+        PriceChart.InsertCandle(new(candle.Open, candle.High, candle.Low, candle.Close) {
+          Volume = candle.Volume,
+          Amount = candle.Amount,
+          Date = candle.Date.ToDateTime(TimeOnly.MinValue)
+        });
+    }
   }
-
-  public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
-    var exchange = StockMarketInformation.OverseaStock.GetExchange(ticker[..3]);
-    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker[3..]) is not OverseaStockInformation information) return false;
+  /// <param name="args">
+  /// exchange[Exchange]: 거래소
+  /// ticker[string]: 종목코드
+  /// </param>
+  public override async Task RefreshAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("exchange", out var exchangeObject) || exchangeObject is not Exchange exchange) return;
+    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
+    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker) is not OverseaStockInformation information) return;
     CurrentExchange = information.Exchange;
-    DecimalDigitCount = information.DecimalDigitCount;
-    Ticker = ticker[3..];
-    var task_1 = ApiClient.KisWebSocket.Subscribe("HDFSCNT0", $"D{CurrentExchange.GetCode()}{ticker[3..]}");
-    var task_2 = CurrentOrderBook?.RequestRefreshRealTimeAsync(ticker) ?? new ValueTask<bool>(true);
-    await task_1;
-    var orderBookSuccess = await task_2;
-    return ApiClient.KisWebSocket.ClientState == System.Net.WebSockets.WebSocketState.Open && orderBookSuccess;
+    Ticker = ticker;
+    Name = information.Name;
+    (CurrentOrder as OverseaStockOrder)?.StockExchange = information.Exchange;
+    (CurrentOrder as OverseaStockOrder)?.Ticker = information.Ticker;
+    (CurrentOrder as OverseaStockOrder)?.Name = information.Name;
+    PriceChart.Clear();
+    var inquireTo = PriceChart.ChartDateEnd ?? DateTimeOffset.Now.Date;
+    var inquireFrom = PriceChart.ChartDateStart ?? DateTimeOffset.Now.Date.AddYears(-5);
+    while (inquireTo >= inquireFrom) {
+      Model.KoreaInvestment.OverseaStock.GetChart(
+        new() {
+          Ticker = information.Ticker,
+          Exchange = information.Exchange,
+          EndDate = DateOnly.FromDateTime(inquireTo.Date),
+          CandlePeriod = PriceChart.Span.ToKisCandlePeriod(),
+          Adjusted = true
+        },
+        OnReceiveData
+      );
+      inquireTo = inquireTo.AddDays(-140);
+    }
   }
 
-  public override async Task EndRefreshRealTimeAsync(string ticker) {
+  public override async Task StartRefreshRealtimeAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("exchange", out var exchangeObject) || exchangeObject is not Exchange exchange) return;
+    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
+    if (StockMarketInformation.OverseaStock.SearchByTicker(exchange, ticker) is not OverseaStockInformation information) return;
+    CurrentExchange = information.Exchange;
+    Ticker = information.Ticker;
+    Name = information.Name;
+    (CurrentOrder as OverseaStockOrder)?.StockExchange = information.Exchange;
+    (CurrentOrder as OverseaStockOrder)?.Ticker = information.Ticker;
+    (CurrentOrder as OverseaStockOrder)?.Name = information.Name;
+    DecimalDigitCount = information.DecimalDigitCount;
+    var task_1 = ApiClient.KisWebSocket.Subscribe("HDFSCNT0", $"D{CurrentExchange.GetCode()}{ticker}");
+    var task_2 = CurrentOrderBook?.StartRefreshRealtimeAsync(args) ?? Task.CompletedTask;
+    await task_1;
+    await task_2;
+  }
+
+  public override async Task EndRefreshRealtimeAsync(IDictionary<string, object> args) {
     if (CurrentExchange == Exchange.None) return;
-    var task_1 = ApiClient.KisWebSocket.Unsubscribe("HDFSCNT0", $"D{CurrentExchange.GetCode()}{ticker[3..]}");
-    var task_2 = CurrentOrderBook?.EndRefreshRealTimeAsync(ticker) ?? Task.CompletedTask;
+    var task_1 = ApiClient.KisWebSocket.Unsubscribe("HDFSCNT0", $"D{CurrentExchange.GetCode()}{Ticker}");
+    var task_2 = CurrentOrderBook?.EndRefreshRealtimeAsync(args) ?? Task.CompletedTask;
     await task_1;
     await task_2;
   }

@@ -263,4 +263,11 @@ public static class KoreaInvestmentExtensions {
     CandlePeriod.Yearly => "Y",
     _ => throw new ArgumentOutOfRangeException(nameof(type))
   };
+  public static CandlePeriod ToKisCandlePeriod(this Charts.CandlestickChartData.CandlePeriod type) => type switch {
+    Charts.CandlestickChartData.CandlePeriod.Daily => CandlePeriod.Daily,
+    Charts.CandlestickChartData.CandlePeriod.Weekly => CandlePeriod.Weekly,
+    Charts.CandlestickChartData.CandlePeriod.Monthly => CandlePeriod.Monthly,
+    Charts.CandlestickChartData.CandlePeriod.Yearly => CandlePeriod.Yearly,
+    _ => throw new ArgumentOutOfRangeException(nameof(type))
+  };
 }

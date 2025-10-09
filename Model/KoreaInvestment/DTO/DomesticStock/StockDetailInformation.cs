@@ -4,166 +4,166 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public class StockDetailInformation {
   [JsonPropertyName("iscd_stat_cls_code")]
-  public required TradingStatusType TradingStatus { get; init; }
+  public required TradingStatusType TradingStatus { get; set; }
   [JsonPropertyName("marg_rate")]
-  public required float MarginRate { get; init; }
+  public required float MarginRate { get; set; }
   [JsonPropertyName("rprs_mrkt_kor_name")]
-  public required string MarketName { get; init; }
+  public required string MarketName { get; set; }
   [JsonPropertyName("new_hgpr_lwpr_cls_code")]
-  public string? NewExtremeCode { get; init; }
+  public string? NewExtremeCode { get; set; }
   [JsonPropertyName("bstp_kor_isnm")]
-  public string? IndexName { get; init; }
+  public string? IndexName { get; set; }
   [JsonPropertyName("temp_stop_yn")]
-  public required bool TemporaryCease { get; init; }
+  public required bool TemporaryCease { get; set; }
   [JsonPropertyName("oprc_rang_cont_yn")]
-  public required bool OpenRangeContinued { get; init; }
+  public required bool OpenRangeContinued { get; set; }
   [JsonPropertyName("clpr_rang_cont_yn")]
-  public required bool CloseRangeContinued { get; init; }
+  public required bool CloseRangeContinued { get; set; }
   [JsonPropertyName("crdt_able_yn")]
-  public required bool AllowCredit { get; init; }
+  public required bool AllowCredit { get; set; }
   // [JsonPropertyName("grmn_rate_cls_code")]
-  // public required MarginRule MarginRateRule { get; init; } // No API specs found.
+  // public required MarginRule MarginRateRule { get; set; } // No API specs found.
   [JsonPropertyName("elw_pblc_yn")]
-  public required bool HasEquityLinkedWarrant { get; init; }
+  public required bool HasEquityLinkedWarrant { get; set; }
   [JsonPropertyName("stck_prpr")]
-  public required ulong Close { get; init; }
+  public required ulong Close { get; set; }
   [JsonPropertyName("prdy_vrss")]
-  public required long PriceChange { get; init; }
+  public required long PriceChange { get; set; }
   [JsonPropertyName("prdy_vrss_sign")]
-  public required PriceChangeSign PriceChangeSign { get; init; }
+  public required PriceChangeSign PriceChangeSign { get; set; }
   [JsonPropertyName("prdy_ctrt")]
-  public required float ChangeRate { get; init; }
+  public required float ChangeRate { get; set; }
   [JsonPropertyName("acml_tr_pbmn")]
-  public required ulong Amount { get; init; }
+  public required ulong Amount { get; set; }
   [JsonPropertyName("acml_vol")]
-  public required ulong Volume { get; init; }
+  public required ulong Volume { get; set; }
   [JsonPropertyName("prdy_vrss_vol_rate")]
-  public required float VolumeRatio { get; init; }
+  public required float VolumeRatio { get; set; }
   [JsonPropertyName("stck_oprc")]
-  public required ulong Open { get; init; }
+  public required ulong Open { get; set; }
   [JsonPropertyName("stck_hgpr")]
-  public required ulong High { get; init; }
+  public required ulong High { get; set; }
   [JsonPropertyName("stck_lwpr")]
-  public required ulong Low { get; init; }
+  public required ulong Low { get; set; }
   [JsonPropertyName("stck_mxpr")]
-  public required ulong UpperLimit { get; init; }
+  public required ulong UpperLimit { get; set; }
   [JsonPropertyName("stck_llam")]
-  public required ulong LowerLimit { get; init; }
+  public required ulong LowerLimit { get; set; }
   [JsonPropertyName("stck_sdpr")]
-  public required ulong StandardPrice { get; init; }
+  public required ulong StandardPrice { get; set; }
   [JsonPropertyName("wghn_avrg_stck_prc")]
-  public required decimal WeightedAveragePrice { get; init; }
+  public required decimal WeightedAveragePrice { get; set; }
   [JsonPropertyName("hts_frgn_ehrt")]
-  public required float ForeignExhaustRate { get; init; }
+  public required float ForeignExhaustRate { get; set; }
   [JsonPropertyName("frgn_ntby_qty")]
-  public required long ForeignNetBuyVolume { get; init; }
+  public required long ForeignNetBuyVolume { get; set; }
   [JsonPropertyName("pgtr_ntby_qty")]
-  public required long ProgramNetBuyVolume { get; init; }
+  public required long ProgramNetBuyVolume { get; set; }
   [JsonPropertyName("pvt_scnd_dmrs_prc")]
-  public required ulong PivotSecondResistance { get; init; }
+  public required ulong PivotSecondResistance { get; set; }
   [JsonPropertyName("pvt_frst_dmrs_prc")]
-  public required ulong PivotFirstResistance { get; init; }
+  public required ulong PivotFirstResistance { get; set; }
   [JsonPropertyName("pvt_pont_val")]
-  public required ulong PivotPoint { get; init; }
+  public required ulong PivotPoint { get; set; }
   [JsonPropertyName("pvt_frst_dmsp_prc")]
-  public required ulong PivotFirstSupport { get; init; }
+  public required ulong PivotFirstSupport { get; set; }
   [JsonPropertyName("pvt_scnd_dmsp_prc")]
-  public required ulong PivotSecondSupport { get; init; }
+  public required ulong PivotSecondSupport { get; set; }
   [JsonPropertyName("dmrs_val")]
-  public required ulong DeMarkResistance { get; init; }
+  public required ulong DeMarkResistance { get; set; }
   [JsonPropertyName("dmsp_val")]
-  public required ulong DeMarkSupport { get; init; }
+  public required ulong DeMarkSupport { get; set; }
   [JsonPropertyName("cpfn")]
-  public required ulong CapitalFoundation { get; init; }
+  public required ulong CapitalFoundation { get; set; }
   [JsonPropertyName("rstc_wdth_prc")]
-  public required ulong RestrictionWidth { get; init; }
+  public required ulong RestrictionWidth { get; set; }
   [JsonPropertyName("stck_fcam")]
-  public required ulong FaceValue { get; init; }
+  public required ulong FaceValue { get; set; }
   [JsonPropertyName("stck_sspr")]
-  public required ulong SubstitutePrice { get; init; }
+  public required ulong SubstitutePrice { get; set; }
   [JsonPropertyName("aspr_unit")]
-  public required ulong AskingPriceUnit { get; init; }
+  public required ulong AskingPriceUnit { get; set; }
   [JsonPropertyName("hts_deal_qty_unit_val")]
-  public required ulong TradingUnit { get; init; }
+  public required ulong TradingUnit { get; set; }
   [JsonPropertyName("lstn_stcn")]
-  public required ulong ListedStocks { get; init; }
+  public required ulong ListedStocks { get; set; }
   public ulong MarketCapitalization => ListedStocks * Close;
   [JsonPropertyName("per")]
-  public required float PriceEarningsRate { get; init; }
+  public required float PriceEarningsRate { get; set; }
   [JsonPropertyName("pbr")]
-  public required float PriceBookValueRatio { get; init; }
+  public required float PriceBookValueRatio { get; set; }
   [JsonPropertyName("stac_month")]
-  public byte? SettlementMonth { get; init; }
+  public byte? SettlementMonth { get; set; }
   [JsonPropertyName("vol_tnrt")]
-  public required float VolumeTurningRate { get; init; }
+  public required float VolumeTurningRate { get; set; }
   [JsonPropertyName("eps")]
-  public required float EarningsPerShare { get; init; }
+  public required float EarningsPerShare { get; set; }
   [JsonPropertyName("bps")]
-  public required float BookValuePerShare { get; init; }
+  public required float BookValuePerShare { get; set; }
   [JsonPropertyName("d250_hgpr")]
-  public required ulong High250Day { get; init; }
+  public required ulong High250Day { get; set; }
   [JsonPropertyName("d250_hgpr_date")]
-  public required DateOnly High250DayDate { get; init; }
+  public required DateOnly High250DayDate { get; set; }
   [JsonPropertyName("d250_hgpr_vrss_prpr_rate")]
-  public required float High250DayRate { get; init; }
+  public required float High250DayRate { get; set; }
   [JsonPropertyName("d250_lwpr")]
-  public required ulong Low250Day { get; init; }
+  public required ulong Low250Day { get; set; }
   [JsonPropertyName("d250_lwpr_date")]
-  public required DateOnly Low250DayDate { get; init; }
+  public required DateOnly Low250DayDate { get; set; }
   [JsonPropertyName("d250_lwpr_vrss_prpr_rate")]
-  public required float Low250DayRate { get; init; }
+  public required float Low250DayRate { get; set; }
   [JsonPropertyName("stck_dryy_hgpr")]
-  public required ulong HighYear { get; init; }
+  public required ulong HighYear { get; set; }
   [JsonPropertyName("dryy_hgpr_vrss_prpr_rate")]
-  public required float HighYearRate { get; init; }
+  public required float HighYearRate { get; set; }
   [JsonPropertyName("dryy_hgpr_date")]
-  public required DateOnly HighYearDate { get; init; }
+  public required DateOnly HighYearDate { get; set; }
   [JsonPropertyName("stck_dryy_lwpr")]
-  public required ulong LowYear { get; init; }
+  public required ulong LowYear { get; set; }
   [JsonPropertyName("dryy_lwpr_vrss_prpr_rate")]
-  public required float LowYearRate { get; init; }
+  public required float LowYearRate { get; set; }
   [JsonPropertyName("dryy_lwpr_date")]
-  public required DateOnly LowYearDate { get; init; }
+  public required DateOnly LowYearDate { get; set; }
   [JsonPropertyName("w52_hgpr")]
-  public required ulong High52Week { get; init; }
+  public required ulong High52Week { get; set; }
   [JsonPropertyName("w52_hgpr_vrss_prpr_ctrt")]
-  public required float High52WeekRate { get; init; }
+  public required float High52WeekRate { get; set; }
   [JsonPropertyName("w52_hgpr_date")]
-  public required DateOnly High52WeekDate { get; init; }
+  public required DateOnly High52WeekDate { get; set; }
   [JsonPropertyName("w52_lwpr")]
-  public required ulong Low52Week { get; init; }
+  public required ulong Low52Week { get; set; }
   [JsonPropertyName("w52_lwpr_vrss_prpr_ctrt")]
-  public required float Low52WeekRate { get; init; }
+  public required float Low52WeekRate { get; set; }
   [JsonPropertyName("w52_lwpr_date")]
-  public required DateOnly Low52WeekDate { get; init; }
+  public required DateOnly Low52WeekDate { get; set; }
   [JsonPropertyName("whol_loan_rmnd_rate")]
-  public required float LoanRemainderRate { get; init; }
+  public required float LoanRemainderRate { get; set; }
   [JsonPropertyName("ssts_yn")]
-  public required bool AllowShortSelling { get; init; }
+  public required bool AllowShortSelling { get; set; }
   [JsonPropertyName("stck_shrn_iscd")]
-  public required string Ticker { get; init; }
+  public required string Ticker { get; set; }
   [JsonPropertyName("fcam_cnnm")]
-  public required string FaceValueCurrency { get; init; }
+  public required string FaceValueCurrency { get; set; }
   [JsonPropertyName("cpfn_cnnm")]
-  public required string CapitalCurrency { get; init; }
+  public required string CapitalCurrency { get; set; }
   // [JsonPropertyName("apprch_rate")]
-  // public required float ApproachRate { get; init; } // What is this?
+  // public required float ApproachRate { get; set; } // What is this?
   [JsonPropertyName("frgn_hldn_qty")]
-  public required ulong ForeignHoldingQuantity { get; init; }
+  public required ulong ForeignHoldingQuantity { get; set; }
   [JsonPropertyName("vi_cls_code")]
-  public required bool Interrupted { get; init; }
+  public required bool Interrupted { get; set; }
   [JsonPropertyName("ovtm_vi_cls_code"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-  public bool? AfterMarketVolatilityInterrupt { get; init; }
+  public bool? AfterMarketVolatilityInterrupt { get; set; }
   [JsonPropertyName("last_ssts_cntg_qty")]
-  public required ulong ShortSellingQuantity { get; init; }
+  public required ulong ShortSellingQuantity { get; set; }
   [JsonPropertyName("invt_caful_yn")]
-  public required bool MarketWarning { get; init; }
+  public required bool MarketWarning { get; set; }
   [JsonPropertyName("mrkt_warn_cls_code")]
-  public required MarketWarning MarketWarningCode { get; init; }
+  public required MarketWarning MarketWarningCode { get; set; }
   [JsonPropertyName("short_over_yn")]
-  public required bool ShortTermOverheat { get; init; }
+  public required bool ShortTermOverheat { get; set; }
   [JsonPropertyName("sltr_yn")]
-  public required bool Cleaning { get; init; }
+  public required bool Cleaning { get; set; }
   [JsonPropertyName("mang_issu_cls_code")]
-  public required bool InManagement { get; init; }
+  public required bool InManagement { get; set; }
 }

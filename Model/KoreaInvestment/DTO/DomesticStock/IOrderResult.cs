@@ -3,16 +3,16 @@ namespace trading_platform.Model.KoreaInvestment;
 using System.Text.Json.Serialization;
 
 public interface IOrderResult {
-  public string ExchangeCode { get; init; }
-  public string OrderNumber { get; init; }
-  public TimeOnly OrderTime { get; init; }
+  public string ExchangeCode { get; set; }
+  public string OrderNumber { get; set; }
+  public TimeOnly OrderTime { get; set; }
 }
 
 public class OrderResult {
   [JsonPropertyName("KRX_FWDG_ORD_ORGNO")]
-  public required string ExchangeOrderNumber { get; init; }
+  public required string ExchangeOrderNumber { get; set; }
   [JsonPropertyName("ODNO")]
-  public required string OrderNumber { get; init; }
+  public required string OrderNumber { get; set; }
   [JsonPropertyName("ORD_TMD"), JsonConverter(typeof(TimeToStringConverter))]
-  public required TimeOnly OrderTime { get; init; }
+  public required TimeOnly OrderTime { get; set; }
 }

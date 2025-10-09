@@ -14,7 +14,7 @@
   DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
   Loaded="UserControl_Loaded"
 >
-  <Grid ColumnDefinitions="*,180,180" RowDefinitions="*" Margin="5">
+  <Grid ColumnDefinitions="*,180,200" RowDefinitions="*" Margin="5">
     <Grid
       Grid.Column="0"
       ColumnDefinitions="*" RowDefinitions="Auto, 100, *, Auto"
@@ -33,7 +33,7 @@
       />
       <com:CandlestickChart
         Name="OHLCChart"
-        DataContext="{Binding #ControlRoot.DataContext}"
+        DataContext="{Binding #ControlRoot.DataContext.PriceChart}"
         Grid.Row="2"
         VerticalAlignment="Stretch"
       />
@@ -47,13 +47,11 @@
     />
     <StackPanel Grid.Column="2" Orientation="Vertical" >
       <comkis:Account
-        AccountBase="{Binding ((vmkis:StockOrder)CurrentOrder).AccountBase}"
-        AccountCode="{Binding ((vmkis:StockOrder)CurrentOrder).AccountCode}"
+        DataContext="{Binding CurrentOrder}"
       />
       <v:Order
         Name="OrderView"
         DataContext="{Binding CurrentOrder}"
-        Grid.Column="2"
       />
     </StackPanel>
   </Grid>

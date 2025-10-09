@@ -22,7 +22,6 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Material.Avalonia" Version="3.13.1" />
     <PackageReference Include="ScottPlot.Avalonia" Version="5.0.56" />
-    <PackageReference Include="Skender.Stock.Indicators" Version="2.6.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0" />
   </ItemGroup>
   <ItemGroup>

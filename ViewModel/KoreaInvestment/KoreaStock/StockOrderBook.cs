@@ -1,6 +1,9 @@
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.VisualBasic;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.StockMarketInformation;
 
@@ -67,67 +70,80 @@ public partial class StockOrderBook : OrderBook {
       HighestQuantity = Math.Max(AskQuantity.Max(x => x.Value), BidQuantity.Max(x => x.Value));
     }
   }
-  public override async ValueTask<bool> RequestRefreshAsync(string ticker) {
-    if (KRXStock.SearchByTicker(ticker) is null) return false;
-    var (status, result) = await DomesticStock.InquireOrderBook(new() {
-      MarketClassification = Exchange.DomesticUnified,
-      Ticker = ticker
-    });
-    if (status != System.Net.HttpStatusCode.OK || result == null) return false;
-    AskPrice[0].Value = result.Output?.AskPrice_1 ?? 0;
-    AskPrice[1].Value = result.Output?.AskPrice_2 ?? 0;
-    AskPrice[2].Value = result.Output?.AskPrice_3 ?? 0;
-    AskPrice[3].Value = result.Output?.AskPrice_4 ?? 0;
-    AskPrice[4].Value = result.Output?.AskPrice_5 ?? 0;
-    AskPrice[5].Value = result.Output?.AskPrice_6 ?? 0;
-    AskPrice[6].Value = result.Output?.AskPrice_7 ?? 0;
-    AskPrice[7].Value = result.Output?.AskPrice_8 ?? 0;
-    AskPrice[8].Value = result.Output?.AskPrice_9 ?? 0;
-    AskPrice[9].Value = result.Output?.AskPrice_10 ?? 0;
-    BidPrice[0].Value = result.Output?.BidPrice_1 ?? 0;
-    BidPrice[1].Value = result.Output?.BidPrice_2 ?? 0;
-    BidPrice[2].Value = result.Output?.BidPrice_3 ?? 0;
-    BidPrice[3].Value = result.Output?.BidPrice_4 ?? 0;
-    BidPrice[4].Value = result.Output?.BidPrice_5 ?? 0;
-    BidPrice[5].Value = result.Output?.BidPrice_6 ?? 0;
-    BidPrice[6].Value = result.Output?.BidPrice_7 ?? 0;
-    BidPrice[7].Value = result.Output?.BidPrice_8 ?? 0;
-    BidPrice[8].Value = result.Output?.BidPrice_9 ?? 0;
-    BidPrice[9].Value = result.Output?.BidPrice_10 ?? 0;
-    AskQuantity[0].Value = result.Output?.AskQuantity_1 ?? 0;
-    AskQuantity[1].Value = result.Output?.AskQuantity_2 ?? 0;
-    AskQuantity[2].Value = result.Output?.AskQuantity_3 ?? 0;
-    AskQuantity[3].Value = result.Output?.AskQuantity_4 ?? 0;
-    AskQuantity[4].Value = result.Output?.AskQuantity_5 ?? 0;
-    AskQuantity[5].Value = result.Output?.AskQuantity_6 ?? 0;
-    AskQuantity[6].Value = result.Output?.AskQuantity_7 ?? 0;
-    AskQuantity[7].Value = result.Output?.AskQuantity_8 ?? 0;
-    AskQuantity[8].Value = result.Output?.AskQuantity_9 ?? 0;
-    AskQuantity[9].Value = result.Output?.AskQuantity_10 ?? 0;
-    BidQuantity[0].Value = result.Output?.BidQuantity_1 ?? 0;
-    BidQuantity[1].Value = result.Output?.BidQuantity_2 ?? 0;
-    BidQuantity[2].Value = result.Output?.BidQuantity_3 ?? 0;
-    BidQuantity[3].Value = result.Output?.BidQuantity_4 ?? 0;
-    BidQuantity[4].Value = result.Output?.BidQuantity_5 ?? 0;
-    BidQuantity[5].Value = result.Output?.BidQuantity_6 ?? 0;
-    BidQuantity[6].Value = result.Output?.BidQuantity_7 ?? 0;
-    BidQuantity[7].Value = result.Output?.BidQuantity_8 ?? 0;
-    BidQuantity[8].Value = result.Output?.BidQuantity_9 ?? 0;
-    BidQuantity[9].Value = result.Output?.BidQuantity_10 ?? 0;
+  public void OnReceiveMessage(string jsonString) {
+    StockInquireOrderBookResult json;
+    try {
+      json = JsonSerializer.Deserialize<StockInquireOrderBookResult>(jsonString, ApiClient.JsonSerializerOption);
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
+      return;
+    }
+    if (json!.ReturnCode != 0) return;
+    var result = json.Output!;
+    AskPrice[0].Value = result.AskPrice_1;
+    AskPrice[1].Value = result.AskPrice_2;
+    AskPrice[2].Value = result.AskPrice_3;
+    AskPrice[3].Value = result.AskPrice_4;
+    AskPrice[4].Value = result.AskPrice_5;
+    AskPrice[5].Value = result.AskPrice_6;
+    AskPrice[6].Value = result.AskPrice_7;
+    AskPrice[7].Value = result.AskPrice_8;
+    AskPrice[8].Value = result.AskPrice_9;
+    AskPrice[9].Value = result.AskPrice_10;
+    BidPrice[0].Value = result.BidPrice_1;
+    BidPrice[1].Value = result.BidPrice_2;
+    BidPrice[2].Value = result.BidPrice_3;
+    BidPrice[3].Value = result.BidPrice_4;
+    BidPrice[4].Value = result.BidPrice_5;
+    BidPrice[5].Value = result.BidPrice_6;
+    BidPrice[6].Value = result.BidPrice_7;
+    BidPrice[7].Value = result.BidPrice_8;
+    BidPrice[8].Value = result.BidPrice_9;
+    BidPrice[9].Value = result.BidPrice_10;
+    AskQuantity[0].Value = result.AskQuantity_1;
+    AskQuantity[1].Value = result.AskQuantity_2;
+    AskQuantity[2].Value = result.AskQuantity_3;
+    AskQuantity[3].Value = result.AskQuantity_4;
+    AskQuantity[4].Value = result.AskQuantity_5;
+    AskQuantity[5].Value = result.AskQuantity_6;
+    AskQuantity[6].Value = result.AskQuantity_7;
+    AskQuantity[7].Value = result.AskQuantity_8;
+    AskQuantity[8].Value = result.AskQuantity_9;
+    AskQuantity[9].Value = result.AskQuantity_10;
+    BidQuantity[0].Value = result.BidQuantity_1;
+    BidQuantity[1].Value = result.BidQuantity_2;
+    BidQuantity[2].Value = result.BidQuantity_3;
+    BidQuantity[3].Value = result.BidQuantity_4;
+    BidQuantity[4].Value = result.BidQuantity_5;
+    BidQuantity[5].Value = result.BidQuantity_6;
+    BidQuantity[6].Value = result.BidQuantity_7;
+    BidQuantity[7].Value = result.BidQuantity_8;
+    BidQuantity[8].Value = result.BidQuantity_9;
+    BidQuantity[9].Value = result.BidQuantity_10;
     HighestQuantity = Math.Max(BidQuantity.Max(x => x.Value), AskQuantity.Max(x => x.Value));
-    ConclusionTime = result.Output?.Time ?? TimeOnly.MinValue;
-    OnPropertyChanged(propertyName: null);
-    return true;
+    ConclusionTime = result.Time;
   }
-  public override async ValueTask<bool> RequestRefreshRealTimeAsync(string ticker) {
-    if (KRXStock.SearchByTicker(ticker) is null) return false;
+  public override async Task RefreshAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
+    if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation info) return;
+    DomesticStock.GetOrderBook(
+      new() {
+        Ticker = ticker,
+        MarketClassification = info.Exchange
+      },
+      OnReceiveMessage
+    );
+  }
+  public override async Task StartRefreshRealtimeAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
+    if (KRXStock.SearchByTicker(ticker) is null) return;
     Ticker = ticker;
     await ApiClient.KisWebSocket.Subscribe("H0UNASP0", ticker);
     RealTimeRefresh = true;
-    return RealTimeRefresh;
   }
-  public override async Task EndRefreshRealTimeAsync(string ticker) {
-    await ApiClient.KisWebSocket.Unsubscribe("H0UNASP0", ticker);
+  public override async Task EndRefreshRealtimeAsync(IDictionary<string, object> args) {
+    await ApiClient.KisWebSocket.Unsubscribe("H0UNASP0", Ticker);
     RealTimeRefresh = false;
   }
 }

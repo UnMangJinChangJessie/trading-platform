@@ -10,65 +10,50 @@
   x:Class="trading_platform.Components.PriceDisplay"
 >
   <DockPanel Margin="5" >
-    <StackPanel DockPanel.Dock="Left">
-      <TextBlock FontSize="{StaticResource FontSizeXXLarge}" Text="{Binding Name}" />
-      <TextBlock FontSize="{StaticResource FontSizeXXLarge}" >
-        <Run FontWeight="Bold" Text="{Binding CurrentClose}" />
-        <Run Text="{Binding Currency}" />
-        <Run>
-          <Run.Text>
-            <MultiBinding StringFormat="({0}, {1})" FallbackValue="">
-              <Binding Path="Change" />
-              <Binding Path="CloseChangeRate" StringFormat="{}{0:P}" FallbackValue="N/A" />
-            </MultiBinding>
-          </Run.Text>
-        </Run>
-      </TextBlock>
-    </StackPanel>
-    <Grid ColumnDefinitions="50,150,50,150" RowDefinitions="*,*,*,*,*" HorizontalAlignment="Right">
-      <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">시가</TextBlock>
-      <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">고가</TextBlock>
-      <TextBlock Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">저가</TextBlock>
-      <TextBlock Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">거래량</TextBlock>
-      <TextBlock Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">거래대금</TextBlock>
+    <Grid ColumnDefinitions="50,150" RowDefinitions="*,*,*,*,*" DockPanel.Dock="Right" Margin="5,0,0,0">
+      <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">시가</TextBlock>
+      <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">고가</TextBlock>
+      <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">저가</TextBlock>
+      <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">거래량</TextBlock>
+      <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,5,0">거래대금</TextBlock>
       <TextBlock 
-        Grid.Row="0" Grid.Column="3"
+        Grid.Row="0" Grid.Column="1"
         VerticalAlignment="Center" HorizontalAlignment="Right"
         Padding="5,0,5,0"
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0} ({1})" >
             <Binding RelativeSource="DataContext" Path="CurrentOpen" />
-            <Binding RelativeSource="DataContext" Path="OpenChangeRate" StringFormat="{}{0:P}" FallbackValue="N/A" />
+            <Binding RelativeSource="DataContext" Path="OpenChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
       <TextBlock 
-        Grid.Row="1" Grid.Column="3"
+        Grid.Row="1" Grid.Column="1"
         VerticalAlignment="Center" HorizontalAlignment="Right"
         Padding="5,0,5,0"
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0} ({1})" FallbackValue="">
             <Binding RelativeSource="DataContext" Path="CurrentHigh" />
-            <Binding RelativeSource="DataContext" Path="HighChangeRate" StringFormat="{}{0:P}" FallbackValue="N/A" />
+            <Binding RelativeSource="DataContext" Path="HighChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
       <TextBlock 
-        Grid.Row="2" Grid.Column="3"
+        Grid.Row="2" Grid.Column="1"
         VerticalAlignment="Center" HorizontalAlignment="Right"
         Padding="5,0,5,0"
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0} ({1})" FallbackValue="">
             <Binding RelativeSource="DataContext" Path="CurrentLow" />
-            <Binding RelativeSource="DataContext" Path="LowChangeRate" StringFormat="{}{0:P}" FallbackValue="N/A" />
+            <Binding RelativeSource="DataContext" Path="LowChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
       <TextBlock 
-        Grid.Row="3" Grid.Column="3"
+        Grid.Row="3" Grid.Column="1"
         VerticalAlignment="Center" HorizontalAlignment="Right"
         Padding="5,0,5,0"
       >
@@ -79,7 +64,7 @@
         </TextBlock.Text>
       </TextBlock>
       <TextBlock 
-        Grid.Row="4" Grid.Column="3"
+        Grid.Row="4" Grid.Column="1"
         VerticalAlignment="Center" HorizontalAlignment="Right"
         Padding="5,0,5,0"
       >
@@ -91,5 +76,20 @@
         </TextBlock.Text>
       </TextBlock>
     </Grid>
+    <StackPanel DockPanel.Dock="Left">
+      <TextBlock FontSize="{StaticResource FontSizeLarge}" Text="{Binding Name}" TextWrapping="Wrap" />
+      <TextBlock FontSize="{StaticResource FontSizeXLarge}" >
+        <Run FontWeight="Bold" Text="{Binding CurrentClose}" />
+        <Run Text="{Binding Currency}" />
+        <Run>
+          <Run.Text>
+            <MultiBinding StringFormat="({0}, {1})" FallbackValue="">
+              <Binding Path="Change" />
+              <Binding Path="CloseChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
+            </MultiBinding>
+          </Run.Text>
+        </Run>
+      </TextBlock>
+    </StackPanel>
   </DockPanel>
 </UserControl>
