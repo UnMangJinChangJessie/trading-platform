@@ -3,25 +3,24 @@ using System.Text.Json.Serialization;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class StockInquirePurchasableQueries : IAccount {
-  public string TransactionId => ApiClient.Simulation ? "VTTTC8908R" : "TTTC8908R";
-  public required string AccountBase { get; set; }
-  public required string AccountCode { get; set; }
-
-  public required string Ticker { get; set; }
-  public required decimal UnitPrice { get; set; }
-  public required ulong Quantity { get; set; }
-  public required OrderMethod OrderDivision { get; set; }
-  public required bool IncludeCashManagementAccount { get; set; }
-  public required bool IncludeForeignCash { get; set; }
-}
-
-public class StockInquirePurchasableResult : KisReturnMessage {
-  [JsonPropertyName("output")] public StockPurchasable? Result { get; set; }
-}
-
 public static partial class DomesticStock {
-  public static readonly Action<StockInquirePurchasableQueries, Action<string>?> GetPurchasable = (queries, cb) =>
+  public class PurchasableQueries : IAccount {
+    public string TransactionId => ApiClient.Simulation ? "VTTTC8908R" : "TTTC8908R";
+    public required string AccountBase { get; set; }
+    public required string AccountCode { get; set; }
+
+    public required string Ticker { get; set; }
+    public required decimal UnitPrice { get; set; }
+    public required ulong Quantity { get; set; }
+    public required OrderMethod OrderDivision { get; set; }
+    public required bool IncludeCashManagementAccount { get; set; }
+    public required bool IncludeForeignCash { get; set; }
+  }
+
+  public class PurchasableResult : KisReturnMessage {
+    [JsonPropertyName("output")] public Purchasable? Result { get; set; }
+  }
+  public static readonly Action<PurchasableQueries, Action<string>?> GetPurchasable = (queries, cb) =>
     ApiClient.PushRequest(
       queries.TransactionId,
       callback: cb,

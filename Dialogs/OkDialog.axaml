@@ -1,12 +1,16 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="trading_platform.Dialogs.OkDialog"
-        Title="Meow :3">
+<Window
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+  x:Class="trading_platform.Dialogs.OkDialog"
+  x:Name="ControlRoot"
+  Closing="Window_Closing"
+  Title="{Binding #ControlRoot.Title}"
+>
   <StackPanel Orientation="Vertical">
-    <TextBlock Text="메시지" Name="DialogTextBlock" HorizontalAlignment="Center" />
+    <TextBlock Text="{Binding #ControlRoot.Message}" Name="DialogTextBlock" HorizontalAlignment="Center" />
     <Button HorizontalAlignment="Center" Name="OkButton" Click="OkButton_Click">
       <TextBlock>
         OK

@@ -1,11 +1,11 @@
 using System.Text.Json;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Tmds.DBus.Protocol;
 using trading_platform.Model;
 using trading_platform.Model.Charts;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.StockMarketInformation;
+using static trading_platform.Model.KoreaInvestment.OverseaStock;
 
 namespace trading_platform.ViewModel.KoreaInvestment;
 
@@ -70,9 +70,9 @@ public partial class OverseaStockMarketData : MarketData {
     }
   }
   private void OnReceiveData(string jsonString) {
-    OverseaStockInquireChartResult result;
+    ChartResult result;
     try {
-      result = JsonSerializer.Deserialize<OverseaStockInquireChartResult>(jsonString, ApiClient.JsonSerializerOption);
+      result = JsonSerializer.Deserialize<ChartResult>(jsonString, ApiClient.JsonSerializerOption);
     }
     catch (Exception ex) {
       ExceptionHandler.PrintExceptionMessage(ex);

@@ -4,10 +4,12 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:v="using:trading_platform.View"
+  xmlns:vkis="using:trading_platform.View.KoreaInvestment"
   xmlns:com="using:trading_platform.Components"
+  xmlns:comkis="using:trading_platform.Components.KoreaInvestment"
   xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
   mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
-  x:Class="trading_platform.View.KoreaStock"
+  x:Class="trading_platform.View.KoreaInvestment.KoreaStock"
   x:DataType="vmkis:StockMarketData"
   x:Name="ControlRoot"
 >
@@ -16,10 +18,16 @@
   </UserControl.DataContext>
   <TabControl>
     <TabItem Header="차트/주문">
-      <v:KoreaStockChart
+      <vkis:KoreaStockChart
         Name="PART_StockChartAndOrder" 
         DataContext="{Binding #ControlRoot.DataContext}"
       />
+    </TabItem>
+    <TabItem Header="빠른 주문">
+      <vkis:KoreaStockQuickOrder />
+    </TabItem>
+    <TabItem Header="잔고">
+      <vkis:KoreaStockProfitLoss />
     </TabItem>
   </TabControl>
 </UserControl>

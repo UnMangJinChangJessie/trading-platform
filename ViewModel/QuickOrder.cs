@@ -6,37 +6,41 @@ using ScottPlot;
 
 namespace trading_platform.ViewModel;
 
-public partial class OrderBookItem(decimal price, decimal ask, decimal bid) : ObservableObject {
+public partial class QuickOrderItem(decimal price, decimal ask, decimal bid) : ObservableObject {
   [ObservableProperty]
   public partial decimal Price { get; set; } = price;
   [ObservableProperty]
   public partial decimal AskQuantity { get; set; } = ask;
   [ObservableProperty]
   public partial decimal BidQuantity { get; set; } = bid;
+  [ObservableProperty]
+  public partial decimal ShortQuantity { get; set; } = 0;
+  [ObservableProperty]
+  public partial decimal LongQuantity { get; set; } = 0;
 }
 
-public abstract partial class OrderBook : ObservableObject, IRefresh, IRefreshRealtime {
+public abstract partial class QuickOrder : ObservableObject, IRefresh, IRefreshRealtime {
   public readonly static Dictionary<string, object> NullArguments = [];
+  public ObservableCollection<decimal> QuantityUnits { get; set; }
   [ObservableProperty]
-  public partial TimeOnly ConclusionTime { get; protected set; } = TimeOnly.MinValue;
+  public partial string Ticker { get; set; } = "";
   [ObservableProperty]
-  public partial string Ticker { get; protected set; } = "";
+  public partial decimal Quantity { get; set; }
   [ObservableProperty]
   public partial decimal CurrentClose { get; set; }
   [ObservableProperty]
   public partial decimal PreviousClose { get; set; }
-  public ObservableCollection<OrderBookItem> CurrentOrders { get; set; } = [];
-  [ObservableProperty]
-  public partial decimal? IntermediatePrice { get; protected set; }
-  [ObservableProperty]
-  public partial decimal? IntermediateAskQuantity { get; protected set; }
-  [ObservableProperty]
-  public partial decimal? IntermediateBidQuantity { get; protected set; }
+  public ObservableCollection<QuickOrderItem> CurrentOrders { get; set; } = [];
   [ObservableProperty]
   public partial decimal HighestQuantity { get; protected set; } = 0;
   public bool RealTimeRefresh { get; protected set; } = false;
+  public Func<decimal, decimal> NextTickGenerator { get; protected set; }
+  public Func<decimal, decimal> PreviousTickGenerator { get; protected set; } 
 
-  public OrderBook() {
+  public QuickOrder() {
+    QuantityUnits = [1, 2, 3, 4, 5, 10, 20, 50, 100];
+    NextTickGenerator = val => val + 0.05M;
+    PreviousTickGenerator = val => val - 0.05M;
     if (Design.IsDesignMode || Debugger.IsAttached) {
       for (int i = 0; i < 50; i++) {
         var price = 450.00M + (25 - i) * 0.05M;
@@ -44,9 +48,8 @@ public abstract partial class OrderBook : ObservableObject, IRefresh, IRefreshRe
         var bidQuantity = i < 25 ? 0 : Random.Shared.Next(1, 50);
         InsertOrder(price, askQuantity, bidQuantity);
       }
-      HighestQuantity = CurrentOrders.Max(x => Math.Max(x.AskQuantity, x.BidQuantity));
       PreviousClose = 450.00M;
-      CurrentClose = 450.05M;
+      HighestQuantity = CurrentOrders.Max(x => Math.Max(x.AskQuantity, x.BidQuantity));
     }
   }
   protected void InsertOrder(decimal price, decimal ask, decimal bid) {
@@ -77,4 +80,6 @@ public abstract partial class OrderBook : ObservableObject, IRefresh, IRefreshRe
   public abstract Task RefreshAsync(IDictionary<string, object> args);
   public abstract Task StartRefreshRealtimeAsync(IDictionary<string, object> args);
   public abstract Task EndRefreshRealtimeAsync(IDictionary<string, object> args);
+  public abstract Task LongAsync(IDictionary<string, object> args);
+  public abstract Task ShortAsync(IDictionary<string, object> args);
 }

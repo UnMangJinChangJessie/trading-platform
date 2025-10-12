@@ -8,7 +8,7 @@ public interface IOrderResult {
   public TimeOnly OrderTime { get; set; }
 }
 
-public class OrderResult {
+public class OrderInformation {
   [JsonPropertyName("KRX_FWDG_ORD_ORGNO")]
   public required string ExchangeOrderNumber { get; set; }
   [JsonPropertyName("ODNO")]

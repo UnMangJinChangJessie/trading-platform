@@ -1,0 +1,27 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:com="using:trading_platform.Components"
+  xmlns:comkis="using:trading_platform.Components.KoreaInvestment"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
+  x:Class="trading_platform.View.KoreaInvestment.KoreaStockProfitLoss"
+  x:DataType="vmkis:DomesticStockProfitLoss"
+  x:Name="ControlRoot"
+>
+<UserControl.DataContext>
+  <vmkis:DomesticStockProfitLoss />
+</UserControl.DataContext>
+<DockPanel Margin="5">
+  <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight" DockPanel.Dock="Top" >
+    <comkis:Account
+      DataContext="{Binding #ControlRoot.((vmkis:IAccount)DataContext)}"
+      HorizontalAlignment="Left"
+      VerticalAlignment="Center"
+    />
+    <Button Click="AccountButton_Click">조회</Button>
+  </StackPanel>
+  <com:ProfitLossList
+    DataContext="{Binding #ControlRoot.DataContext}"
+  />
+</DockPanel>
+</UserControl>

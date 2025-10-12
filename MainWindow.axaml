@@ -4,7 +4,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:component="using:trading_platform.Components"
   xmlns:cat="using:trading_platform.Styles.Catppuccin"
-  xmlns:view="using:trading_platform.View"
+  xmlns:view="using:trading_platform.View.KoreaInvestment"
   mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
   x:Class="trading_platform.MainWindow"
   Title="Trading Platform"

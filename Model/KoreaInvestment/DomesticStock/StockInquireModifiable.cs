@@ -1,32 +1,30 @@
-using System.Net;
 using System.Text.Json.Serialization;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class StockInquireModifiableQueries : IAccount, IConsecutive {
-  public const int ORDER = 0;
-  public const int TICKER = 1;
-  public const int ALL = 0;
-  public const int SELL = 1;
-  public const int BUY = 2;
-  
-  public required string AccountBase { get; set; }
-  public required string AccountCode { get; set; }
-  public required string FirstConsecutiveContext { get; set; } = "";
-  public required string SecondConsecutiveContext { get; set; } = "";
-  public required int OrderOrTicker { get; set; }
-  public required int SellOrBuy { get; set; }
-}
-
-public class StockInquireModifiableResult : KisReturnMessage, IReturnConsecutive {
-  [JsonIgnore] public bool HasNextData { get; set; }
-  [JsonPropertyName("ctx_area_fk100")] public string? FirstConsecutiveContext { get; set; }
-  [JsonPropertyName("ctx_area_nk100")] public string? SecondConsecutiveContext { get; set; }
-
-  [JsonPropertyName("output")] public IEnumerable<StockPendingOrder>? ModifiableList { get; set; }
-}
-
 public static partial class DomesticStock {
+  public class StockInquireModifiableQueries : IAccount, IConsecutive {
+    public const int ORDER = 0;
+    public const int TICKER = 1;
+    public const int ALL = 0;
+    public const int SELL = 1;
+    public const int BUY = 2;
+    
+    public required string AccountBase { get; set; }
+    public required string AccountCode { get; set; }
+    public required string FirstConsecutiveContext { get; set; } = "";
+    public required string SecondConsecutiveContext { get; set; } = "";
+    public required int OrderOrTicker { get; set; }
+    public required int SellOrBuy { get; set; }
+  }
+
+  public class StockInquireModifiableResult : KisReturnMessage, IReturnConsecutive {
+    [JsonIgnore] public bool HasNextData { get; set; }
+    [JsonPropertyName("ctx_area_fk100")] public string? FirstConsecutiveContext { get; set; }
+    [JsonPropertyName("ctx_area_nk100")] public string? SecondConsecutiveContext { get; set; }
+
+    [JsonPropertyName("output")] public IEnumerable<PendingOrder>? ModifiableList { get; set; }
+  }
   public static Action<StockInquireModifiableQueries, Action<string>?> InquireStockModifiableOrder = (queries, cb) =>
     ApiClient.PushRequest(
       "TTTC0084R",

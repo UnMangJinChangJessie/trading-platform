@@ -1,10 +1,10 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using trading_platform.Model;
 using trading_platform.Model.Charts;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.StockMarketInformation;
+using static trading_platform.Model.KoreaInvestment.DomesticStock;
 
 namespace trading_platform.ViewModel.KoreaInvestment;
 
@@ -23,7 +23,25 @@ public class StockMarketData : MarketData {
       CandlestickChartData.CandlePeriod.Monthly,
       CandlestickChartData.CandlePeriod.Yearly,
     ];
-    ApiClient.KisWebSocket.MessageReceived += (sender, args) => {
+    ApiClient.KisWebSocket.MessageReceived += OnReceivedRealtime;
+    // if (true) {
+    if (Design.IsDesignMode) {
+      var generated = Generators.Series.GenerateBrownianOHLC(450.0, -0.01, 0.2, TimeSpan.FromDays(1), DateTime.Today, 300);
+      PriceChart.InsertCandleRange(generated);
+      CurrentClose = PriceChart[0]!.Close;
+      CurrentHigh = PriceChart[0]!.High;
+      CurrentLow = PriceChart[0]!.Low;
+      CurrentOpen = PriceChart[0]!.Open;
+      CurrentVolume = PriceChart[0]!.Volume;
+      Currency = "pt";
+      Name = "KOSPI200";
+      PreviousClose = PriceChart[1]!.Close;
+    }
+  }
+  ~StockMarketData() {
+    ApiClient.KisWebSocket.MessageReceived -= OnReceivedRealtime;
+  }
+  private void OnReceivedRealtime(object? sender, (string TransactionId, List<string[]> Message) args) {
       if (args.TransactionId != "H0UNCNT0" && args.TransactionId != "H0STCNT0" && args.TransactionId != "H0NXCNT0") return; // 통합 | KRX | NexTrade
       if (args.Message.Count == 0) return;
       for (int i = args.Message.Count - 1; i < args.Message.Count; i++) { // 현재는 체결 목록을 저장하지 않기에 마지막 행만 읽음. 
@@ -53,25 +71,11 @@ public class StockMarketData : MarketData {
       }
       ChangeDependentValues();
       Currency = "원";
-    };
-    // if (true) {
-    if (Design.IsDesignMode || System.Diagnostics.Debugger.IsAttached) {
-      var generated = Generators.Series.GenerateBrownianOHLC(450.0, -0.01, 0.2, TimeSpan.FromDays(1), DateTime.Today, 300);
-      PriceChart.InsertCandleRange(generated);
-      CurrentClose = PriceChart[0]!.Close;
-      CurrentHigh = PriceChart[0]!.High;
-      CurrentLow = PriceChart[0]!.Low;
-      CurrentOpen = PriceChart[0]!.Open;
-      CurrentVolume = PriceChart[0]!.Volume;
-      Currency = "pt";
-      Name = "KOSPI200";
-      PreviousClose = PriceChart[1]!.Close;
     }
-  }
   private void OnRequestSuccess(string jsonString) {
-    StockInquireChartResult? body;
+    ChartResult? body;
     try {
-      body = JsonSerializer.Deserialize<StockInquireChartResult>(jsonString, options: ApiClient.JsonSerializerOption);
+      body = JsonSerializer.Deserialize<ChartResult>(jsonString, options: ApiClient.JsonSerializerOption);
     }
     catch (Exception ex) {
       ExceptionHandler.PrintExceptionMessage(ex);

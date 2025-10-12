@@ -157,7 +157,6 @@ public partial class ApiClient {
     }
 
     public static async ValueTask<bool> Connect() {
-      if (Client.State == WebSocketState.Connecting) SpinWait.SpinUntil(() => Client.State != WebSocketState.Connecting, 5_000);
       if (Client.State == WebSocketState.Open) return true;
       if (Client.State == WebSocketState.Aborted) {
         // 소켓이 죽었으므로 CancellationTokenSource와 소켓을 다시 생성
@@ -173,6 +172,7 @@ public partial class ApiClient {
       Uri uri = new($"ws://ops.koreainvestment.com:{(Simulation ? 31000 : 21000)}");
       try {
         await Client.ConnectAsync(uri, CancellationToken.None);
+        SpinWait.SpinUntil(() => Client.State != WebSocketState.Connecting, 10_000);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
@@ -185,12 +185,6 @@ public partial class ApiClient {
     public static async Task Subscribe(string id, string key) {
       lock (SubscriptionsLock) {
         if (Subscriptions.Count >= 41) return;
-      }
-      if (Client.State != WebSocketState.Open) {
-        if (!await Connect()) {
-          Debug.WriteLine($"[{nameof(KisWebSocket)}] Failed to connect the shared WebSocket.");
-          return;
-        }
       }
       try {
         await Client.SendAsync(RequestJsonString(true, id, key), WebSocketMessageType.Text, true, CancellationToken.None);

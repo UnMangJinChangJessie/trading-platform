@@ -26,7 +26,7 @@ public partial class OverseaStockOrder : Order, IAccount {
   public override async Task Long() {
     if (SelectedMethod == null) return;
     Model.KoreaInvestment.OverseaStock.Order(new() {
-      Position = Model.KoreaInvestment.OrderPosition.Buy,
+      Position = Model.KoreaInvestment.OrderPosition.Long,
       Exchange = StockExchange,
       AccountBase = AccountBase,
       AccountCode = AccountCode,
@@ -40,7 +40,7 @@ public partial class OverseaStockOrder : Order, IAccount {
   public override async Task Short() {
     if (SelectedMethod == null) return;
     Model.KoreaInvestment.OverseaStock.Order(new() {
-      Position = Model.KoreaInvestment.OrderPosition.Sell,
+      Position = Model.KoreaInvestment.OrderPosition.Short,
       Exchange = StockExchange,
       AccountBase = AccountBase,
       AccountCode = AccountCode,

@@ -24,6 +24,7 @@ public static partial class ApiClient {
   public static bool Simulation { get; private set; } = false;
   public static string AppPublicKey { get; set; } = "";
   public static string AppSecretKey { get; set; } = "";
+  public static string AccountId { get; set; } = "";
   public static string AccessToken { get; set; } = default!;
   public static DateTime AccessTokenExpire { get; private set; } = DateTime.UnixEpoch;
   public static ConcurrentQueue<RequestBlock> PendingRequests = new();
@@ -59,11 +60,19 @@ public static partial class ApiClient {
     return AccessToken[..Math.Min(3, AccessToken.Length)] + "...";
   }
   public static void PollApiRequest() {
-    while (!PollingTaskCancellationToken.IsCancellationRequested) {
-      SpinWait.SpinUntil(() => !PendingRequests.IsEmpty && LastRequestTime + REQUEST_RATE_LIMIT <= DateTime.Now);
+    while (true) {
+      SpinWait.SpinUntil(() =>
+        PollingTaskCancellationToken.IsCancellationRequested || // 취소 요청
+        DateTime.Now >= AccessTokenExpire || //접근 토큰 만료
+        (!PendingRequests.IsEmpty && LastRequestTime + REQUEST_RATE_LIMIT <= DateTime.Now) // 정보 수신 요청
+      );
       LastRequestTime = DateTime.Now;
+      if (PollingTaskCancellationToken.IsCancellationRequested) {
+        break;
+      }
       if (DateTime.Now >= AccessTokenExpire) {
         IssueToken().Wait();
+        continue;
       }
       if (!PendingRequests.TryDequeue(out var request)) continue; // SpinUntil로 인해 일어나지는 않는 코드
       try {

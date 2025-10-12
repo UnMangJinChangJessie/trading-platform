@@ -4,19 +4,19 @@ using System.Text.Json.Serialization;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class OverseaStockInquireChartQueries {
-  public required Exchange Exchange { get; set; }
-  public required string Ticker { get; set; }
-  public required DateOnly EndDate { get; set; }
-  public required CandlePeriod CandlePeriod { get; set; }
-  public required bool Adjusted { get; set; }
-}
-public class OverseaStockInquireChartResult : KisReturnMessage {
-  [JsonPropertyName("output2")]
-  public IEnumerable<OverseaStockChart>? Chart { get; set; }
-}
 public static partial class OverseaStock {
-  public readonly static Action<OverseaStockInquireChartQueries, Action<string>?> GetChart = (queries, callback) =>
+  public class ChartQueries {
+    public required Exchange Exchange { get; set; }
+    public required string Ticker { get; set; }
+    public required DateOnly EndDate { get; set; }
+    public required CandlePeriod CandlePeriod { get; set; }
+    public required bool Adjusted { get; set; }
+  }
+  public class ChartResult : KisReturnMessage {
+    [JsonPropertyName("output2")]
+    public IEnumerable<ChartItem>? Chart { get; set; }
+  }
+  public readonly static Action<ChartQueries, Action<string>?> GetChart = (queries, callback) =>
     ApiClient.PushRequest(
       transId: "HHDFS76240000",
       callback: callback,

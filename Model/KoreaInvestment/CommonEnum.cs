@@ -7,9 +7,9 @@ namespace trading_platform.Model.KoreaInvestment;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderPosition {
   [JsonStringEnumMemberName("01")]
-  Sell, // also short
+  Short, // also short
   [JsonStringEnumMemberName("02")]
-  Buy, // also long
+  Long, // also long
 }
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderSelling {

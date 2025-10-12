@@ -1,10 +1,9 @@
-using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using trading_platform.Model.KoreaInvestment;
 
-namespace trading_platform.View;
+namespace trading_platform.View.KoreaInvestment;
 
 public partial class OverseaStockChart : UserControl {
   private ViewModel.MarketData? CastedDataContext => DataContext as ViewModel.MarketData;

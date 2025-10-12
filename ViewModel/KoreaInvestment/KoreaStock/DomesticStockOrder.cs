@@ -32,11 +32,11 @@ public partial class StockOrder : Order, IAccount {
     Model.KoreaInvestment.DomesticStock.OrderCash(new() {
       AccountBase = AccountBase,
       AccountCode = AccountCode,
-      Position = Model.KoreaInvestment.OrderPosition.Buy,
+      Position = Model.KoreaInvestment.OrderPosition.Long,
       Ticker = Ticker,
       UnitPrice = (ulong)UnitPrice,
       Quantity = (ulong)Quantity,
-      OrderDivision = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
+      Method = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
       StopLossLimit = (ulong?)StopLossPrice
     }, null);
     await Task.CompletedTask;
@@ -47,11 +47,11 @@ public partial class StockOrder : Order, IAccount {
       AccountBase = AccountBase,
       AccountCode = AccountCode,
       SellType = Model.KoreaInvestment.OrderSelling.Ordinary,
-      Position = Model.KoreaInvestment.OrderPosition.Buy,
+      Position = Model.KoreaInvestment.OrderPosition.Long,
       Ticker = Ticker,
       UnitPrice = (ulong)UnitPrice,
       Quantity = (ulong)Quantity,
-      OrderDivision = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
+      Method = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
       StopLossLimit = (ulong?)StopLossPrice
     }, null);
     await Task.CompletedTask;

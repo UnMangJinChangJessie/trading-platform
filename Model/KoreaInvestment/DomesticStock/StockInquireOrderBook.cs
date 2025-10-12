@@ -3,18 +3,20 @@ using System.Text.Json.Serialization;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class StockInquireOrderBookQueries {
-  public required Exchange MarketClassification { get; set; }
-  public required string Ticker { get; set; }
-}
-
-public class StockInquireOrderBookResult : KisReturnMessage {
-  [JsonPropertyName("output1")]
-  public StockOrderBook? Output { get; set; }
-}
 
 public static partial class DomesticStock {
-  public static readonly Action<StockInquireOrderBookQueries, Action<string>?> GetOrderBook = (queries, cb) =>
+  public class OrderBookQueries {
+    public required Exchange MarketClassification { get; set; }
+    public required string Ticker { get; set; }
+  }
+
+  public class OrderBookResult : KisReturnMessage {
+    [JsonPropertyName("output1")]
+    public OrderBook? Output { get; set; }
+    [JsonPropertyName("output2")]
+    public OrderBookInformation? Information { get; set; }
+  }
+  public static readonly Action<OrderBookQueries, Action<string>?> GetOrderBook = (queries, cb) =>
     ApiClient.PushRequest(
       "FHKST01010200", 
       callback: cb,

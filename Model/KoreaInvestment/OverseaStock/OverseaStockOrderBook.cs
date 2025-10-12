@@ -4,19 +4,18 @@ using System.Text.Json.Serialization;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class OverseaStockOrderBookQueries {
-  public required Exchange ExchangeCode { get; set; }
-  public required string Ticker { get; set; }
-}
-public class OverseaStockOrderBookResult : KisReturnMessage {
-  [JsonPropertyName("output1")]
-  public OverseaStockOrderBookInformation? Information { get; set; }
-  [JsonPropertyName("output2")]
-  public OverseaStockOrderBook? OrderBook { get; set; }
-}
-
 public static partial class OverseaStock {
-  public readonly static Action<OverseaStockOrderBookQueries, Action<string>?> GetOrderBook = (queries, callback) =>
+  public class OrderBookQueries {
+    public required Exchange ExchangeCode { get; set; }
+    public required string Ticker { get; set; }
+  }
+  public class OrderBookResult : KisReturnMessage {
+    [JsonPropertyName("output1")]
+    public OrderBookInformation? Information { get; set; }
+    [JsonPropertyName("output2")]
+    public OrderBook? OrderBook { get; set; }
+  }
+  public readonly static Action<OrderBookQueries, Action<string>?> GetOrderBook = (queries, callback) =>
     ApiClient.PushRequest(
       "HHDFS76200100",
       callback: callback,

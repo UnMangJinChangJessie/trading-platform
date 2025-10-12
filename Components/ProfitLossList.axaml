@@ -1,0 +1,76 @@
+<UserControl
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vm="using:trading_platform.ViewModel"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns="https://github.com/avaloniaui"
+  d:DesignHeight="720"
+  d:DesignWidth="1080"
+  mc:Ignorable="d"
+  x:Class="trading_platform.Components.ProfitLossList"
+  x:DataType="vm:ProfitLoss"
+>
+<DockPanel>
+  <StackPanel 
+    DockPanel.Dock="Top"
+    Orientation="Horizontal"
+  >
+    <TextBlock 
+      FontSize="{StaticResource FontSizeXLarge}"
+      FontWeight="Bold"
+      Margin="5"
+      VerticalAlignment="Bottom"
+    >
+      <TextBlock.Text>
+        <MultiBinding StringFormat="총 손익 (PnL%) {0:+#,#;-#,#;0} ({1:+0.00%;-0.00%;0.00%})">
+          <Binding Path="TotalProfitLoss" FallbackValue="N/A" />
+          <Binding Path="TotalProfitLossRate" FallbackValue="N/A%" />
+        </MultiBinding>
+      </TextBlock.Text>
+    </TextBlock>
+    <TextBlock
+      FontSize="{StaticResource FontSizeMedium}"
+      Margin="5"
+      VerticalAlignment="Bottom"
+    >
+      <TextBlock.Text>
+        <Binding StringFormat="진입금액 총합 {0:#,#;}" Path="TotalEntryAmount" FallbackValue="진입금액 총합 N/A" />
+      </TextBlock.Text>
+    </TextBlock>
+    <TextBlock
+      FontSize="{StaticResource FontSizeMedium}"
+      Margin="5"
+      VerticalAlignment="Bottom"
+    >
+      <TextBlock.Text>
+        <Binding StringFormat="평가금액 총합 {0:#,#;}" Path="TotalEvaluation" FallbackValue="평가금액 총합 N/A" />
+      </TextBlock.Text>
+    </TextBlock>
+  </StackPanel>
+  <DataGrid 
+    Margin="5" 
+    ItemsSource="{Binding ProfitLosses}" 
+    IsReadOnly="True" 
+    CanUserResizeColumns="True" 
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+  >
+    <DataGrid.Columns>
+      <DataGridTextColumn Header="종목코드" Binding="{Binding Ticker}" />
+      <DataGridTextColumn Header="종목명" Binding="{Binding Name}" />
+      <DataGridTextColumn Header="손익 (PnL%)">
+        <DataGridTextColumn.Binding>
+          <MultiBinding StringFormat="{}{0:+#,#;-#,#;0} ({1:+0.00%;-0.00%;0.00%})">
+            <Binding Path="CurrentProfitLoss" />
+            <Binding Path="CurrentProfitLossRate" />
+          </MultiBinding>
+        </DataGridTextColumn.Binding>
+      </DataGridTextColumn>
+      <DataGridTextColumn Header="진입금액" Binding="{Binding EntryAmount, StringFormat='{}{0:#,#}'}" />
+      <DataGridTextColumn Header="평가금액" Binding="{Binding CurrentEvaluation, StringFormat='{}{0:#,#}'}" />
+      <DataGridTextColumn Header="평균단가" Binding="{Binding AveragePrice, StringFormat='{}{0:#,#.0000}'}" />
+      <DataGridTextColumn Header="수량" Binding="{Binding Quantity, StringFormat='{}{0:#,#}'}" />
+    </DataGrid.Columns>
+  </DataGrid>
+</DockPanel>
+</UserControl>

@@ -1,0 +1,34 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:com="clr-namespace:trading_platform.Components;assembly=trading-platform"
+  xmlns:comkis="clr-namespace:trading_platform.Components.KoreaInvestment;assembly=trading-platform"
+  xmlns:vmkis="clr-namespace:trading_platform.ViewModel.KoreaInvestment;assembly=trading-platform"
+  x:Class="trading_platform.View.KoreaInvestment.KoreaStockQuickOrder"
+  x:DataType="vmkis:DomesticStockQuickOrder"
+  x:Name="ControlRoot"
+>
+  <UserControl.DataContext>
+    <vmkis:DomesticStockQuickOrder />
+  </UserControl.DataContext>
+  <DockPanel Margin="5" >
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" >
+      <comkis:Account
+        DataContext="{Binding #ControlRoot.((vmkis:IAccount)DataContext)}"
+      />
+      <TextBox Text="{Binding Ticker}" ToolTip.Tip="종목코드 입력" Watermark="종목코드 입력" />
+      <Button
+        Classes="Flat"
+        HorizontalContentAlignment="Center"
+        VerticalContentAlignment="Center"
+        ClickMode="Release"
+        Click="InquireButton_Click"
+      >
+        조회
+      </Button>
+    </StackPanel>
+    <com:QuickOrder
+      DataContext="{Binding #ControlRoot.DataContext}"
+    />
+  </DockPanel>
+</UserControl>

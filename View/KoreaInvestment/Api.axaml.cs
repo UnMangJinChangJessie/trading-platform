@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using trading_platform.Model.KoreaInvestment;
 
-namespace trading_platform.View;
+namespace trading_platform.View.KoreaInvestment;
 
 public partial class Api : UserControl {
   public Api() {
@@ -38,6 +38,7 @@ public partial class Api : UserControl {
       AccessKeyTextBox.Text = ApiClient.AccessToken;
       AccessKeyExpireTextBox.Text = ApiClient.AccessTokenExpire.ToString("yyyy-MM-ddThh:mm:sszzz");
     }
+    await ApiClient.KisWebSocket.Connect();
   }
   private async void RevokeButton_Click(object? sender, RoutedEventArgs args) {
     var success = await ApiClient.RevokeToken();

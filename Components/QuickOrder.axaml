@@ -1,0 +1,94 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:com="using:trading_platform.Components"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:m="clr-namespace:trading_platform.Model"
+  xmlns:vm="clr-namespace:trading_platform.ViewModel"
+  xmlns:vmkis="clr-namespace:trading_platform.ViewModel.KoreaInvestment"
+  x:Class="trading_platform.Components.QuickOrder"
+  x:DataType="vm:QuickOrder"
+  x:Name="ControlRoot"
+  d:DesignWidth="1000"
+  Loaded="UserControl_Loaded"
+>
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top">
+      <ComboBox 
+        ToolTip.Tip="단위수량"
+        ItemsSource="{Binding QuantityUnits}"
+        SelectedItem="{Binding Quantity}"
+        Width="100"
+      />
+    </StackPanel>
+    <ScrollViewer Margin="5" >
+      <ItemsControl ItemsSource="{Binding CurrentOrders}" >
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Vertical" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="*,*,1.5*,*,*">
+              <Button
+                Background="{Binding #ControlRoot.ShortBrush}"
+                Classes="Flat"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+              >
+                <TextBlock
+                  IsVisible="{Binding !!ShortQuantity}"
+                  Text="{Binding ShortQuantity}"
+                  HorizontalAlignment="Left"
+                />
+              </Button>
+              <TextBlock
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                IsVisible="{Binding !!AskQuantity}"
+                Text="{Binding AskQuantity}"
+                VerticalAlignment="Center"
+              />
+              <TextBlock
+                Grid.Column="2"
+                HorizontalAlignment="Center" 
+                Padding="5"
+                Text="{Binding Price}" 
+              >
+                <TextBlock.Foreground>
+                  <MultiBinding Converter="{x:Static m:Converters.ComparisonConverter}" Mode="OneWay" >
+                    <Binding Path="Price" />
+                    <Binding Path="#ControlRoot.((vm:QuickOrder)DataContext).PreviousClose" />
+                    <Binding Path="#ControlRoot.LongBrush" />
+                    <Binding Path="#ControlRoot.ShortBrush" />
+                    <Binding Path="#ControlRoot.NeutralBrush" />
+                  </MultiBinding>
+                </TextBlock.Foreground>
+              </TextBlock>
+              <Button
+                Background="{Binding #ControlRoot.LongBrush}"
+                Classes="Flat"
+                Grid.Column="3"
+                Grid.ColumnSpan="2"
+              >
+                <TextBlock
+                  IsVisible="{Binding !!LongQuantity}"
+                  Text="{Binding LongQuantity}"
+                  HorizontalAlignment="Right"
+                />
+              </Button>
+              <TextBlock
+                Grid.Column="3"
+                HorizontalAlignment="Center"
+                IsVisible="{Binding !!BidQuantity}"
+                Text="{Binding BidQuantity}"
+                VerticalAlignment="Center"
+              />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

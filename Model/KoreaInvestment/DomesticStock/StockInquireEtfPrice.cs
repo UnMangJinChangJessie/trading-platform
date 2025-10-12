@@ -4,14 +4,14 @@ using System.Text.Json.Serialization;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public class StockInquireEtpPriceQueries {
-  public required string Ticker { get; set; }
-}
-public class StockInquireEtpPriceResult : KisReturnMessage {
-  [JsonPropertyName("output")]
-  public StockEtpDetailInformation? Information { get; set; }
-}
 public static partial class DomesticStock {
+  public class StockInquireEtpPriceQueries {
+    public required string Ticker { get; set; }
+  }
+  public class StockInquireEtpPriceResult : KisReturnMessage {
+    [JsonPropertyName("output")]
+    public EtpInformation? Information { get; set; }
+  }
   public static readonly Action<StockInquireEtpPriceQueries, Action<string>?> GetEtpPrice = (queries, cb) => 
     ApiClient.PushRequest(
       transId: "FHPST02400000",

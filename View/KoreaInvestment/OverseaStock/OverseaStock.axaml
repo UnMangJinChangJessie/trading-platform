@@ -4,9 +4,10 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:v="using:trading_platform.View"
+  xmlns:vkis="using:trading_platform.View.KoreaInvestment"
   xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-  x:Class="trading_platform.View.OverseaStock"
+  x:Class="trading_platform.View.KoreaInvestment.OverseaStock"
   x:DataType="vmkis:OverseaStockMarketData"
   x:Name="ControlRoot"
 >
@@ -15,10 +16,13 @@
   </UserControl.DataContext>
   <TabControl>
     <TabItem Header="차트/주문">
-      <v:OverseaStockChart
+      <vkis:OverseaStockChart
         Name="PART_StockChartAndOrder" 
         DataContext="{Binding #ControlRoot.DataContext}"
       />
+    </TabItem>
+    <TabItem Header="잔고">
+      <vkis:OverseaStockProfitLoss />
     </TabItem>
   </TabControl>
 </UserControl>

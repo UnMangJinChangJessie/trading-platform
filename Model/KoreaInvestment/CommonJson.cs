@@ -15,11 +15,12 @@ public class StringToBooleanConverter : JsonConverter<bool> {
 
 public class DateToStringConverter : JsonConverter<DateOnly> {
   public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-    return DateOnly.ParseExact(
+    var result = DateOnly.TryParseExact(
       reader.GetString() ?? "19700101",
       "yyyyMMdd",
-      CultureInfo.CreateSpecificCulture("ko-KR")
+      out var date
     );
+    return result ? date : DateOnly.MinValue;
   }
   public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options) {
     writer.WriteStringValue(value.ToString("yyyyMMdd"));
