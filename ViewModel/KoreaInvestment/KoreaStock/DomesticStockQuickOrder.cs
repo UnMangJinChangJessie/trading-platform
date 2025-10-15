@@ -6,17 +6,23 @@ using static trading_platform.Model.StockMarketInformation;
 
 namespace trading_platform.ViewModel.KoreaInvestment;
 
+internal class DomesticStockQuickOrderItem(decimal price, decimal ask, decimal bid) : QuickOrderItem(price, ask, bid) {
+  public List<PendingOrder> LongOrders { get; set; } = [];
+  public List<PendingOrder> ShortOrders { get; set; } = [];
+}
+
 public partial class DomesticStockQuickOrder : QuickOrder, IAccount {
   [ObservableProperty]
   public partial string AccountBase { get; set; }
   [ObservableProperty]
   public partial string AccountCode { get; set; }
+  private KRXSecuritiesType SecuritiesType { get; set; }
 
   public DomesticStockQuickOrder() : base() {
     AccountBase = "";
     AccountCode = "";
-    NextTickGenerator = KRXStock.GetTickIncrement;
-    PreviousTickGenerator = KRXStock.GetTickDecrement;
+    NextTickGenerator = x => KRXStock.GetTickIncrement(x, SecuritiesType);
+    PreviousTickGenerator = x => KRXStock.GetTickDecrement(x, SecuritiesType);
   }
   public void OnReceivedLong(string jsonString) {
     throw new NotImplementedException();
@@ -110,9 +116,63 @@ public partial class DomesticStockQuickOrder : QuickOrder, IAccount {
       Quantity = quantity,
     }, OnReceivedLong);
   }
-
+  public override async Task MoveAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("from_price", out var fromPriceObject) || fromPriceObject is not decimal fromPrice) return;
+    if (!args.TryGetValue("to_price", out var toPriceObject) || toPriceObject is not decimal toPrice) return;
+    if (!args.TryGetValue("from_position", out var fromPositionObject) || fromPositionObject is not Model.Position fromPosition) return;
+    if (!args.TryGetValue("to_position", out var toPositionObject) || toPositionObject is not Model.Position toPosition) return;
+    // 정정주문 총량
+    ulong totalQuantity = 0;
+    var orderRowIdx = BinarySearch(fromPrice);
+    if (orderRowIdx < 0) return; // 주문이 등록이 되어있어서 있어야 하지만 혹시라도...
+    List<PendingOrder> modifying = fromPosition == Model.Position.Long ?
+      ((DomesticStockQuickOrderItem)CurrentOrders[orderRowIdx]).LongOrders :
+      ((DomesticStockQuickOrderItem)CurrentOrders[orderRowIdx]).ShortOrders;
+    totalQuantity = modifying.Aggregate(0UL, (prev, x) => prev + x.ModifiableQuantity);
+    await CancelAsync(args);
+    // 지정가 재주문
+    if (toPosition == Model.Position.Long) {
+      await LongAsync(new Dictionary<string, object>() {
+        ["ticker"] = Ticker,
+        ["price"] = toPrice,
+        ["quantity"] = totalQuantity,
+      });
+    }
+    else {
+      await ShortAsync(new Dictionary<string, object>() {
+        ["ticker"] = Ticker,
+        ["price"] = toPrice,
+        ["quantity"] = totalQuantity,
+      });
+    }
+  }
+  public override async Task CancelAsync(IDictionary<string, object> args) {
+    if (!args.TryGetValue("from_price", out var fromPriceObject) || fromPriceObject is not decimal fromPrice) return;
+    if (!args.TryGetValue("from_position", out var fromPositionObject) || fromPositionObject is not Model.Position fromPosition) return;
+    var orderRowIdx = BinarySearch(fromPrice);
+    if (orderRowIdx < 0) return; // 호가가 등록이 되어있어서 있어야 하지만 혹시라도...
+    List<PendingOrder> modifying = fromPosition == Model.Position.Long ?
+      ((DomesticStockQuickOrderItem)CurrentOrders[orderRowIdx]).LongOrders :
+      ((DomesticStockQuickOrderItem)CurrentOrders[orderRowIdx]).ShortOrders; // 이러면 참조로 되나?
+    // 굳이 그러나 싶지만 같은 가격에 주문을 나누는 경우가 있을 수 있으니,,,,
+    foreach (var order in modifying) {
+      ModifyOrder(new ModifyOrderBody() {
+        AccountBase = AccountBase,
+        AccountCode = AccountCode,
+        ModificationType = Modification.Cancel,
+        OrganizationNumber = order.OrganizationNumber,
+        OrderNumber = order.OrderNumber,
+        ModifyEntirely = true,
+        Quantity = order.ModifiableQuantity,
+        UnitPrice = order.UnitPrice,
+        OrderDivision = order.OrderDivision
+      }, (jsonString) => { }); // callback에서 할 게 없음
+    }
+    modifying.Clear();
+  }
   public override async Task RefreshAsync(IDictionary<string, object> args) {
-    if (KRXStock.SearchByTicker(Ticker) is null) return;
+    if (KRXStock.SearchByTicker(Ticker) is not KRXStockInformation information) return;
+    SecuritiesType = information.SecuritiesType;
     lock (CurrentOrders) CurrentOrders.Clear();
     GetOrderBook(new() {
       MarketClassification = Exchange.DomesticUnified,

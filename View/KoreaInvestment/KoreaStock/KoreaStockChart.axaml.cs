@@ -7,28 +7,38 @@ using trading_platform.Model;
 namespace trading_platform.View.KoreaInvestment;
 
 public partial class KoreaStockChart : UserControl {
-  private ViewModel.MarketData? CastedDataContext => DataContext as ViewModel.MarketData;
+  private ViewModel.KoreaInvestment.StockMarketData? CastedDataContext => DataContext as ViewModel.KoreaInvestment.StockMarketData;
   public KoreaStockChart() {
     InitializeComponent();
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     OrderView.PriceSpinner.Spinned += (sender, args) => {
       if (sender is not NumericUpDown castedSender) return;
+      if (CastedDataContext == null) return;
       if (!castedSender.Value.HasValue) {
         castedSender.Value = 0;
         return;
       }
-      if (args.Direction == SpinDirection.Increase) castedSender.Value = StockMarketInformation.KRXStock.GetTickIncrement(castedSender.Value.Value - castedSender.Increment);
-      else castedSender.Value = StockMarketInformation.KRXStock.GetTickDecrement(castedSender.Value.Value + castedSender.Increment);
+      if (args.Direction == SpinDirection.Increase) {
+        castedSender.Value = StockMarketInformation.KRXStock.GetTickIncrement(castedSender.Value.Value - castedSender.Increment, CastedDataContext.SecuritiesType);
+      }
+      else {
+        castedSender.Value = StockMarketInformation.KRXStock.GetTickDecrement(castedSender.Value.Value + castedSender.Increment, CastedDataContext.SecuritiesType);
+      }
     };
     OrderView.StopLossSpinner.Spinned += (sender, args) => {
       if (sender is not NumericUpDown castedSender) return;
+      if (CastedDataContext == null) return;
       if (!castedSender.Value.HasValue) {
         castedSender.Value = 0;
         return;
       }
-      if (args.Direction == SpinDirection.Increase) castedSender.Value = StockMarketInformation.KRXStock.GetTickIncrement(castedSender.Value.Value - castedSender.Increment);
-      else castedSender.Value = StockMarketInformation.KRXStock.GetTickDecrement(castedSender.Value.Value + castedSender.Increment);
+      if (args.Direction == SpinDirection.Increase) {
+        castedSender.Value = StockMarketInformation.KRXStock.GetTickIncrement(castedSender.Value.Value - castedSender.Increment, CastedDataContext.SecuritiesType);
+      }
+      else {
+        castedSender.Value = StockMarketInformation.KRXStock.GetTickDecrement(castedSender.Value.Value + castedSender.Increment, CastedDataContext.SecuritiesType);
+      }
     };
   }
   public async void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {

@@ -10,44 +10,69 @@
 >
   <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" >
     <TextBlock Text="API 접근 토큰 관리" Classes="h1" HorizontalAlignment="Center" />
-    <Grid ColumnDefinitions="150, 400" RowDefinitions="Auto, Auto, Auto">
+    <Grid ColumnDefinitions="150, 400" RowDefinitions="Auto, Auto, Auto, Auto">
       <TextBlock Grid.Row="0" Grid.Column="0" Text="API Public Key" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10" />
       <TextBox 
-        Grid.Row="0" Grid.Column="1"
-        Name="AppPublicKey"
-        VerticalAlignment="Center"
+        Grid.Column="1"
+        Grid.Row="0"
         HorizontalAlignment="Stretch"
-        TextChanged="AppPublicKey_TextChanged"
         Margin="0 5"
+        Name="AppPublicKey"
+        TextChanged="AppPublicKey_TextChanged"
+        VerticalAlignment="Center"
       />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="API Secret Key" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10"/>
       <TextBox 
-        Grid.Row="1" Grid.Column="1"
-        Name="AppSecretKey"
-        VerticalAlignment="Center"
+        Grid.Column="1"
+        Grid.Row="1"
         HorizontalAlignment="Stretch"
-        TextChanged="AppSecretKey_TextChanged"
-        PasswordChar="*"
         Margin="0 5"
+        Name="AppSecretKey"
+        PasswordChar="*"
+        TextChanged="AppSecretKey_TextChanged"
+        VerticalAlignment="Center"
+      />
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="기본 계좌(10자리)" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10"/>
+      <TextBox 
+        Grid.Column="1"
+        Grid.Row="2"
+        HorizontalAlignment="Stretch"
+        Margin="0 5"
+        MaxLength="10"
+        Name="DefaultAccount"
+        TextChanged="DefaultAccount_TextChanged"
+        VerticalAlignment="Center"
+      />
+      <TextBlock Grid.Row="3" Grid.Column="0" Text="ID" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10"/>
+      <TextBox 
+        Grid.Column="1"
+        Grid.Row="3"
+        HorizontalAlignment="Stretch"
+        Margin="0 5"
+        Name="BrokerageId"
+        TextChanged="BrokerageId_TextChanged"
+        VerticalAlignment="Center"
       />
     </Grid>
     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto">
       <Button
-        Grid.Row="0" Grid.Column="0"
+        Classes="Flat"
+        Click="IssueButton_Click"
+        Grid.Column="0"
+        Grid.Row="0"
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Center"
-        Click="IssueButton_Click"
-        Classes="Flat"
         Margin="10 5"
       >
         API 접근 토큰 발급
       </Button>
       <Button
-        Grid.Row="0" Grid.Column="1"
+        Classes="Flat"
+        Click="RevokeButton_Click"
+        Grid.Column="1"
+        Grid.Row="0"
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Center"
-        Click="RevokeButton_Click"
-        Classes="Flat"
         Margin="0 5"
       >
         API 접근 토큰 폐기

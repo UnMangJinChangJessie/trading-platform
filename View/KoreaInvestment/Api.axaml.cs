@@ -15,9 +15,14 @@ public partial class Api : UserControl {
       var json = await JsonSerializer.DeserializeAsync<JsonElement>(File.OpenRead("kis-developers-key.json"));
       if (json.TryGetProperty("public_key", out var pubKey)) ApiClient.AppPublicKey = pubKey.GetString() ?? "";
       if (json.TryGetProperty("secret_key", out var secretKey)) ApiClient.AppSecretKey = secretKey.GetString() ?? "";
+      if (json.TryGetProperty("account_base", out var accountBase)) ApiClient.DefaultAccountBase = accountBase.GetString() ?? "";
+      if (json.TryGetProperty("account_code", out var accountCode)) ApiClient.DefaultAccountCode = accountCode.GetString() ?? "";
+      if (json.TryGetProperty("hts_id", out var brokerageId)) ApiClient.BrokerageId = brokerageId.GetString() ?? "";
     }
     AppPublicKey.Text = ApiClient.AppPublicKey;
     AppSecretKey.Text = ApiClient.AppSecretKey;
+    BrokerageId.Text = ApiClient.BrokerageId;
+    DefaultAccount.Text = ApiClient.DefaultAccountBase + ApiClient.DefaultAccountCode;
   }
   public void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     AppPublicKey.Text = ApiClient.AppPublicKey;
@@ -25,12 +30,18 @@ public partial class Api : UserControl {
     AccessKeyTextBox.Text = ApiClient.AccessToken;
     AccessKeyExpireTextBox.Text = ApiClient.AccessTokenExpire.ToString("yyyy-MM-ddThh:mm:sszzz");
   }
-  private void AppPublicKey_TextChanged(object? sender, RoutedEventArgs args) {
+  private void AppPublicKey_TextChanged(object? sender, TextChangedEventArgs args) {
     ApiClient.AppPublicKey = AppPublicKey.Text ?? "";
   }
-  private void AppSecretKey_TextChanged(object? sender, RoutedEventArgs args) {
-    if (sender == null) return;
+  private void AppSecretKey_TextChanged(object? sender, TextChangedEventArgs args) {
     ApiClient.AppSecretKey = AppSecretKey.Text ?? "";
+  }
+  private void DefaultAccount_TextChanged(object? sender, TextChangedEventArgs args) {
+    ApiClient.DefaultAccountBase = DefaultAccount.Text?[..8] ?? "";
+    ApiClient.DefaultAccountCode = DefaultAccount.Text?[8..] ?? "";
+  }
+  private void BrokerageId_TextChanged(object? sender, TextChangedEventArgs args) {
+    ApiClient.BrokerageId = BrokerageId.Text ?? "";
   }
   private async void IssueButton_Click(object? sender, RoutedEventArgs args) {
     var success = await ApiClient.IssueToken();
@@ -50,5 +61,6 @@ public partial class Api : UserControl {
   private void RevealButton_Click(object? sender, RoutedEventArgs args) {
     if (sender == null) return;
     AccessKeyTextBox.RevealPassword = !AccessKeyTextBox.RevealPassword;
+    
   }
 }

@@ -12,6 +12,7 @@ public class StockMarketData : MarketData {
   public float EarningsPerShare { get; private set; } = 0.0F;
   public float PriceBookValueRate { get; private set; } = 0.0F;
   public float PriceEarningsRate { get; private set; } = 0.0F;
+  public KRXSecuritiesType SecuritiesType { get; private set; } = KRXSecuritiesType.Unknown;
 
   public StockMarketData() {
     CurrentOrderBook = new StockOrderBook();
@@ -106,6 +107,7 @@ public class StockMarketData : MarketData {
   public override async Task RefreshAsync(IDictionary<string, object> args) {
     if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
     if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation stockInformation) return;
+    SecuritiesType = stockInformation.SecuritiesType;
     var inquireFrom = PriceChart.ChartDateStart ?? DateTimeOffset.Now.AddYears(-5);
     var inquireTo = PriceChart.ChartDateEnd ?? DateTimeOffset.Now;
     PriceChart.Clear();
@@ -127,6 +129,7 @@ public class StockMarketData : MarketData {
     if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
     if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation information) return;
     Ticker = ticker;
+    SecuritiesType = information.SecuritiesType;
     var task_1 = information.Exchange switch {
       Exchange.NexTrade => ApiClient.KisWebSocket.Subscribe("H0NXCNT0", ticker),
       Exchange.KoreaExchange => ApiClient.KisWebSocket.Subscribe("H0STCNT0", ticker),

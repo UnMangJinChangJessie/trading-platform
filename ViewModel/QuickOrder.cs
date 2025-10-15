@@ -82,4 +82,9 @@ public abstract partial class QuickOrder : ObservableObject, IRefresh, IRefreshR
   public abstract Task EndRefreshRealtimeAsync(IDictionary<string, object> args);
   public abstract Task LongAsync(IDictionary<string, object> args);
   public abstract Task ShortAsync(IDictionary<string, object> args);
+  // 주문을 다른 가격의 (주로 지정가) 주문으로 묶어 재주문하는 함수
+  // 숏 주문을 롱으로, 반대로 롱 주문을 숏 주문으로 전환하는 것도 가능하도록 해야 한다.
+  public abstract Task MoveAsync(IDictionary<string, object> args);
+  // 주문 취소 함수
+  public abstract Task CancelAsync(IDictionary<string, object> args);
 }

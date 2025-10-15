@@ -21,10 +21,11 @@ public static partial class Converters {
     var absoluteValue = Math.Abs(val);
     var sign = val >= 0 ? "" : "-";
     int first = 0, second = (int)decimal.Floor(val / KOREAN_NUMBER_UNITS[0].Unit);
-    decimal remainder = val - KOREAN_NUMBER_UNITS[0].Unit * second;
+    val -= KOREAN_NUMBER_UNITS[0].Unit * second;
     for (int i = 1; i < KOREAN_NUMBER_UNITS.Length; i++) {
       first = second;
       second = (int)decimal.Floor(val / KOREAN_NUMBER_UNITS[i].Unit);
+      val -= second * KOREAN_NUMBER_UNITS[i].Unit;
       if (first != 0) {
         if (second == 0) return sign + $"{first}" + KOREAN_NUMBER_UNITS[i - 1].UnitName;
         else return sign + $"{first}" + KOREAN_NUMBER_UNITS[i - 1].UnitName + $" {second}" + KOREAN_NUMBER_UNITS[i].UnitName;

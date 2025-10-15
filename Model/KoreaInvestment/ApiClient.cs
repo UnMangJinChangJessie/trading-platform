@@ -1,11 +1,9 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Net;
-using System.Net.Http.Json;
+using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.Model.KoreaInvestment;
 
@@ -24,6 +22,9 @@ public static partial class ApiClient {
   public static bool Simulation { get; private set; } = false;
   public static string AppPublicKey { get; set; } = "";
   public static string AppSecretKey { get; set; } = "";
+  public static string DefaultAccountBase { get; set; } = "";
+  public static string DefaultAccountCode { get; set; } = "";
+  public static string BrokerageId { get; set; } = "";
   public static string AccountId { get; set; } = "";
   public static string AccessToken { get; set; } = default!;
   public static DateTime AccessTokenExpire { get; private set; } = DateTime.UnixEpoch;
@@ -45,6 +46,7 @@ public static partial class ApiClient {
     },
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
   };
+
   public static bool ToggleSimulation() {
     Simulation = !Simulation;
     RequestClient.BaseAddress = BuildApiBaseAddress();

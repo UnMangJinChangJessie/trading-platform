@@ -7,9 +7,9 @@ namespace trading_platform.Model.KoreaInvestment;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderPosition {
   [JsonStringEnumMemberName("01")]
-  Short, // also short
+  Short, // also sell
   [JsonStringEnumMemberName("02")]
-  Long, // also long
+  Long, // also buy
 }
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum OrderSelling {
@@ -233,7 +233,7 @@ public static class KoreaInvestmentExtensions {
     OrderMethod.AfterMarketTreasuryStockTrust => "77",
     OrderMethod.AfterMarketHugeTreasuryStock => "79",
     OrderMethod.Basket => "80",
-    _ => throw new ArgumentOutOfRangeException(nameof(type))
+    _ => throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(OrderMethod))
   };
   public static bool IsPriceMarket(this OrderMethod method) => Enumerable.Contains([
     OrderMethod.Market, OrderMethod.IocMarket, OrderMethod.FokMarket,
@@ -254,20 +254,25 @@ public static class KoreaInvestmentExtensions {
     Exchange.Tokyo => "TSE",
     Exchange.Hanoi => "HNX",
     Exchange.HoChiMinh => "HSX",
-    _ => throw new ArgumentOutOfRangeException(nameof(exchange))
+    _ => throw new InvalidEnumArgumentException(nameof(exchange), (int)exchange, typeof(Exchange))
   };
   public static string GetCode(this CandlePeriod type) => type switch {
     CandlePeriod.Daily => "D",
     CandlePeriod.Weekly => "W",
     CandlePeriod.Monthly => "M",
     CandlePeriod.Yearly => "Y",
-    _ => throw new ArgumentOutOfRangeException(nameof(type))
+    _ => throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(CandlePeriod))
   };
   public static CandlePeriod ToKisCandlePeriod(this Charts.CandlestickChartData.CandlePeriod type) => type switch {
     Charts.CandlestickChartData.CandlePeriod.Daily => CandlePeriod.Daily,
     Charts.CandlestickChartData.CandlePeriod.Weekly => CandlePeriod.Weekly,
     Charts.CandlestickChartData.CandlePeriod.Monthly => CandlePeriod.Monthly,
     Charts.CandlestickChartData.CandlePeriod.Yearly => CandlePeriod.Yearly,
-    _ => throw new ArgumentOutOfRangeException(nameof(type))
+    _ => throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(Charts.CandlestickChartData.CandlePeriod))
+  };
+  public static OrderPosition ToKisOrderPosition(this Position type) => type switch {
+    Position.Long => OrderPosition.Long,
+    Position.Short => OrderPosition.Short,
+    _ => throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(Position))
   };
 }

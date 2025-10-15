@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 public static partial class DomesticStock {
   public class PendingOrder {
     [JsonPropertyName("KRX_FWDG_ORD_ORGNO")]
-    public required string ExchangeCode { get; set; }
+    public required string OrganizationNumber { get; set; }
     [JsonPropertyName("ODNO")]
     public required string OrderNumber { get; set; }
     [JsonPropertyName("ORD_TMD"), JsonConverter(typeof(TimeToStringConverter))]
@@ -18,7 +18,7 @@ public static partial class DomesticStock {
     [JsonPropertyName("ord_dvsn_cd")]
     public required OrderMethod OrderDivision { get; set; }
     [JsonPropertyName("ord_unpr")]
-    public required decimal UnitPrice { get; set; }
+    public required ulong UnitPrice { get; set; }
     [JsonPropertyName("ord_qty")]
     public required ulong Quantity { get; set; }
     [JsonPropertyName("stpm_cndt_pric")]
@@ -30,11 +30,11 @@ public static partial class DomesticStock {
     public required string ModificationType { get; set; }
 
     [JsonPropertyName("tot_ccld_qty")]
-    public required long ConcludedQuantity { get; set; }
+    public required ulong ConcludedQuantity { get; set; }
     [JsonPropertyName("tot_ccld_amt")]
-    public required long ConcludedAmount { get; set; }
+    public required ulong ConcludedAmount { get; set; }
     [JsonPropertyName("psbl_qty")]
-    public required long ModifiableQuantity { get; set; }
+    public required ulong ModifiableQuantity { get; set; }
 
     [JsonPropertyName("excg_dvsn_cd")] public required Exchange Exchange { get; set; }
     [JsonPropertyName("excg_id_dvsn_name")] public required string ExchangeName { get; set; }
