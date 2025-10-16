@@ -59,7 +59,12 @@ public abstract partial class MarketData : ObservableObject, IRefresh, IRefreshR
     HighChangeRate = GetChangeRate(PreviousClose, CurrentHigh);
     LowChangeRate = GetChangeRate(PreviousClose, CurrentLow);
     CloseChangeRate = GetChangeRate(PreviousClose, CurrentClose);
+    OnPropertyChanged(nameof(OpenChangeRate));
+    OnPropertyChanged(nameof(HighChangeRate));
+    OnPropertyChanged(nameof(LowChangeRate));
+    OnPropertyChanged(nameof(CloseChangeRate));
     Change = CurrentClose - PreviousClose;
+    OnPropertyChanged(nameof(Change));
     CurrentOrderBook?.PreviousClose = PreviousClose;
     CurrentOrderBook?.CurrentClose = CurrentClose;
     CurrentOrder?.Name = Name;

@@ -41,7 +41,10 @@ public class SimpleMovingAverage : Indicator {
   }
   public override AxisLimits GetAxisLimits() {
     if (MovingAverage.Count == 0) return AxisLimits.Unset;
-    var notNull = MovingAverage.Where(x => x.Value.HasValue);
+    ImmutableArray<SmaResult> notNull;
+    lock (MovingAverage) {
+      notNull = MovingAverage.Where(x => x.Value.HasValue).ToImmutableArray();
+    }
     if (!notNull.Any()) return AxisLimits.Default;
     else return new(
       left: MovingAverage[0].Date.ToOADate(),

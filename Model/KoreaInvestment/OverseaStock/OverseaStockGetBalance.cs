@@ -44,16 +44,18 @@ public static partial class OverseaStock {
     [JsonPropertyName("output2")]
     public Balance? AccountBalance { get; set; }
   }
-  public readonly static Action<BalanceQueries, Action<string>?> GetBalance = (queries, cb) => ApiClient.PushRequest(
-    transId: "TTTS3012R",
-    queries: new Dictionary<string, string>() {
-      ["CANO"] = queries.AccountBase,
-      ["ACNT_PRDT_CD"] = queries.AccountCode,
-      ["OVRS_EXCG_CD"] = queries.ExchangeCode,
-      ["TR_CRCY_CD"] = queries.CurrencyCode,
-      ["CTX_AREA_FK200"] = queries.FirstConsecutiveContext,
-      ["CTX_AREA_NK200"] = queries.SecondConsecutiveContext
-    },
-    callback: cb
-  );
+  public readonly static Action<BalanceQueries, Action<string, object?>?, object?> GetBalance = (queries, cb, args) =>
+    ApiClient.PushRequest(
+      transId: "TTTS3012R",
+      queries: new Dictionary<string, string>() {
+        ["CANO"] = queries.AccountBase,
+        ["ACNT_PRDT_CD"] = queries.AccountCode,
+        ["OVRS_EXCG_CD"] = queries.ExchangeCode,
+        ["TR_CRCY_CD"] = queries.CurrencyCode,
+        ["CTX_AREA_FK200"] = queries.FirstConsecutiveContext,
+        ["CTX_AREA_NK200"] = queries.SecondConsecutiveContext
+      },
+      callback: cb,
+      callbackParameters: args
+    );
 }

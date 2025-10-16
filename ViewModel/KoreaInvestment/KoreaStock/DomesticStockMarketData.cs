@@ -73,7 +73,7 @@ public class StockMarketData : MarketData {
       ChangeDependentValues();
       Currency = "원";
     }
-  private void OnRequestSuccess(string jsonString) {
+  private void OnRequestSuccess(string jsonString, object? args) {
     ChartResult? body;
     try {
       body = JsonSerializer.Deserialize<ChartResult>(jsonString, options: ApiClient.JsonSerializerOption);
@@ -102,7 +102,9 @@ public class StockMarketData : MarketData {
     PriceBookValueRate = body.Information!.PriceBookValueRatio;
     EarningsPerShare = body.Information!.EarningsPerShare;
     ChangeDependentValues();
-    OnPropertyChanged("");
+    if (args is bool v && v) {
+      StartRefreshRealtimeAsync(new Dictionary<string, object>() { ["ticker"] = body.Information.Ticker }).Wait(); // these are nonblocking anyway
+    }
   }
   public override async Task RefreshAsync(IDictionary<string, object> args) {
     if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
@@ -113,15 +115,17 @@ public class StockMarketData : MarketData {
     PriceChart.Clear();
     while (inquireTo >= inquireFrom) {
       var minDate = inquireTo.AddDays(-139);
-      DomesticStock.GetChart(new() {
+      var nextInquireTo = inquireTo.AddDays(-140);
+      var isLast = nextInquireTo < inquireFrom;
+      GetChart(new() {
         Ticker = ticker,
         Exchange = stockInformation.Exchange,
         From = DateOnly.FromDateTime(minDate > inquireFrom ? minDate.Date : inquireFrom.Date), // 봉 최대 100건 조회. 평일 휴일을 고려하지 않을 때 한 번에 최대 100 * 7 / 5 = 140일 조회 가능.
         To = DateOnly.FromDateTime(inquireTo.Date),
         CandlePeriod = PriceChart.Span.ToKisCandlePeriod(),
         Adjusted = true
-      }, OnRequestSuccess);
-      inquireTo = inquireTo.AddDays(-140);
+      }, OnRequestSuccess, isLast);
+      inquireTo = nextInquireTo;
     };
     if (CurrentOrderBook != null) await CurrentOrderBook.RefreshAsync(args);
   }

@@ -20,10 +20,11 @@ public static partial class DomesticStock {
   public class PurchasableResult : KisReturnMessage {
     [JsonPropertyName("output")] public Purchasable? Result { get; set; }
   }
-  public static readonly Action<PurchasableQueries, Action<string>?> GetPurchasable = (queries, cb) =>
+  public static readonly Action<PurchasableQueries, Action<string, object?>?, object?> GetPurchasable = (queries, cb, args) =>
     ApiClient.PushRequest(
       queries.TransactionId,
       callback: cb,
+      callbackParameters: args,
       queries: new Dictionary<string, string>() {
         ["CANO"] = queries.AccountBase,
         ["ACNT_PRDT_CD"] = queries.AccountCode,

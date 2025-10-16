@@ -1,13 +1,10 @@
-using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using ScottPlot;
-using ScottPlot.Plottables;
 using trading_platform.Model;
 using trading_platform.Model.Charts.Indicators;
-using trading_platform.ViewModel;
 
 namespace trading_platform.Components;
 
@@ -86,7 +83,6 @@ public partial class CandlestickChart : UserControl {
     foreach (var plottable in CandlePlot.PlottableList) {
       if (plottable == null) continue;
       plottable.Axes.YAxis.Range.Set(lowerLimit * 1.05 - upperLimit * 0.05, upperLimit * 1.05 - lowerLimit * 0.05);
-      plottable.Axes.XAxis.Range.Set(currentRange.Min, currentRange.Max);
     }
   }
   public void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {

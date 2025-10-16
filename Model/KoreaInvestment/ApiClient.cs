@@ -1,9 +1,7 @@
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.Model.KoreaInvestment;
 
@@ -12,7 +10,8 @@ public record RequestBlock(string transId, IDictionary<string, string>? queries 
   public string? BodyString { get; set; } = body;
   public IDictionary<string, string>? Queries { get; set; } = queries;
   public bool RequestNext { get; set; } = next;
-  public Action<string>? Callback { get; set; }
+  public Action<string, object?>? Callback { get; set; }
+  public object? CallbackParameters { get; set; }
 }
 
 public static partial class ApiClient {
@@ -94,7 +93,7 @@ public static partial class ApiClient {
         using (var reader = new StreamReader(response.Content.ReadAsStream())) {
           responseBody = reader.ReadToEnd();
         }
-        request.Callback?.Invoke(responseBody);
+        request.Callback?.Invoke(responseBody, request.CallbackParameters);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
@@ -103,11 +102,15 @@ public static partial class ApiClient {
   }
   public static void PushRequest(
     string transId,
-    Action<string>? callback = null,
+    Action<string, object?>? callback = null,
+    object? callbackParameters = null,
     IDictionary<string, string>? queries = null,
     object? body = null,
     bool next = false
   ) {
-    PendingRequests.Enqueue(new(transId, queries, body == null ? null : JsonSerializer.Serialize(body, JsonSerializerOption), next) { Callback = callback } );
+    PendingRequests.Enqueue(new(transId, queries, body == null ? null : JsonSerializer.Serialize(body, JsonSerializerOption), next) {
+      Callback = callback,
+      CallbackParameters = callbackParameters
+    });
   }
 }

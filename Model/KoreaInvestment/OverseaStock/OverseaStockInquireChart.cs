@@ -16,10 +16,11 @@ public static partial class OverseaStock {
     [JsonPropertyName("output2")]
     public IEnumerable<ChartItem>? Chart { get; set; }
   }
-  public readonly static Action<ChartQueries, Action<string>?> GetChart = (queries, callback) =>
+  public readonly static Action<ChartQueries, Action<string, object?>?, object?> GetChart = (queries, callback, args) =>
     ApiClient.PushRequest(
       transId: "HHDFS76240000",
       callback: callback,
+      callbackParameters: args,
       queries: new Dictionary<string, string>() {
         ["AUTH"] = "",
         ["EXCD"] = queries.Exchange.GetCode(),

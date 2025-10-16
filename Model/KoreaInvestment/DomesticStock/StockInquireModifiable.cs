@@ -25,7 +25,7 @@ public static partial class DomesticStock {
 
     [JsonPropertyName("output")] public IEnumerable<PendingOrder>? ModifiableList { get; set; }
   }
-  public static Action<StockInquireModifiableQueries, Action<string>?> InquireStockModifiableOrder = (queries, cb) =>
+  public static Action<StockInquireModifiableQueries, Action<string, object?>?, object?> InquireStockModifiableOrder = (queries, cb, args) =>
     ApiClient.PushRequest(
       "TTTC0084R",
       queries: new Dictionary<string, string>() {
@@ -37,6 +37,7 @@ public static partial class DomesticStock {
         ["INQR_DVSN_2"] = queries.SellOrBuy.ToString()
       },
       callback: cb,
+      callbackParameters: args,
       next: queries.FirstConsecutiveContext != "" && queries.SecondConsecutiveContext != ""
     );
 }

@@ -39,6 +39,7 @@
       />
     </Grid>
     <com:OrderBookDisplay
+      Focusable="False"
       Name="OrderBookDisplayView"
       DataContext="{Binding CurrentOrderBook}"
       PriceDecimalPoint="0"

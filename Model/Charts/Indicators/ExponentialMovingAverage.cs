@@ -6,7 +6,7 @@ namespace trading_platform.Model.Charts.Indicators;
 public class ExponentialMovingAverage : Indicator {
   public struct EmaResult {
     public DateTime Date { get; set; }
-    public double? Value { get; set; }
+    public double Value { get; set; }
     public double Close { get; set; }
   };
   private int _Lookback;
@@ -35,12 +35,11 @@ public class ExponentialMovingAverage : Indicator {
   }
   public override AxisLimits GetAxisLimits() {
     if (MovingAverage.Count == 0) return AxisLimits.Unset;
-    var notNull = MovingAverage.Where(x => x.Value.HasValue);
-    if (!notNull.Any()) return AxisLimits.Default;
-    else return new(
+    var snapshot = Snapshot();
+    return new(
       left: MovingAverage[0].Date.ToOADate(),
       right: MovingAverage[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: notNull.Min(x => x.Value!.Value), notNull.Max(x => x.Value!.Value)
+      bottom: snapshot.Min(x => x.Value), snapshot.Max(x => x.Value)
     );
   }
   public ImmutableArray<EmaResult> Snapshot() {
@@ -63,9 +62,8 @@ public class ExponentialMovingAverage : Indicator {
         var margin = 5 * BaseChart.TimeSpan.TotalDays;
         return range.Min - margin <= date && date <= range.Max + margin;
       })
-      .Where(x => x.Value.HasValue)
       .Select(x => rp.Plot.GetPixel(
-        new Coordinates((double)x.Date.ToOADate(), (double)x.Value!.Value),
+        new Coordinates((double)x.Date.ToOADate(), (double)x.Value),
         rp.Plot.Axes.Bottom,
         rp.Plot.Axes.Left
       ));
@@ -81,10 +79,9 @@ public class ExponentialMovingAverage : Indicator {
     if (endIdx < 0) endIdx = ~endIdx;
     if (startIdx == endIdx) return;
     var (min, max) = snapshot[startIdx..endIdx]
-      .Where(x => x.Value.HasValue)
       .Aggregate(
-        (Minimum: snapshot[0].Value!.Value, Maximum: snapshot[0].Value!.Value),
-        (prev, x) => (Math.Min(prev.Minimum, x.Value!.Value), Math.Max(prev.Maximum, x.Value!.Value))
+        (Minimum: snapshot[0].Value, Maximum: snapshot[0].Value),
+        (prev, x) => (Math.Min(prev.Minimum, x.Value), Math.Max(prev.Maximum, x.Value))
       );
     rp.Plot.Axes.SetLimitsY(min * (1 + PaddingRate) - max * PaddingRate, max * (1 + PaddingRate) - min * PaddingRate);
   }
@@ -119,18 +116,14 @@ public class ExponentialMovingAverage : Indicator {
   }
   protected override void Invalidate() {
     var snapshot = BaseChart.Candles.ToImmutableList();
+    if (snapshot.Count == 0) return;
     MovingAverage.Clear();
-    LinkedList<double> closes = [];
+    double? val = null;
+    double alpha = 2.0 / (1.0 + Lookback);
     foreach (var candle in snapshot) {
-      closes.AddLast((double)candle.Close);
-      double? value;
-      if (closes.Count < Lookback) value = null;
-      else if (closes.Count == Lookback) value = closes.Average();
-      else {
-        value = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, closes.Last() - closes.First()) / Lookback;
-        closes.RemoveFirst();
-      }
-      MovingAverage.Add(new() { Close = (double)candle.Close, Date = candle.Date, Value = value });
+      if (val == null) val = (double)candle.Close;
+      else val = val * (1 - alpha) + (double)candle.Close * alpha;
+      MovingAverage.Add(new() { Close = (double)candle.Close, Date = candle.Date, Value = val.Value });
     }
   }
   protected void Reevaluate(int begin, int end = int.MaxValue, double? withClose = null) {
@@ -138,7 +131,7 @@ public class ExponentialMovingAverage : Indicator {
     for (int i = begin; i < Math.Min(MovingAverage.Count, end); i++) {
       if (i == 0) MovingAverage[i] = MovingAverage[i] with { Value = MovingAverage[i].Close };
       else MovingAverage[i] = MovingAverage[i] with {
-        Value = double.Lerp(MovingAverage[i - 1].Value!.Value, MovingAverage[i].Close, 2.0 / (1.0 + Lookback))
+        Value = double.Lerp(MovingAverage[i - 1].Value, MovingAverage[i].Close, 2.0 / (1.0 + Lookback))
       };
     }
   }

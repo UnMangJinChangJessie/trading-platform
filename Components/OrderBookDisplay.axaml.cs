@@ -1,7 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace trading_platform.Components;
 
@@ -92,7 +94,24 @@ public partial class OrderBookDisplay : UserControl {
     get => this.GetValue(TransparentProperty);
     set => SetValue(TransparentProperty, value);
   }
+  /// <summary>
+  /// ClickPrice StyledProperty definition
+  /// indicates events on clicks at price buttons.
+  /// </summary>
+  public static readonly StyledProperty<EventHandler<RoutedEventArgs>> ClickPriceProperty =
+      AvaloniaProperty.Register<OrderBookDisplay, EventHandler<RoutedEventArgs>>(nameof(ClickPrice));
 
+  /// <summary>
+  /// Gets or sets the ClickPrice property. This StyledProperty
+  /// indicates events on clicks at price buttons.
+  /// </summary>
+  public EventHandler<RoutedEventArgs> ClickPrice {
+    get => this.GetValue(ClickPriceProperty);
+    set => SetValue(ClickPriceProperty, value);
+  }
+
+}
+public partial class OrderBookDisplay {
   public OrderBookDisplay() {
     InitializeComponent();
   }
@@ -100,5 +119,10 @@ public partial class OrderBookDisplay : UserControl {
     LongBrush ??= new SolidColorBrush(Colors.Pink);
     ShortBrush ??= new SolidColorBrush(Colors.SkyBlue);
     NeutralBrush ??= new SolidColorBrush(Colors.Black);
+  }
+  public void PriceButton_Click(object? sender, RoutedEventArgs args) {
+    if (sender is not Button button) return;
+    if (button.DataContext is not ViewModel.OrderBookItem item) return;
+    ClickPrice?.Invoke(sender, new() { Source = button.DataContext });
   }
 }

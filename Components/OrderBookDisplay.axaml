@@ -11,6 +11,7 @@
   x:DataType="vm:OrderBook"
   x:Name="ControlRoot"
   d:DesignWidth="200"
+  Focusable="False"
   Loaded="UserControl_Loaded"
 >
   <ScrollViewer Margin="5" >
@@ -32,6 +33,8 @@
           />
           <Button
             Classes="Flat"
+            Click="PriceButton_Click"
+            DataContext="{Binding .}"
             Grid.Column="1"
             HorizontalAlignment="Stretch"
             Padding="5"

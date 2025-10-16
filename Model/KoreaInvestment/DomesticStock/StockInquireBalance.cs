@@ -36,7 +36,7 @@ public partial class DomesticStock {
     [JsonPropertyName("output2")]
     public IEnumerable<Balance>? AccountBalance { get; set; } // Is defined as array but pretty sure this is a singleton
   }
-  public static Action<BalanceQueries, Action<string>?> GetBalance = (queries, cb) =>
+  public static Action<BalanceQueries, Action<string, object?>?, object?> GetBalance = (queries, cb, args) =>
     ApiClient.PushRequest(
       "TTTC8434R",
       queries: new Dictionary<string, string>() {
@@ -53,6 +53,7 @@ public partial class DomesticStock {
         ["FNCG_AMT_AUTO_RDPT_YN"] = "N",
       },
       callback: cb,
+      callbackParameters: args,
       next: queries.FirstConsecutiveContext != "" && queries.SecondConsecutiveContext != ""
     );
 }

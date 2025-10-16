@@ -12,10 +12,11 @@ public static partial class DomesticStock {
     [JsonPropertyName("output")]
     public EtpInformation? Information { get; set; }
   }
-  public static readonly Action<StockInquireEtpPriceQueries, Action<string>?> GetEtpPrice = (queries, cb) => 
+  public static readonly Action<StockInquireEtpPriceQueries, Action<string, object?>?, object?> GetEtpPrice = (queries, cb, args) => 
     ApiClient.PushRequest(
       transId: "FHPST02400000",
       callback: cb,
+      callbackParameters: args,
       queries: new Dictionary<string, string>() {
         ["FID_COND_MRKT_DIV_CODE"] = "J",
         ["FID_INPUT_ISCD"] = queries.Ticker,
