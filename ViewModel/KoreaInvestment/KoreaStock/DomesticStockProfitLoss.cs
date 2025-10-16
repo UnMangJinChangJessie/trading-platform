@@ -42,7 +42,7 @@ public partial class DomesticStockProfitLoss : ProfitLoss, IAccount {
       TotalProfitLossRate = -0.2F;
     }
   }
-  protected void OnMessageReceived(string jsonString) {
+  protected void OnMessageReceived(string jsonString, object? args) {
     BalanceResult result;
     try {
       result = JsonSerializer.Deserialize<BalanceResult>(jsonString, ApiClient.JsonSerializerOption)!;
@@ -73,7 +73,7 @@ public partial class DomesticStockProfitLoss : ProfitLoss, IAccount {
           IncludePreviousTrade = true,
           DisplayPrice = BalanceQueries.PRICE_DEFAULT,
           InquiryType = BalanceQueries.INQUIRY_TICKER
-        }, OnMessageReceived);
+        }, OnMessageReceived, args);
       }
       else {
         ChangeDependentProperties();
@@ -91,12 +91,6 @@ public partial class DomesticStockProfitLoss : ProfitLoss, IAccount {
       IncludeFund = false,
       IncludePreviousTrade = true,
       InquiryType = BalanceQueries.INQUIRY_TICKER
-    }, OnMessageReceived);
-  }
-  public override async Task StartRefreshRealtimeAsync(IDictionary<string, object> dict) {
-    return;
-  }
-  public override async Task EndRefreshRealtimeAsync(IDictionary<string, object> dict) {
-    return;
+    }, OnMessageReceived, null);
   }
 }

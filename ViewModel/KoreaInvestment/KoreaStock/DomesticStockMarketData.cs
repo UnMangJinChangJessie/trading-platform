@@ -13,6 +13,7 @@ public class StockMarketData : MarketData {
   public float PriceBookValueRate { get; private set; } = 0.0F;
   public float PriceEarningsRate { get; private set; } = 0.0F;
   public KRXSecuritiesType SecuritiesType { get; private set; } = KRXSecuritiesType.Unknown;
+  public Exchange TickerExchange { get; private set; }
 
   public StockMarketData() {
     CurrentOrderBook = new StockOrderBook();
@@ -25,7 +26,6 @@ public class StockMarketData : MarketData {
       CandlestickChartData.CandlePeriod.Yearly,
     ];
     ApiClient.KisWebSocket.MessageReceived += OnReceivedRealtime;
-    // if (true) {
     if (Design.IsDesignMode) {
       var generated = Generators.Series.GenerateBrownianOHLC(450.0, -0.01, 0.2, TimeSpan.FromDays(1), DateTime.Today, 300);
       PriceChart.InsertCandleRange(generated);
@@ -73,7 +73,7 @@ public class StockMarketData : MarketData {
       ChangeDependentValues();
       Currency = "원";
     }
-  private void OnRequestSuccess(string jsonString, object? args) {
+  private async void OnRequestSuccess(string jsonString, object? args) {
     ChartResult? body;
     try {
       body = JsonSerializer.Deserialize<ChartResult>(jsonString, options: ApiClient.JsonSerializerOption);
@@ -103,13 +103,15 @@ public class StockMarketData : MarketData {
     EarningsPerShare = body.Information!.EarningsPerShare;
     ChangeDependentValues();
     if (args is bool v && v) {
-      StartRefreshRealtimeAsync(new Dictionary<string, object>() { ["ticker"] = body.Information.Ticker }).Wait(); // these are nonblocking anyway
+      await StartRefreshRealtimeAsync();
     }
   }
   public override async Task RefreshAsync(IDictionary<string, object> args) {
     if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
-    if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation stockInformation) return;
-    SecuritiesType = stockInformation.SecuritiesType;
+    if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation information) return;
+    Ticker = information.Ticker;
+    TickerExchange = information.Exchange;
+    SecuritiesType = information.SecuritiesType;
     var inquireFrom = PriceChart.ChartDateStart ?? DateTimeOffset.Now.AddYears(-5);
     var inquireTo = PriceChart.ChartDateEnd ?? DateTimeOffset.Now;
     PriceChart.Clear();
@@ -119,7 +121,7 @@ public class StockMarketData : MarketData {
       var isLast = nextInquireTo < inquireFrom;
       GetChart(new() {
         Ticker = ticker,
-        Exchange = stockInformation.Exchange,
+        Exchange = information.Exchange,
         From = DateOnly.FromDateTime(minDate > inquireFrom ? minDate.Date : inquireFrom.Date), // 봉 최대 100건 조회. 평일 휴일을 고려하지 않을 때 한 번에 최대 100 * 7 / 5 = 140일 조회 가능.
         To = DateOnly.FromDateTime(inquireTo.Date),
         CandlePeriod = PriceChart.Span.ToKisCandlePeriod(),
@@ -129,24 +131,20 @@ public class StockMarketData : MarketData {
     };
     if (CurrentOrderBook != null) await CurrentOrderBook.RefreshAsync(args);
   }
-  public override async Task StartRefreshRealtimeAsync(IDictionary<string, object> args) {
-    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
-    if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation information) return;
-    Ticker = ticker;
-    SecuritiesType = information.SecuritiesType;
-    var task_1 = information.Exchange switch {
-      Exchange.NexTrade => ApiClient.KisWebSocket.Subscribe("H0NXCNT0", ticker),
-      Exchange.KoreaExchange => ApiClient.KisWebSocket.Subscribe("H0STCNT0", ticker),
-      _ => ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ticker),
+  private async Task StartRefreshRealtimeAsync() {
+    var task = TickerExchange switch {
+      Exchange.NexTrade => ApiClient.KisWebSocket.Subscribe("H0NXCNT0", Ticker),
+      Exchange.KoreaExchange => ApiClient.KisWebSocket.Subscribe("H0STCNT0", Ticker),
+      _ => ApiClient.KisWebSocket.Subscribe("H0UNCNT0", Ticker),
     };
-    var task_2 = CurrentOrderBook?.StartRefreshRealtimeAsync(args) ?? Task.CompletedTask;
-    await task_1;
-    await task_2;
+    await task;
   }
-  public override async Task EndRefreshRealtimeAsync(IDictionary<string, object> args) {
-    var task_1 = ApiClient.KisWebSocket.Unsubscribe("H0UNCNT0", Ticker);
-    var task_2 = CurrentOrderBook?.EndRefreshRealtimeAsync(args) ?? Task.CompletedTask;
-    await task_1;
-    await task_2;
+  private async Task EndRefreshRealtimeAsync() {
+    var task = TickerExchange switch {
+      Exchange.NexTrade => ApiClient.KisWebSocket.Unsubscribe("H0NXCNT0", Ticker),
+      Exchange.KoreaExchange => ApiClient.KisWebSocket.Unsubscribe("H0STCNT0", Ticker),
+      _ => ApiClient.KisWebSocket.Unsubscribe("H0UNCNT0", Ticker),
+    };
+    await task;
   }
 }

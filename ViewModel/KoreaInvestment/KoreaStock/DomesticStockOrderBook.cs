@@ -74,10 +74,10 @@ public partial class StockOrderBook : OrderBook {
       ConclusionTime = TimeOnly.ParseExact(args.Message[^1][1], "HHmmss");
     }
   }
-  public void OnReceiveMessage(string jsonString) {
+  public async void OnReceiveMessage(string jsonString, object? args) {
     OrderBookResult json;
     try {
-      json = JsonSerializer.Deserialize<OrderBookResult>(jsonString, ApiClient.JsonSerializerOption);
+      json = JsonSerializer.Deserialize<OrderBookResult>(jsonString, ApiClient.JsonSerializerOption)!;
     }
     catch (Exception ex) {
       ExceptionHandler.PrintExceptionMessage(ex);
@@ -112,27 +112,29 @@ public partial class StockOrderBook : OrderBook {
     ConclusionTime = result.Time;
     PreviousClose = json.Information!.PreviousClose;
     CurrentClose = json.Information!.CurrentClose;
+    await EndRefreshRealtimeAsync();
+    await StartRefreshRealtimeAsync();
   }
   public override async Task RefreshAsync(IDictionary<string, object> args) {
     if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
     if (KRXStock.SearchByTicker(ticker) is not KRXStockInformation info) return;
-    lock (CurrentOrders) CurrentOrders.Clear();
+    Ticker = info.Ticker;
+    lock (CurrentOrders) {
+      CurrentOrders.Clear();
+    }
     GetOrderBook(
       new() {
         Ticker = ticker,
         MarketClassification = info.Exchange
       },
-      OnReceiveMessage
+      OnReceiveMessage, null
     );
   }
-  public override async Task StartRefreshRealtimeAsync(IDictionary<string, object> args) {
-    if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
-    if (KRXStock.SearchByTicker(ticker) is null) return;
-    Ticker = ticker;
-    await ApiClient.KisWebSocket.Subscribe("H0UNASP0", ticker);
+  private async Task StartRefreshRealtimeAsync() {
+    await ApiClient.KisWebSocket.Subscribe("H0UNASP0", Ticker);
     RealTimeRefresh = true;
   }
-  public override async Task EndRefreshRealtimeAsync(IDictionary<string, object> args) {
+  private async Task EndRefreshRealtimeAsync() {
     await ApiClient.KisWebSocket.Unsubscribe("H0UNASP0", Ticker);
     RealTimeRefresh = false;
   }

@@ -38,7 +38,7 @@ public partial class StockOrder : Order, IAccount {
       Quantity = (ulong)Quantity,
       Method = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
       StopLossLimit = (ulong?)StopLossPrice
-    }, null);
+    }, null, null);
     await Task.CompletedTask;
   }
   public override async Task Short() {
@@ -53,7 +53,7 @@ public partial class StockOrder : Order, IAccount {
       Quantity = (ulong)Quantity,
       Method = (Model.KoreaInvestment.OrderMethod)SelectedMethod,
       StopLossLimit = (ulong?)StopLossPrice
-    }, null);
+    }, null, null);
     await Task.CompletedTask;
   }
 }

@@ -15,7 +15,7 @@ public partial class OrderBookItem(decimal price, decimal ask, decimal bid) : Ob
   public partial decimal BidQuantity { get; set; } = bid;
 }
 
-public abstract partial class OrderBook : ObservableObject, IRefresh, IRefreshRealtime {
+public abstract partial class OrderBook : ObservableObject, IRefresh {
   public readonly static Dictionary<string, object> NullArguments = [];
   [ObservableProperty]
   public partial TimeOnly ConclusionTime { get; protected set; } = TimeOnly.MinValue;
@@ -75,6 +75,4 @@ public abstract partial class OrderBook : ObservableObject, IRefresh, IRefreshRe
   }
 
   public abstract Task RefreshAsync(IDictionary<string, object> args);
-  public abstract Task StartRefreshRealtimeAsync(IDictionary<string, object> args);
-  public abstract Task EndRefreshRealtimeAsync(IDictionary<string, object> args);
 }

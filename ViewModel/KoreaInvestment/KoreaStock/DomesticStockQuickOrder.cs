@@ -24,16 +24,24 @@ public partial class DomesticStockQuickOrder : QuickOrder, IAccount {
     NextTickGenerator = x => KRXStock.GetTickIncrement(x, SecuritiesType);
     PreviousTickGenerator = x => KRXStock.GetTickDecrement(x, SecuritiesType);
   }
-  public void OnReceivedLong(string jsonString) {
-    throw new NotImplementedException();
+  public void OnReceivedLong(string jsonString, object? args) {
+    CashOrderResult result;
+    try {
+      result = JsonSerializer.Deserialize<CashOrderResult>(jsonString, ApiClient.JsonSerializerOption)!;
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
+      return;
+    }
+    if (result.ReturnCode != 0) return;
+    // refresh
   }
-  public void OnReceivedShort(string jsonString) {
-    throw new NotImplementedException();
+  public void OnReceivedShort(string jsonString, object? args) {
   }
-  public void OnReceivedOrderBook(string jsonString) {
+  public void OnReceivedOrderBook(string jsonString, object? args) {
     OrderBookResult json;
     try {
-      json = JsonSerializer.Deserialize<OrderBookResult>(jsonString, ApiClient.JsonSerializerOption);
+      json = JsonSerializer.Deserialize<OrderBookResult>(jsonString, ApiClient.JsonSerializerOption)!;
     }
     catch (Exception ex) {
       ExceptionHandler.PrintExceptionMessage(ex);
@@ -99,7 +107,7 @@ public partial class DomesticStockQuickOrder : QuickOrder, IAccount {
       Method = OrderMethod.Limit,
       UnitPrice = price,
       Quantity = quantity,
-    }, OnReceivedLong);
+    }, OnReceivedLong, (Price: price, Quantity: quantity));
   }
   public override async Task ShortAsync(IDictionary<string, object> args) {
     if (!args.TryGetValue("ticker", out var tickerObject) || tickerObject is not string ticker) return;
@@ -114,7 +122,7 @@ public partial class DomesticStockQuickOrder : QuickOrder, IAccount {
       Method = OrderMethod.Limit,
       UnitPrice = price,
       Quantity = quantity,
-    }, OnReceivedLong);
+    }, OnReceivedShort, (Price: price, Quantity: quantity));
   }
   public override async Task MoveAsync(IDictionary<string, object> args) {
     if (!args.TryGetValue("from_price", out var fromPriceObject) || fromPriceObject is not decimal fromPrice) return;

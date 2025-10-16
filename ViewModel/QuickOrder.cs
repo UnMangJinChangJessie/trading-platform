@@ -19,7 +19,7 @@ public partial class QuickOrderItem(decimal price, decimal ask, decimal bid) : O
   public partial decimal LongQuantity { get; set; } = 0;
 }
 
-public abstract partial class QuickOrder : ObservableObject, IRefresh, IRefreshRealtime {
+public abstract partial class QuickOrder : ObservableObject, IRefresh {
   public readonly static Dictionary<string, object> NullArguments = [];
   public ObservableCollection<decimal> QuantityUnits { get; set; }
   [ObservableProperty]
@@ -78,8 +78,6 @@ public abstract partial class QuickOrder : ObservableObject, IRefresh, IRefreshR
   }
 
   public abstract Task RefreshAsync(IDictionary<string, object> args);
-  public abstract Task StartRefreshRealtimeAsync(IDictionary<string, object> args);
-  public abstract Task EndRefreshRealtimeAsync(IDictionary<string, object> args);
   public abstract Task LongAsync(IDictionary<string, object> args);
   public abstract Task ShortAsync(IDictionary<string, object> args);
   // 주문을 다른 가격의 (주로 지정가) 주문으로 묶어 재주문하는 함수

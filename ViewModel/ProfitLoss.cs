@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.ViewModel;
 
-public abstract partial class ProfitLoss : ObservableObject, IRefresh, IRefreshRealtime {
+public abstract partial class ProfitLoss : ObservableObject, IRefresh {
   public partial class Item : ObservableObject {
     [ObservableProperty]
     public partial string Ticker { get; set; } = "";
@@ -44,6 +44,4 @@ public abstract partial class ProfitLoss : ObservableObject, IRefresh, IRefreshR
     TotalProfitLossRate = TotalEntryAmount != 0 ? (float)TotalProfitLoss / (float)TotalEntryAmount : 0;
   }
   public abstract Task RefreshAsync(IDictionary<string, object> dict);
-  public abstract Task StartRefreshRealtimeAsync(IDictionary<string, object> dict);
-  public abstract Task EndRefreshRealtimeAsync(IDictionary<string, object> dict);
 }

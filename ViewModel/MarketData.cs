@@ -5,7 +5,7 @@ using trading_platform.Model.KoreaInvestment;
 
 namespace trading_platform.ViewModel;
 
-public abstract partial class MarketData : ObservableObject, IRefresh, IRefreshRealtime {
+public abstract partial class MarketData : ObservableObject, IRefresh {
   public enum CandleUpdate {
     InsertEnd, InsertBegin, Clear, UpdateLast
   };
@@ -71,6 +71,4 @@ public abstract partial class MarketData : ObservableObject, IRefresh, IRefreshR
     CurrentOrder?.Ticker = Ticker;
   }
   public abstract Task RefreshAsync(IDictionary<string, object> args);
-  public abstract Task StartRefreshRealtimeAsync(IDictionary<string, object> args);
-  public abstract Task EndRefreshRealtimeAsync(IDictionary<string, object> args);
 }
