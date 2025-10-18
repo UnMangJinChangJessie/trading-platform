@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 namespace trading_platform.View;
 
 public partial class Order : UserControl {
-  private ViewModel.Order? CastedDataContext => DataContext as ViewModel.Order;
+  private ViewModel.OrderForm? CastedDataContext => DataContext as ViewModel.OrderForm;
   public Order() {
     InitializeComponent();
   }

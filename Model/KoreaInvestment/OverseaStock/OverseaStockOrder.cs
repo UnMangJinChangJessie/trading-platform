@@ -69,6 +69,6 @@ public static partial class OverseaStock {
     [JsonPropertyName("output")]
     public OrderResult? Result { get; set; }
   }
-  public static readonly Action<OrderBody, Action<string, object?>?, object?> Order = (body, callback, args) =>
+  public static readonly Action<OrderBody, Action<string, bool, object?>?, object?> Order = (body, callback, args) =>
     ApiClient.PushRequest(body.TransactionId, callback: callback, callbackParameters: args, body: body);
 }

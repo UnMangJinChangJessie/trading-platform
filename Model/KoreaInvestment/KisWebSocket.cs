@@ -1,4 +1,7 @@
 using System.Buffers;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
@@ -6,21 +9,44 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-using Subscription = (string TransactionId, string TransactionKey);
-
 public partial class ApiClient {
   public static class KisWebSocket {
+    public class MessageReceivedEventArgs(string id, ImmutableArray<ImmutableArray<string>> tokens) : EventArgs {
+      public string TransactionId { get; set; } = id;
+      public ImmutableArray<ImmutableArray<string>> Tokens { get; set; } = tokens;
+    }
+    internal class SubscriptionKey(string id, string key) {
+      public string TransactionId { get; set; } = id;
+      public string TransactionKey { get; set; } = key;
+      // override object.Equals
+      public override bool Equals(object? obj) {
+        if (obj == null || obj is not SubscriptionKey comp) {
+          return false;
+        }
+        return TransactionId == comp.TransactionId && TransactionKey == comp.TransactionKey;
+      }
+      // override object.GetHashCode
+      public override int GetHashCode() {
+        return (TransactionId + TransactionKey).GetHashCode();
+      }
+    }
+    internal class SubscriptionValue(Aes? aes) {
+      public Aes? EncryptionAlgorithm { get; set; } = aes;
+      public event EventHandler<MessageReceivedEventArgs> MessageReceived = default!;
+      public void InvokeCallback(string id, ImmutableArray<ImmutableArray<string>> tokens) {
+        MessageReceived?.Invoke(this, new(id, tokens));
+      }
+    }
     public static string AccessToken { get; private set; } = "";
     public static CancellationTokenSource Cancellation { get; } = new();
     public static WebSocketState ClientState => Client.State;
     private static ClientWebSocket Client { get; set; } = new() { };
     private static Task? PollingTask { get; set; } = null;
-    private static readonly Lock SubscriptionsLock = new();
-    private static Dictionary<Subscription, Aes?> Subscriptions { get; set; } = [];
+    private static ConcurrentDictionary<SubscriptionKey, SubscriptionValue> Subscriptions { get; set; } = [];
+    private static ConcurrentDictionary<SubscriptionKey, EventHandler<MessageReceivedEventArgs>> PendingCallbacks = [];
     private static byte[] RequestJsonString(bool subscribe, string transId, string transKey) => JsonSerializer.SerializeToUtf8Bytes(new {
       header = new {
         approval_key = AccessToken,
@@ -35,7 +61,6 @@ public partial class ApiClient {
         },
       },
     });
-    public static event EventHandler<(string TransactionId, List<string[]> Message)> MessageReceived;
 
     private static async Task PollReceivedMessage() {
       WebSocketReceiveResult receiveResult;
@@ -67,15 +92,15 @@ public partial class ApiClient {
             string transId = tokens[1];
             int rowCount = int.Parse(tokens[2]);
             string rawData = tokens[3];
-            var subscriptions = Subscriptions.Keys.Where(x => x.TransactionId == transId);
-            foreach (var subscription in subscriptions) {
+            var subscriptions = Subscriptions.Where(x => x.Key.TransactionId == transId);
+            foreach (var kv in subscriptions) {
               var result = ParseTransactionData(
-                subscription,
+                kv.Key,
                 input: rawData,
                 encrypted,
                 rowCount
               );
-              MessageReceived?.Invoke(null, (TransactionId: transId, Message: result));
+              kv.Value.InvokeCallback(transId, result);
             }
           }
         }
@@ -85,11 +110,11 @@ public partial class ApiClient {
         ExceptionHandler.PrintExceptionMessage(ex);
       }
     }
-    private static List<string[]> ParseTransactionData(Subscription subscription, string input, bool encrypted, int rowCount) {
+    private static ImmutableArray<ImmutableArray<string>> ParseTransactionData(SubscriptionKey subscription, string input, bool encrypted, int rowCount) {
       if (encrypted) {
         byte[] bytes = Convert.FromBase64String(input);
         try {
-          var encryption = Subscriptions[subscription]!;
+          var encryption = Subscriptions[subscription]!.EncryptionAlgorithm;
           byte[] decrypted = encryption!.DecryptCbc(bytes.AsSpan(), encryption.IV);
           input = Encoding.UTF8.GetString(decrypted);
         }
@@ -100,17 +125,17 @@ public partial class ApiClient {
       }
       var dataTokens = input.Split('^');
       var itemCount = dataTokens.Length / rowCount;
-      List<string[]> result = [];
+      List<ImmutableArray<string>> result = [];
       try {
         for (int i = 0; i < rowCount; i++) {
-          result.Add(dataTokens[(itemCount * i)..(itemCount * (i + 1))]);
+          result.Add(dataTokens.AsSpan()[(itemCount * i)..(itemCount * (i + 1))].ToImmutableArray());
         }
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
         return [];
       }
-      return result;
+      return [..result];
     }
     private static async ValueTask<bool> ParseResponseJson(string input) {
       try {
@@ -139,14 +164,16 @@ public partial class ApiClient {
             encryption.IV = paddedIv;
             encryption.Key = Convert.FromBase64String(key);
           }
-          lock (SubscriptionsLock) {
-            if (!Subscriptions.TryAdd((transId!, transKey!), encryption)) Subscriptions[(transId!, transKey!)] = encryption;
+          SubscriptionKey dictKey = new(transId!, transKey!);
+          SubscriptionValue dictValue = new(encryption);
+          // search for the callback (there must be at least one)
+          if (PendingCallbacks.TryRemove(dictKey, out var callback)) {
+            dictValue.MessageReceived += callback;
           }
+          if (!Subscriptions.TryAdd(dictKey, dictValue)) Subscriptions[dictKey] = dictValue;
         }
         else if (responseCode == "OPSP0001" || responseCode == "OPSP0003") { // UNSUBSCRIBE SUCCESS || UNSUBSCRIBE ERROR(not found!)
-          lock (SubscriptionsLock) {
-            Subscriptions.Remove((transId!, transKey!));
-          }
+          Subscriptions.Remove(new(transId!, transKey!), out var _);
         }
         return responseCode == "OPSP0000" || responseCode == "OPSP0001" || responseCode == "OPSP0002" || responseCode == "OPSP0003";
       }
@@ -182,12 +209,12 @@ public partial class ApiClient {
       return true;
     }
 
-    public static async Task Subscribe(string id, string key) {
-      lock (SubscriptionsLock) {
-        if (Subscriptions.Count >= 41) return;
-      }
+    public static async Task Subscribe(string id, string key, EventHandler<MessageReceivedEventArgs> callback) {
+      if (Subscriptions.Count >= 41) return;
+      if (Subscriptions.ContainsKey(new(id, key))) return;
       try {
         await Client.SendAsync(RequestJsonString(true, id, key), WebSocketMessageType.Text, true, CancellationToken.None);
+        PendingCallbacks.TryAdd(new(id, key), callback);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
@@ -195,6 +222,7 @@ public partial class ApiClient {
     }
     public static async Task Unsubscribe(string id, string key) {
       if (Client.State != WebSocketState.Open) return;
+      if (!Subscriptions.ContainsKey(new(id, key))) return;
       try {
         await Client.SendAsync(RequestJsonString(false, id, key), WebSocketMessageType.Text, true, CancellationToken.None);
       }

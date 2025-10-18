@@ -25,11 +25,11 @@ public static partial class DomesticStock {
     [JsonPropertyName("pchs_avg_pric")]
     public required decimal AverageUnitPrice { get; set; }
     [JsonPropertyName("pchs_amt")]
-    public required decimal PositionAmount { get; set; }
+    public required decimal EntryAmount { get; set; }
     [JsonPropertyName("prpr")]
     public required decimal CurrentPrice { get; set; }
     [JsonPropertyName("evlu_amt")]
-    public required decimal EvaluationAmount { get; set; }
+    public required decimal CurrentEvaluation { get; set; }
     [JsonPropertyName("evlu_pfls_amt")]
     public required decimal ProfitLoss { get; set; }
     [JsonPropertyName("evlu_pfls_rt")]

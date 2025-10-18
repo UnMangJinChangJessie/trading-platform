@@ -1,4 +1,7 @@
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using trading_platform.ViewModel;
 
 namespace trading_platform.Model.Charts;
 
@@ -25,112 +28,54 @@ public class CandlestickChartData {
     [Description("년")]
     Yearly,
   }
-  public readonly Lock CandlesLock;
-  public List<ChartOHLC> Candles { get; private set; }
-  public DateTimeOffset? ChartDateStart { get; set; }
+  public ObservableCollection<ChartOHLC> Candles { get; private set; }
+  public DateTimeOffset? ChartDateBegin { get; set; }
   public DateTimeOffset? ChartDateEnd { get; set; }
   public CandlePeriod Span { get; set; }
   public TimeSpan TimeSpan => ToTimeSpan(Span);
   public List<CandlePeriod> AvailableCandlePeriod { get; set; }
-  public event EventHandler<ChartOHLC> CandleChanged;
-  public event EventHandler<ChartOHLC> CandleInserted;
-  public event EventHandler<DateTime> CandleRemoved;
-  public event EventHandler Cleared;
 
   public CandlestickChartData() {
     Span = CandlePeriod.Daily;
     AvailableCandlePeriod = [];
-    CandlesLock = new();
     Candles = [];
-    ChartDateStart = DateTimeOffset.Now.Date.AddDays(-180);
+    ChartDateBegin = DateTimeOffset.Now.Date.AddDays(-180);
     ChartDateEnd = DateTimeOffset.Now.Date.AddDays(1).AddMilliseconds(-1);
-    CandleChanged = default!;
-    CandleInserted = default!;
-    CandleRemoved = default!;
-    Cleared = default!;
   }
-  public void InsertCandle(ChartOHLC ohlc) {
-    var floorDate = Floor(ohlc.Date, Span);
-    ohlc.Date = floorDate;
-    lock (CandlesLock) {
-      var candleIndex = Candles.BinarySearch(new() { Date = floorDate }); // 시각이 같은 캔들을 찾음
-      if (candleIndex < 0) {
-        // 캔들을 삽입할 자리는 이미 BinarySearch가 찾아줌.
-        Candles.Insert(~candleIndex, ohlc);
-        CandleInserted?.Invoke(this, ohlc);
-      }
-      else {
-        var candle = Candles[candleIndex];
-        var candleEqual =
-          candle.Open == ohlc.Open &&
-          candle.High == ohlc.High &&
-          candle.Low == ohlc.Low &&
-          candle.Close == ohlc.Close &&
-          candle.Volume == ohlc.Volume &&
-          candle.Amount == ohlc.Amount;
-        if (!candleEqual) {
-          candle.CopyOHLCFrom(ohlc);
-          CandleChanged?.Invoke(this, candle);
-        }
+  public void ExtendBegin(ChartOHLC ohlc) {
+    lock (Candles) {
+      if (Candles.Count != 0 && ohlc.Date >= Candles[0].Date) return;
+      Candles.Insert(0, ohlc);
+    }
+  }
+  public void ExtendBegin(IEnumerable<ChartOHLC> ohlcs, bool assumeSorted = false) {
+    ImmutableList<ChartOHLC> sorted = assumeSorted ? [.. ohlcs] : [.. ohlcs
+      .Select(x => {
+        var candle = new ChartOHLC() { Date = Floor(x.Date, Span) };
+        candle.CopyOHLCFrom(x);
+        return candle;
+      })
+      .OrderByDescending(x => x.Date)
+    ];
+    lock (Candles) {
+      if (Candles.Count != 0 && sorted[^1].Date >= Candles[0].Date) return;
+      for (int i = 0; i < sorted.Count; i++) {
+        Candles.Insert(0, sorted[i]);
       }
     }
   }
-  public void InsertCandleRange(IEnumerable<ChartOHLC> ohlcs) {
-    List<ChartOHLC> changedCandles = [];
-    List<ChartOHLC> insertedCandles = [];
-    lock (CandlesLock) {
-      foreach (var ohlc in ohlcs) {
-        var floorDate = Floor(ohlc.Date, Span);
-        var candleIndex = Candles.BinarySearch(new() { Date = floorDate }); // 시각이 같은 캔들을 찾음
-        ohlc.Date = floorDate;
-        if (candleIndex < 0) {
-          // 캔들을 삽입할 자리는 이미 BinarySearch가 찾아줌.
-          Candles.Insert(~candleIndex, ohlc);
-          CandleInserted?.Invoke(this, ohlc);
-        }
-        else {
-          var candle = Candles[candleIndex];
-          var candleEqual =
-            candle.Open == ohlc.Open &&
-            candle.High == ohlc.High &&
-            candle.Low == ohlc.Low &&
-            candle.Close == ohlc.Close &&
-            candle.Volume == ohlc.Volume &&
-            candle.Amount == ohlc.Amount;
-          if (!candleEqual) {
-            candle.CopyOHLCFrom(ohlc);
-            CandleChanged?.Invoke(this, candle);
-          }
-        }
-      }
-    }
-  }
-  public void RemoveCandle(ChartOHLC ohlc) {
-    lock (CandlesLock) {
-      if (Candles.Remove(ohlc)) {
-        CandleRemoved?.Invoke(this, ohlc.Date);
-      }
-    }
-  }
-  public void RemoveCandle(DateTime date) {
-    lock (CandlesLock) {
-      if (Candles.Remove(new() { Date = Floor(date, Span) })) {
-        CandleRemoved?.Invoke(this, date);
-      }
-    }
-  }
-  public void RemoveCandle(double oaDate) {
-    lock (CandlesLock) {
-      if (Candles.Remove(new() { Date = Floor(DateTime.FromOADate(oaDate), Span) })) {
-        CandleRemoved?.Invoke(this, DateTime.FromOADate(oaDate));
-      }
+  public void UpdateEnd(ChartOHLC ohlc) {
+    lock (Candles) {
+      ChartOHLC inserting = new() { Date = Floor(ohlc.Date, Span) };
+      inserting.CopyOHLCFrom(ohlc);
+      if (Candles[^1].Date == inserting.Date) Candles[^1].CopyOHLCFrom(ohlc);
+      else Candles.Add(inserting);
     }
   }
   public void Clear() {
-    lock (CandlesLock) {
+    lock (Candles) {
       Candles.Clear();
     }
-    Cleared?.Invoke(this, EventArgs.Empty);
   }
   /// <summary>
   /// 최근 캔들부터 차례대로 0, 1, 2, 3, ...과 같이 접근할 수 있습니다.

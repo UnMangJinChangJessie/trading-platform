@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace trading_platform.Model.KoreaInvestment;
 
 public static partial class DomesticStock {
-  public class StockInquireModifiableQueries : IAccount, IConsecutive {
+  public class GetModifiableQueries : IAccount, IConsecutive {
     public const int ORDER = 0;
     public const int TICKER = 1;
     public const int ALL = 0;
@@ -18,14 +18,14 @@ public static partial class DomesticStock {
     public required int SellOrBuy { get; set; }
   }
 
-  public class StockInquireModifiableResult : KisReturnMessage, IReturnConsecutive {
+  public class GetModifiableResult : KisReturnMessage, IReturnConsecutive {
     [JsonIgnore] public bool HasNextData { get; set; }
     [JsonPropertyName("ctx_area_fk100")] public string? FirstConsecutiveContext { get; set; }
     [JsonPropertyName("ctx_area_nk100")] public string? SecondConsecutiveContext { get; set; }
 
     [JsonPropertyName("output")] public IEnumerable<PendingOrder>? ModifiableList { get; set; }
   }
-  public static Action<StockInquireModifiableQueries, Action<string, object?>?, object?> InquireStockModifiableOrder = (queries, cb, args) =>
+  public static Action<GetModifiableQueries, Action<string, bool, object?>?, object?> GetModifiableOrder = (queries, cb, args) =>
     ApiClient.PushRequest(
       "TTTC0084R",
       queries: new Dictionary<string, string>() {

@@ -12,7 +12,7 @@ public static partial class DomesticStock {
     [JsonPropertyName("output")]
     public EtpInformation? Information { get; set; }
   }
-  public static readonly Action<StockInquireEtpPriceQueries, Action<string, object?>?, object?> GetEtpPrice = (queries, cb, args) => 
+  public static readonly Action<StockInquireEtpPriceQueries, Action<string, bool, object?>?, object?> GetEtpPrice = (queries, cb, args) => 
     ApiClient.PushRequest(
       transId: "FHPST02400000",
       callback: cb,

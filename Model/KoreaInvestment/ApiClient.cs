@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -10,7 +12,7 @@ public record RequestBlock(string transId, IDictionary<string, string>? queries 
   public string? BodyString { get; set; } = body;
   public IDictionary<string, string>? Queries { get; set; } = queries;
   public bool RequestNext { get; set; } = next;
-  public Action<string, object?>? Callback { get; set; }
+  public Action<string, bool, object?>? Callback { get; set; }
   public object? CallbackParameters { get; set; }
 }
 
@@ -35,7 +37,7 @@ public static partial class ApiClient {
   private static Task? PollingTask;
   private readonly static CancellationTokenSource PollingTaskCancellationToken = new();
   private static CancellationTokenSource CancellationSource = new();
-  public readonly static JsonSerializerOptions JsonSerializerOption = new() {
+  private readonly static JsonSerializerOptions JsonSerializerOption = new() {
     NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
     AllowTrailingCommas = true,
     Converters = {
@@ -45,7 +47,16 @@ public static partial class ApiClient {
     },
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
   };
-
+  public static T? DeserializeJson<T>(string jsonString) where T : class {
+    if (jsonString == null) return null;
+    try {
+      return JsonSerializer.Deserialize<T>(jsonString, JsonSerializerOption);
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
+      return null;
+    }
+  }
   public static bool ToggleSimulation() {
     Simulation = !Simulation;
     RequestClient.BaseAddress = BuildApiBaseAddress();
@@ -93,7 +104,9 @@ public static partial class ApiClient {
         using (var reader = new StreamReader(response.Content.ReadAsStream())) {
           responseBody = reader.ReadToEnd();
         }
-        request.Callback?.Invoke(responseBody, request.CallbackParameters);
+        string? nextDataHeader = response.Headers.GetValues("tr_cont").FirstOrDefault();
+        bool hasNextData = nextDataHeader != null ? Enumerable.Contains(["F", "M"], nextDataHeader) : false;
+        request.Callback?.Invoke(responseBody, hasNextData, request.CallbackParameters);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
@@ -102,7 +115,7 @@ public static partial class ApiClient {
   }
   public static void PushRequest(
     string transId,
-    Action<string, object?>? callback = null,
+    Action<string, bool, object?>? callback = null,
     object? callbackParameters = null,
     IDictionary<string, string>? queries = null,
     object? body = null,
