@@ -1,50 +1,40 @@
 using System.Collections.Immutable;
 using ScottPlot;
+using trading_platform.Extensions;
 
 namespace trading_platform.Model.Charts.Indicators;
 
-public class SimpleMovingAverage : Indicator {
+public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indicator(data) {
+  public override string LegendText => $"SMA({Lookback})";
   public struct SmaResult {
     public DateTime Date { get; set; }
     public double? Value { get; set; }
     public double Close { get; set; }
   };
-  private int _Lookback;
   public int Lookback {
-    get => _Lookback;
+    get => field;
     set {
       ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
-      if (_Lookback != value) {
-        _Lookback = value;
-        LegendText = $"SMA({_Lookback})";
-        Invalidate();
+      if (field != value) {
+        field = value;
+        Reset();
       }
     }
-  }
-  public List<SmaResult> MovingAverage { get; private set; }
+  } = lookback;
+  public List<SmaResult> MovingAverage { get; private set; } = [];
   public LineStyle LineStyle { get; set; } = new LineStyle() {
     Color = Colors.DarkBlue,
     Pattern = LinePattern.Solid,
     AntiAlias = true,
     Width = 1,
   };
-  public SimpleMovingAverage(CandlestickChartData data, int lookback) : base(data) {
-    MovingAverage = [];
-    Lookback = lookback;
-    // Invalidate(); will be called at the lookback allocation.
-  }
   public ImmutableArray<SmaResult> Snapshot() {
-    bool entered = Monitor.TryEnter(MovingAverage);
-    ImmutableArray<SmaResult> result = [.. MovingAverage];
-    if (entered) Monitor.Exit(MovingAverage);
-    return result;
+    lock (MovingAverage) return [.. MovingAverage];
   }
   public override AxisLimits GetAxisLimits() {
     if (MovingAverage.Count == 0) return AxisLimits.Unset;
-    ImmutableArray<SmaResult> notNull;
-    lock (MovingAverage) {
-      notNull = MovingAverage.Where(x => x.Value.HasValue).ToImmutableArray();
-    }
+    var snapshot = Snapshot();
+    ImmutableArray<SmaResult> notNull = [.. MovingAverage.Where(x => x.Value.HasValue)];
     if (!notNull.Any()) return AxisLimits.Default;
     else return new(
       left: MovingAverage[0].Date.ToOADate(),
@@ -56,8 +46,8 @@ public class SimpleMovingAverage : Indicator {
     var snapshot = Snapshot();
     if (snapshot.Length == 0) return;
     var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
-    var startIdx = SearchIndexByDate(snapshot, DateTime.FromOADate(xRange.Min));
-    var endIdx = SearchIndexByDate(snapshot, DateTime.FromOADate(xRange.Max));
+    var startIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
+    var endIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
     if (startIdx < 0) startIdx = ~startIdx;
     if (endIdx < 0) endIdx = ~endIdx;
     if (startIdx == endIdx) return;
@@ -75,7 +65,7 @@ public class SimpleMovingAverage : Indicator {
     }
     // Want to assume that the candles are already sorted by dates but...
     // Also, the base collection can be modified by another thread.
-    ImmutableArray<SmaResult> snapshot = Snapshot();
+    var snapshot = Snapshot();
     IEnumerable<Pixel> pixels = snapshot
       .Where(x => {
         var date = x.Date.ToOADate();
@@ -91,73 +81,42 @@ public class SimpleMovingAverage : Indicator {
       ));
     Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
   }
-  protected override void OnCandleChanged(object? sender, ChartOHLC candle) {
-    lock (MovingAverage) {
-      int idx = SearchIndexByDate(Snapshot(), candle.Date);
-      if (idx < 0) return; // 캔들의 변경인데 시각이 존재하지 않으면 안 됨.
-      Reevaluate(idx, idx + Lookback, withClose: (double)candle.Close);
-    }
-  }
-  protected override void OnCandleInserted(object? sender, ChartOHLC candle) {
-    lock (MovingAverage) {
-      int idx = SearchIndexByDate(Snapshot(), candle.Date);
-      if (idx >= 0) return; // 캔들의 삽입인데 시각이 이미 존재하면 안 됨.
-      idx = ~idx;
-      MovingAverage.Insert(idx, new() { Date = candle.Date });
-      Reevaluate(idx, idx + Lookback, withClose: (double)candle.Close);
-    }
-  }
-  protected override void OnCandleRemoved(object? sender, DateTime dt) {
-    lock (MovingAverage) {
-      int idx = SearchIndexByDate(Snapshot(), dt);
-      if (idx < 0) return; // 캔들의 삭제인데 시각이 존재하지 않으면 안 됨.
-      MovingAverage.RemoveAt(idx);
-      Reevaluate(idx, idx + Lookback);
-    }
-  }
-  protected override void OnCleared(object? sender, EventArgs args) {
+  public override void Reset() {
     lock (MovingAverage) {
       MovingAverage.Clear();
-    }
-  }
-  protected override void Invalidate() {
-    var snapshot = BaseChart.Candles.ToImmutableList();
-    MovingAverage.Clear();
-    LinkedList<double> closes = [];
-    foreach (var candle in snapshot) {
-      closes.AddLast((double)candle.Close);
-      double? value;
-      if (closes.Count < Lookback) value = null;
-      else if (closes.Count == Lookback) value = closes.Average();
-      else {
-        value = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, closes.Last() - closes.First()) / Lookback;
-        closes.RemoveFirst();
+      for (int i = 0; i < BaseChart.Candles.Count; i++) {
+        var date = BaseChart.Candles[i].Date;
+        var close = (double)BaseChart.Candles[i].Close;
+        if (i + 1 < Lookback) MovingAverage.Add(new() { Date = date, Close = close, Value = null });
+        else if (i + 1 == Lookback) {
+          MovingAverage.Add(new() {
+            Date = BaseChart.Candles[i].Date,
+            Close = close,
+            Value = BaseChart.Candles.Take(Lookback).Average(x => (double)x.Close)
+          });
+        }
+        else {
+          var average = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[i - Lookback].Close) / Lookback;
+          MovingAverage.Add(new() { Date = date, Close = close, Value = average });
+        }
       }
-      MovingAverage.Add(new() { Close = (double)candle.Close, Date = candle.Date, Value = value });
     }
   }
-  protected void Reevaluate(int begin, int end = int.MaxValue, double? withClose = null) {
-    if (withClose != null) MovingAverage[begin] = MovingAverage[begin] with { Close = withClose.Value };
-    for (int i = begin; i < Math.Min(MovingAverage.Count, end); i++) {
-      if (i + 1 == Lookback) MovingAverage[i] = MovingAverage[i] with { Value = MovingAverage[..Lookback].Average(x => x.Close) };
-      else if (i + 1 > Lookback) MovingAverage[i] = MovingAverage[i] with {
-        Value = Math.FusedMultiplyAdd(
-          MovingAverage[i - 1].Value!.Value, Lookback, MovingAverage[i].Close - MovingAverage[i - Lookback].Close
-        ) / Lookback
-      };
+  public override void UpdateEnd() {
+    if (BaseChart.Candles.Count == 0) return;
+    if (MovingAverage.Count == 0) return;
+    var date = BaseChart.Candles[^1].Date;
+    var close = (double)BaseChart.Candles[^1].Close;
+    lock (MovingAverage) {
+      var count = MovingAverage.Count;
+      if (MovingAverage[^1].Date == BaseChart.Candles[^1].Date) {
+        var average = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^1].Close);
+        MovingAverage[^1] = new() { Date = date, Close = close, Value = average };
+      }
+      else {
+        var average = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^Lookback].Close);
+        MovingAverage.Add(new() { Date = date, Close = close, Value = average });
+      }
     }
-  }
-  private int SearchIndexByDate(ImmutableArray<SmaResult> snapshot, DateTime date) {
-    if (snapshot.Length == 0) return -1;
-    int lo = 0;
-    int hi = snapshot.Length;
-    while (lo != hi) {
-      int mid = lo + (hi - lo) / 2;
-      if (date < snapshot[mid].Date) hi = Math.Max(mid, 0);
-      else if (date > snapshot[mid].Date) lo = Math.Min(mid + 1, snapshot.Length);
-      else return mid;
-    }
-    if (lo == snapshot.Length) return ~lo;
-    return snapshot[lo].Date == date ? lo : ~lo;
   }
 }

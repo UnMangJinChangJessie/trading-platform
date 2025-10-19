@@ -25,8 +25,8 @@ public static partial class DomesticStock {
 
     [JsonPropertyName("output")] public IEnumerable<PendingOrder>? ModifiableList { get; set; }
   }
-  public static Action<GetModifiableQueries, Action<string, bool, object?>?, object?> GetModifiableOrder = (queries, cb, args) =>
-    ApiClient.PushRequest(
+  public static Action<ApiModel, GetModifiableQueries, Action<string, bool, object?>?, object?> GetModifiableOrder = (api, queries, cb, args) =>
+    api.PushRequest(
       "TTTC0084R",
       queries: new Dictionary<string, string>() {
         ["CANO"] = queries.AccountBase,

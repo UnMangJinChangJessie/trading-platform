@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 
-namespace trading_platform.ViewModel;
+namespace trading_platform.Extensions;
 
-public static class Extensions {
+public static class ListExtensions {
   public static int BinarySearch<T>(this Collection<T> collection, T? item) where T : IComparable<T> {
     if (collection.Count == 0) return ~0;
     int low = 0, high = collection.Count;

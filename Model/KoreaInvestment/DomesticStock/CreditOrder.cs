@@ -46,6 +46,6 @@ public static partial class DomesticStock {
     [JsonPropertyName("output")]
     public OrderInformation? Response { get; set; }
   }
-  public static readonly Action<CreditOrderBody, Action<string, bool, object?>?, object?> OrderCredit = (body, cb, args) =>
-    ApiClient.PushRequest(body.TransactionId, callback: cb, callbackParameters: args, body: body);
+  public static readonly Action<ApiModel, CreditOrderBody, Action<string, bool, object?>?, object?> OrderCredit = (api, body, cb, args) =>
+    api.PushRequest(body.TransactionId, callback: cb, callbackParameters: args, body: body);
 }

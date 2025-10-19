@@ -19,8 +19,8 @@ public static partial class DomesticStock {
     [JsonPropertyName("output2")]
     public IEnumerable<ChartItem>? Chart { get; set; }
   }
-  public static readonly Action<ChartQueries, Action<string, bool, object?>?, object?> GetChart = (queries, cb, args) => 
-    ApiClient.PushRequest(
+  public static readonly Action<ApiModel, ChartQueries, Action<string, bool, object?>?, object?> GetChart = (api, queries, cb, args) => 
+    api.PushRequest(
       transId: "FHKST03010100",
       callback: cb,
       callbackParameters: args,

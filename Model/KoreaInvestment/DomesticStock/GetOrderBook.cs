@@ -16,8 +16,8 @@ public static partial class DomesticStock {
     [JsonPropertyName("output2")]
     public OrderBookInformation? Information { get; set; }
   }
-  public static readonly Action<OrderBookQueries, Action<string, bool, object?>?, object?> GetOrderBook = (queries, cb, args) =>
-    ApiClient.PushRequest(
+  public static readonly Action<ApiModel, OrderBookQueries, Action<string, bool, object?>?, object?> GetOrderBook = (api, queries, cb, args) =>
+    api.PushRequest(
       "FHKST01010200", 
       callback: cb,
       callbackParameters: args,

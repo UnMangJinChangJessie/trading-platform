@@ -8,8 +8,7 @@ public static partial class OverseaStock {
   public class OrderBody : IAccount {
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public OrderPosition Position { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public string TransactionId => (ApiClient.Simulation ? "V" : "") + (Exchange switch {
+    public string TransactionId(bool isSimulation) => (isSimulation ? "V" : "") + (Exchange switch {
       Exchange.Nasdaq or Exchange.NewYorkStockExchange or Exchange.NyseAmerican =>
         Position switch { OrderPosition.Long => "TTTT1002U", OrderPosition.Short => "TTTT1006U", _ => "" },
       Exchange.Tokyo =>
@@ -69,6 +68,6 @@ public static partial class OverseaStock {
     [JsonPropertyName("output")]
     public OrderResult? Result { get; set; }
   }
-  public static readonly Action<OrderBody, Action<string, bool, object?>?, object?> Order = (body, callback, args) =>
-    ApiClient.PushRequest(body.TransactionId, callback: callback, callbackParameters: args, body: body);
+  public static readonly Action<ApiModel, OrderBody, Action<string, bool, object?>?, object?> Order = (api, body, callback, args) =>
+    api.PushRequest(body.TransactionId(api.IsSimulation), callback: callback, callbackParameters: args, body: body);
 }

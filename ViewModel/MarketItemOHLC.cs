@@ -22,6 +22,8 @@ public partial class MarketItemOHLC : ObservableObject {
   [ObservableProperty]
   public partial decimal CurrentAmount { get; set; } = 0.0M;
   [ObservableProperty]
+  public partial string Currency { get; protected set; } = "";
+  [ObservableProperty]
   [NotifyPropertyChangedFor(nameof(OpenChangeRate), nameof(HighChangeRate), nameof(LowChangeRate), nameof(CloseChangeRate), nameof(Change))]
   public partial decimal PreviousClose { get; set; } = 0.0M;
   public float OpenChangeRate => GetChangeRate(PreviousClose, CurrentOpen);

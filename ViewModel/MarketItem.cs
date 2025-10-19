@@ -10,8 +10,6 @@ public abstract partial class MarketItem : ObservableObject, IRefresh {
   [ObservableProperty]
   public partial Model.Charts.CandlestickChartData ItemChart { get; protected set; } = new();
   [ObservableProperty]
-  public partial string Currency { get; protected set; } = "";
-  [ObservableProperty]
   /// <summary>
   /// 호가 정보
   /// </summary>

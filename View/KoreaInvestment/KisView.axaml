@@ -1,0 +1,46 @@
+<UserControl 
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:vkis="using:trading_platform.View.KoreaInvestment"
+  xmlns:vkisks="using:trading_platform.View.KoreaInvestment.KoreaStock"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
+  mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+  x:Class="trading_platform.View.KoreaInvestment.KisView"
+  x:DataType="vmkis:KisViewModel"
+  x:Name="ControlRoot"
+>
+  <TabControl DockPanel.Dock="Left">
+    <TabItem Header="API 접근 토큰 관리">
+      <DockPanel>
+        <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight" DockPanel.Dock="Top" Margin="0,5,0,0" >
+          <Button Classes="Flat" >파일 불러오기</Button>
+          <Button Classes="Flat" >선택한 API 삭제</Button>
+          <Button Classes="Flat" >선택한 API 활성화</Button>
+          <Button Classes="Flat" >선택한 API 비활성화</Button>
+        </StackPanel>
+        <DataGrid
+          CanUserResizeColumns="True" 
+          ItemsSource="{Binding AvailableClients}"
+          Margin="5"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+        >
+          <DataGrid.Columns>
+            <DataGridCheckBoxColumn Header="선택" Binding="{Binding Selected}" />
+            <DataGridTextColumn Header="이름" Binding="{Binding Name, FallbackValue='API'}" />
+            <DataGridTextColumn Header="Public Key" Binding="{Binding ApiClient.AppPublicKey}" />
+            <DataGridTextColumn Header="Secret Key" Binding="{Binding ApiClient.AppSecretKey}" />
+            <DataGridCheckBoxColumn Header="모의투자 여부" Binding="{Binding ApiClient.IsSimulation}" />
+            <DataGridCheckBoxColumn Header="개인 여부" Binding="{Binding ApiClient.IsPersonal}" />
+            <DataGridCheckBoxColumn Header="API 접근 토큰" Binding="{Binding ApiClient.AccessToken}" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </TabItem>
+    <TabItem Header="한국 주식">
+      <vkisks:MainView DataContext="{Binding KoreaStockMarketViewModel}"/>
+    </TabItem>
+  </TabControl>
+</UserControl>

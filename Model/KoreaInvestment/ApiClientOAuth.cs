@@ -1,11 +1,12 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace trading_platform.Model.KoreaInvestment;
 
-public static partial class ApiClient {
-  public static async Task<bool> IssueToken() {
+public partial class ApiModel {
+  public async ValueTask<bool> IssueToken() {
     var body = new {
       grant_type = "client_credentials",
       appkey = AppPublicKey,
@@ -28,13 +29,12 @@ public static partial class ApiClient {
     return !string.IsNullOrEmpty(AccessToken);
   }
 
-  public static async Task<bool> RevokeToken() {
+  public async ValueTask<bool> RevokeToken() {
     var body = new {
       appkey = AppPublicKey,
       appsecret = AppSecretKey,
       token = AccessToken
     };
-    // var result = await Request(HttpMethod.Post, "/oauth/revokeP", [], [], body);
     var result = await RequestClient.PostAsJsonAsync("/oauth2/revokeP", body);
     if (!result.IsSuccessStatusCode) {
       return false;
@@ -44,5 +44,33 @@ public static partial class ApiClient {
       await PollingTask;
     }
     return true;
+  }
+  public async ValueTask<string?> IssueWebSocketToken() {
+    var body = new {
+      grant_type = "client_credentials",
+      appkey = AppPublicKey,
+      secretkey = AppSecretKey,
+    };
+    try {
+      var result = await RequestClient.PostAsJsonAsync("/oauth2/Approval", body);
+      var responseBody = await result.Content.ReadFromJsonAsync<JsonNode>();
+      if (responseBody == null) {
+        Debug.WriteLine("Failed to get response from the server: [{0}] {1}", args: [result.StatusCode, result.ReasonPhrase]);
+        return null;
+      }
+      if (!result.IsSuccessStatusCode) {
+        Debug.WriteLine(
+          "Failed to issue a WebSocket token: [{0}] {1}",
+          responseBody["error_code"]?.GetValue<string>(),
+          responseBody["error_description"]?.GetValue<string>()
+        );
+        return null;
+      }
+      return responseBody["approval_key"]?.GetValue<string>();
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
+      return null;
+    }
   }
 }

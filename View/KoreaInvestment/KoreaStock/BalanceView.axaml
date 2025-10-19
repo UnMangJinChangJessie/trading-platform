@@ -3,19 +3,16 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:com="using:trading_platform.Components"
   xmlns:comkis="using:trading_platform.Components.KoreaInvestment"
-  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
-  x:Class="trading_platform.View.KoreaInvestment.OverseaStockProfitLoss"
-  x:DataType="vmkis:OverseaStockProfitLoss"
+  xmlns:mkis="using:trading_platform.Model.KoreaInvestment"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment.KoreaStock"
+  x:Class="trading_platform.View.KoreaInvestment.KoreaStock.BalanceView"
+  x:DataType="vmkis:Balance"
   x:Name="ControlRoot"
 >
-<UserControl.DataContext>
-  <vmkis:OverseaStockProfitLoss />
-</UserControl.DataContext>
 <DockPanel Margin="5">
   <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight" DockPanel.Dock="Top" >
-    <ComboBox Name="ExchangeComboBox" SelectionChanged="ExchangeComboBox_SelectionChanged" PlaceholderText="거래소 선택" />
     <comkis:Account
-      DataContext="{Binding #ControlRoot.((vmkis:IAccount)DataContext)}"
+      DataContext="{Binding Account}"
       HorizontalAlignment="Left"
       VerticalAlignment="Center"
     />

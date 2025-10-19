@@ -44,8 +44,8 @@ public static partial class OverseaStock {
     [JsonPropertyName("output2")]
     public Balance? AccountBalance { get; set; }
   }
-  public readonly static Action<BalanceQueries, Action<string, bool, object?>?, object?> GetBalance = (queries, cb, args) =>
-    ApiClient.PushRequest(
+  public readonly static Action<ApiModel, BalanceQueries, Action<string, bool, object?>?, object?> GetBalance = (api, queries, cb, args) =>
+    api.PushRequest(
       transId: "TTTS3012R",
       queries: new Dictionary<string, string>() {
         ["CANO"] = queries.AccountBase,

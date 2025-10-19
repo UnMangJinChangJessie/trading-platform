@@ -1,18 +1,20 @@
 namespace trading_platform.ViewModel.KoreaInvestment.KoreaStock;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.KoreaInvestment.DomesticStock;
 
 using OrderBookBase = ViewModel.OrderBook;
 
-public partial class OrderBook(MarketItemLabel label) : OrderBookBase(label) {
+public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label) : OrderBookBase(label) {
   /// <summary>
   /// WebSocket의 연결 해제를 위해 저장하는 종목코드
   /// </summary>
   private string? WebSocketTicker = null;
-  private void OnReceivedRealtimeOrderBook(object? sender, ApiClient.KisWebSocket.MessageReceivedEventArgs args) {
+  private readonly KisClients Api = api;
+  private void OnReceivedRealtimeOrderBook(object? sender, WebSocketModel.MessageReceivedEventArgs args) {
     if (args.Tokens.Length == 0) return;
     lock (CurrentOrders) {
       for (int i = 0; i < 10; i++) {
@@ -22,7 +24,7 @@ public partial class OrderBook(MarketItemLabel label) : OrderBookBase(label) {
     }
   }
   private async void OnReceivedOrderBook(string jsonString, bool hasNextData, object? args) {
-    var result = ApiClient.DeserializeJson<OrderBookResult>(jsonString);
+    var result = ApiModel.DeserializeJson<OrderBookResult>(jsonString);
     if (result == null) return;
     if (result.ReturnCode != 0) {
       Debug.WriteLine($"[{result.ResponseMessageCode}, {nameof(OnReceivedOrderBook)}] {result.ResponseMessage}");
@@ -53,19 +55,24 @@ public partial class OrderBook(MarketItemLabel label) : OrderBookBase(label) {
       #endregion
     }
     if (WebSocketTicker != null) {
-      await ApiClient.KisWebSocket.Unsubscribe("H0UNASP0", WebSocketTicker);
+      await Api!.WebSocketClient.Unsubscribe("H0UNASP0", WebSocketTicker);
     }
     WebSocketTicker = Label.Ticker;
     // 실시간 데이터 수신 요청(KRX/NXT 통합)
-    await ApiClient.KisWebSocket.Subscribe("H0UNASP0", Label.Ticker, OnReceivedRealtimeOrderBook);
+    await Api!.WebSocketClient.Subscribe("H0UNASP0", Label.Ticker, OnReceivedRealtimeOrderBook);
   }
   public override void Refresh() {
-    GetOrderBook(new OrderBookQueries() {
-      MarketClassification = Exchange.DomesticUnified,
-      Ticker = Label.Ticker,
-    }, OnReceivedOrderBook, null);
+    if (Api == null) return;
+    GetOrderBook(
+      Api.ApiClient,
+      new OrderBookQueries() {
+        MarketClassification = Exchange.DomesticUnified,
+        Ticker = Label.Ticker,
+      }, OnReceivedOrderBook, null
+    );
   }
   public override Task RefreshAsync() {
-    throw new NotImplementedException();
+    Refresh();
+    return Task.CompletedTask;
   }
 }

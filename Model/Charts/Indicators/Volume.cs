@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using ScottPlot;
+using trading_platform.Extensions;
 
 namespace trading_platform.Model.Charts.Indicators;
 
@@ -8,6 +9,7 @@ public class Volume : Indicator {
     public DateTime Date { get; set; }
     public double Value { get; set; }
   };
+  public override string LegendText => $"Volume";
   public BarStyle BarStyle { get; private set; }
   public List<VolumeResult> Results { get; private set; }
   
@@ -23,7 +25,7 @@ public class Volume : Indicator {
       NegativeBarIncreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
       NegativeBarDecreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
     };
-    Invalidate();
+    Reset();
   }
   public ImmutableArray<VolumeResult> Snapshot() {
     bool entered = Monitor.TryEnter(Results);
@@ -44,8 +46,8 @@ public class Volume : Indicator {
     var snapshot = Snapshot();
     if (snapshot.Length == 0) return;
     var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
-    var startIdx = SearchIndexByDate(snapshot, DateTime.FromOADate(xRange.Min));
-    var endIdx = SearchIndexByDate(snapshot, DateTime.FromOADate(xRange.Max));
+    var startIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
+    var endIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
     if (startIdx < 0) startIdx = ~startIdx;
     if (endIdx < 0) endIdx = ~endIdx;
     if (startIdx == endIdx) return;
@@ -97,51 +99,17 @@ public class Volume : Indicator {
       Drawing.DrawPath(rp.Canvas, rp.Paint, [rect.BottomLeft, rect.BottomRight, rect.TopRight, rect.TopLeft], line, close: true);
     }
   }
-  protected override void OnCandleChanged(object? sender, ChartOHLC candle) {
+  public override void Reset() {
     lock (Results) {
-      int idx = SearchIndexByDate(Snapshot(), candle.Date);
-      if (idx < 0) return; // 캔들의 변경인데 시각이 존재하지 않으면 안 됨.
-      Results[idx] = Results[idx] with { Value = (double)candle.Volume };
+      Results = [.. BaseChart.Candles.Select(x => new VolumeResult() { Date = x.Date, Value = (double)x.Volume })];
     }
   }
-  protected override void OnCandleInserted(object? sender, ChartOHLC candle) {
+  public override void UpdateEnd() {
+    if (Results.Count == 0) return;
+    if (BaseChart[0] is not ChartOHLC candle) return;
     lock (Results) {
-      int idx = SearchIndexByDate(Snapshot(), candle.Date);
-      if (idx >= 0) return; // 캔들의 삽입인데 시각이 이미 존재하면 안 됨.
-      idx = ~idx;
-      Results.Insert(idx, new() { Date = candle.Date, Value = (double)candle.Volume });
+      if (Results[^1].Date == candle.Date) Results[^1] = new() { Date = candle.Date, Value = (double)candle.Volume };
+      else Results.Add(new() { Date = candle.Date, Value = (double)candle.Volume });
     }
-  }
-  protected override void OnCandleRemoved(object? sender, DateTime dt) {
-    lock (Results) {
-      int idx = SearchIndexByDate(Snapshot(), dt);
-      if (idx < 0) return; // 캔들의 삭제인데 시각이 존재하지 않으면 안 됨.
-      Results.RemoveAt(idx);
-    }
-  }
-  protected override void OnCleared(object? sender, EventArgs args) {
-    lock (Results) {
-      Results.Clear();
-    }
-  }
-  protected override void Invalidate() {
-    var snapshot = BaseChart.Candles.ToImmutableList();
-    Results.Clear();
-    for (int i = 0; i < snapshot.Count; i++) {
-      Results.Add(new() { Date = snapshot[i].Date, Value = (double)snapshot[i].Volume });
-    }
-  }
-  private int SearchIndexByDate(ImmutableArray<VolumeResult> snapshot, DateTime date) {
-    if (snapshot.Length == 0) return -1;
-    int lo = 0;
-    int hi = snapshot.Length;
-    while (lo != hi) {
-      int mid = lo + (hi - lo) / 2;
-      if (date < snapshot[mid].Date) hi = Math.Max(mid, 0);
-      else if (date > snapshot[mid].Date) lo = Math.Min(mid + 1, snapshot.Length);
-      else return mid;
-    }
-    if (lo == snapshot.Length) return ~lo;
-    return snapshot[lo].Date == date ? lo : ~lo;
   }
 }

@@ -1,56 +1,45 @@
 using System.Collections.Immutable;
 using Avalonia;
 using ScottPlot;
+using trading_platform.Extensions;
 
 namespace trading_platform.Model.Charts.Indicators;
 
-public class MovingAverageConvergenceDivergence : Indicator {
+public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int lookback_1, int lookback_2) : Indicator(chart) {
+  public override string LegendText => $"MACD({Lookback_1}, {Lookback_2})";
   public struct MacdResult {
     public DateTime Date { get; set; }
     public double Average_1 { get; set; }
     public double Average_2 { get; set; }
     public double Value { get; set; }
-    public double Close { get; set; }
   };
   public BarStyle BarStyle { get; private set; }
-  private int _Lookback_1;
-  private int _Lookback_2;
   public int Lookback_1 {
-    get => _Lookback_1;
+    get => field;
     set {
       ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 0, nameof(value));
-      if (value != _Lookback_1) {
-        LegendText = $"MACD({_Lookback_1}, {_Lookback_2})";
-        _Lookback_1 = value;
-        Invalidate();
+      if (field != value) {
+        field = value;
+        Reset();
       }
     }
-  }
+  } = lookback_1;
   public int Lookback_2 {
-    get => _Lookback_2;
+    get => field;
     set {
       ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 0, nameof(value));
-      if (value != _Lookback_2) {
-        LegendText = $"MACD({_Lookback_1}, {_Lookback_2})";
-        _Lookback_2 = value;
-        Invalidate();
+      if (field != value) {
+        field = value;
+        Reset();
       }
     }
-  }
-  public List<MacdResult> Results { get; private set; }
+  } = lookback_2;
+  public List<MacdResult> Results { get; private set; } = [];
   
-  public MovingAverageConvergenceDivergence(CandlestickChartData data, int lookback_1, int lookback_2) : base(data) {
-    Results = [];
-    Lookback_1 = lookback_1;
-    Lookback_2 = lookback_2;
-    BarStyle = new();
-    Invalidate();
-  }
   public ImmutableArray<MacdResult> Snapshot() {
-    bool entered = Monitor.TryEnter(Results);
-    ImmutableArray<MacdResult> result = [.. Results];
-    if (entered) Monitor.Exit(Results);
-    return result;
+    lock (Results) {
+      return [..Results];
+    }
   }
   public override AxisLimits GetAxisLimits() {
     if (Results.Count == 0) return AxisLimits.Unset;
@@ -64,8 +53,8 @@ public class MovingAverageConvergenceDivergence : Indicator {
     var snapshot = Snapshot();
     if (snapshot.Length == 0) return;
     var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
-    var startIdx = SearchIndexByDate(snapshot, DateTime.FromOADate(xRange.Min));
-    var endIdx = SearchIndexByDate(snapshot, DateTime.FromOADate(xRange.Max));
+    var startIdx = BaseChart.Candles.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
+    var endIdx = BaseChart.Candles.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
     if (startIdx < 0) startIdx = ~startIdx;
     if (endIdx < 0) endIdx = ~endIdx;
     if (startIdx == endIdx) return;
@@ -115,87 +104,73 @@ public class MovingAverageConvergenceDivergence : Indicator {
       color: Colors.Black
     );
   }
-  protected override void OnCandleChanged(object? sender, ChartOHLC candle) {
-    lock (Results) {
-      int idx = SearchIndexByDate(Snapshot(), candle.Date);
-      if (idx < 0) return; // 캔들의 변경인데 시각이 존재하지 않으면 안 됨.
-      Reevaluate(idx, withClose: (double)candle.Close);
-    }
-  }
-  protected override void OnCandleInserted(object? sender, ChartOHLC candle) {
-    lock (Results) {
-      int idx = SearchIndexByDate(Snapshot(), candle.Date);
-      if (idx >= 0) return; // 캔들의 삽입인데 시각이 이미 존재하면 안 됨.
-      idx = ~idx;
-      Results.Insert(idx, new() { Date = candle.Date });
-      Reevaluate(idx, withClose: (double)candle.Close);
-    }
-  }
-  protected override void OnCandleRemoved(object? sender, DateTime dt) {
-    lock (Results) {
-      int idx = SearchIndexByDate(Snapshot(), dt);
-      if (idx < 0) return; // 캔들의 삭제인데 시각이 존재하지 않으면 안 됨.
-      Results.RemoveAt(idx);
-      Reevaluate(idx); // 이론상으로는 캔들 하나가 바뀌면 그 뒤의 모든 이동평균은 다시 계산해야 함.
-    }
-  }
-  protected override void OnCleared(object? sender, EventArgs args) {
+  public override void Reset() {
     lock (Results) {
       Results.Clear();
-    }
-  }
-  protected override void Invalidate() {
-    var snapshot = BaseChart.Candles.ToImmutableList();
-    Results.Clear();
-    LinkedList<double> closes = [];
-    for (int i = 0; i < snapshot.Count; i++) {
-      Results.Add(new() { Date = snapshot[i].Date, Close = (double)snapshot[i].Close });
-      if (i == 0) Results[i] = Results[i] with {
-        Average_1 = Results[i].Close,
-        Average_2 = Results[i].Close,
-        Value = 0.0
-      };
-      else {
-        var avg_1 = double.Lerp(Results[i - 1].Average_1, Results[i].Close, 2.0 / (1.0 + Lookback_1));
-        var avg_2 = double.Lerp(Results[i - 1].Average_2, Results[i].Close, 2.0 / (1.0 + Lookback_2));
-        Results[i] = Results[i] with {
-          Average_1 = avg_1,
-          Average_2 = avg_2,
-          Value = avg_1 - avg_2
-        };
+      double alpha_1 = 2.0 / (Lookback_1 + 1);
+      double alpha_2 = 2.0 / (Lookback_2 + 1);
+      for (int i = 0; i < BaseChart.Candles.Count; i++) {
+        var close = (double)BaseChart.Candles[i].Close;
+        if (i == 0) {
+          Results.Add(new() {
+            Date = BaseChart.Candles[i].Date,
+            Average_1 = close,
+            Average_2 = close,
+            Value = 0.0
+          });
+        }
+        else {
+          var average_1 = Results[i - 1].Average_1 * (1 - alpha_1) + close * alpha_1;
+          var average_2 = Results[i - 1].Average_2 * (1 - alpha_2) + close * alpha_2;
+          Results.Add(new() {
+            Date = BaseChart.Candles[i].Date,
+            Average_1 = average_1,
+            Average_2 = average_2,
+            Value = average_1 - average_2
+          });
+        }
       }
     }
   }
-  protected void Reevaluate(int begin, int end = int.MaxValue, double? withClose = null) {
-    if (withClose != null) Results[begin] = Results[begin] with { Close = withClose.Value };
-    for (int i = begin; i < Math.Min(Results.Count, end); i++) {
-      if (i == 0) Results[i] = Results[i] with {
-        Average_1 = Results[i].Close,
-        Average_2 = Results[i].Close,
-        Value = 0.0
-      };
+  public override void UpdateEnd() {
+    if (BaseChart.Candles.Count == 0) return;
+    double alpha_1 = 2.0 / (Lookback_1 + 1);
+    double alpha_2 = 2.0 / (Lookback_2 + 1);
+    lock (Results) {
+      if (Results.Count == 0) return;
+      var close = (double)BaseChart[0]!.Close;
+      var date = BaseChart[0]!.Date;
+      if (Results[^1].Date == date) {
+        if (Results.Count == 1) {
+          Results[0] = new() {
+            Date = date,
+            Average_1 = close,
+            Average_2 = close,
+            Value = 0.0
+          };
+        }
+        else {
+          var average_1 = Ema(Results[^1].Average_1, close, alpha_1);
+          var average_2 = Ema(Results[^1].Average_2, close, alpha_2);
+          Results[^1] = new() {
+            Date = date,
+            Average_1 = average_1,
+            Average_2 = average_2,
+            Value = average_1 - average_2
+          };
+        }
+      }
       else {
-        var avg_1 = double.Lerp(Results[i - 1].Average_1, Results[i].Close, 2.0 / (1.0 + Lookback_1));
-        var avg_2 = double.Lerp(Results[i - 1].Average_2, Results[i].Close, 2.0 / (1.0 + Lookback_2));
-        Results[i] = Results[i] with {
-          Average_1 = avg_1,
-          Average_2 = avg_2,
-          Value = avg_1 - avg_2
-        };
+        var average_1 = Ema(Results[^1].Average_1, close, alpha_1);
+        var average_2 = Ema(Results[^1].Average_2, close, alpha_2);
+        Results.Add(new() {
+          Date = date,
+          Average_1 = average_1,
+          Average_2 = average_2,
+          Value = average_1 - average_2
+        });
       }
     }
   }
-  private int SearchIndexByDate(ImmutableArray<MacdResult> snapshot, DateTime date) {
-    if (snapshot.Length == 0) return -1;
-    int lo = 0;
-    int hi = snapshot.Length;
-    while (lo != hi) {
-      int mid = lo + (hi - lo) / 2;
-      if (date < snapshot[mid].Date) hi = Math.Max(mid, 0);
-      else if (date > snapshot[mid].Date) lo = Math.Min(mid + 1, snapshot.Length);
-      else return mid;
-    }
-    if (lo == snapshot.Length) return ~lo;
-    return snapshot[lo].Date == date ? lo : ~lo;
-  }
+  internal static double Ema(double x, double y, double a) => y * a + x * (1 - a);
 }

@@ -12,8 +12,8 @@ public static partial class DomesticStock {
     [JsonPropertyName("output")]
     public DetailedInformation? Information { get; set; }
   }
-  public static readonly Action<DetailedInformationQueries, Action<string, bool, object?>?, object?> GetDetailedInformation = (queries, cb, args) => 
-    ApiClient.PushRequest(
+  public static readonly Action<ApiModel, DetailedInformationQueries, Action<string, bool, object?>?, object?> GetDetailedInformation = (api, queries, cb, args) => 
+    api.PushRequest(
       transId: "FHKST01010100",
       callback: cb, 
       callbackParameters: args,

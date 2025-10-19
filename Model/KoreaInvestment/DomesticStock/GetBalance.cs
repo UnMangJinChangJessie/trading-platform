@@ -36,8 +36,8 @@ public partial class DomesticStock {
     [JsonPropertyName("output2")]
     public IEnumerable<Balance>? AccountBalance { get; set; } // Is defined as array but pretty sure this is a singleton
   }
-  public static Action<BalanceQueries, Action<string, bool, object?>?, object?> GetBalance = (queries, cb, args) =>
-    ApiClient.PushRequest(
+  public static Action<ApiModel, BalanceQueries, Action<string, bool, object?>?, object?> GetBalance = (api, queries, cb, args) =>
+    api.PushRequest(
       "TTTC8434R",
       queries: new Dictionary<string, string>() {
         ["CANO"] = queries.AccountBase,

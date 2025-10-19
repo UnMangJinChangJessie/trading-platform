@@ -30,7 +30,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Text="조회 기간" Margin="5,0,0,0" VerticalAlignment="Center" />
-      <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateStart}" Margin="5,0,0,0" />
+      <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateBegin}" Margin="5,0,0,0" />
       <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateEnd}" Margin="2,0,0,0" />
     </StackPanel>
     <ScottPlot:AvaPlot

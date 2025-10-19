@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -8,10 +9,9 @@ public static partial class DomesticStock {
   public class CashOrderBody : IAccount {
     [JsonIgnore]
     public OrderPosition Position { get; set; }
-    [JsonIgnore]
-    public string TransactionId => Position switch {
-      OrderPosition.Long => ApiClient.Simulation ? "VTTC0012U" : "TTTC0012U",
-      OrderPosition.Short => ApiClient.Simulation ? "VTTC0011U" : "TTTC0011U",
+    public string TransactionId(bool isSimulation) => Position switch {
+      OrderPosition.Long => isSimulation ? "VTTC0012U" : "TTTC0012U",
+      OrderPosition.Short => isSimulation ? "VTTC0011U" : "TTTC0011U",
       _ => throw new ArgumentOutOfRangeException(nameof(Position))
     };
     [JsonPropertyName("CANO")]
@@ -37,6 +37,6 @@ public static partial class DomesticStock {
     [JsonPropertyName("output")]
     public OrderInformation? Response { get; set; }
   }
-  public static readonly Action<CashOrderBody, Action<string, bool, object?>?, object?> OrderCash = (body, callback, args) =>
-    ApiClient.PushRequest(body.TransactionId, callback: callback, callbackParameters: args, body: body);
+  public static readonly Action<ApiModel, CashOrderBody, Action<string, bool, object?>?, object?> OrderCash = (api, body, callback, args) =>
+    api.PushRequest(body.TransactionId(api.IsSimulation), callback: callback, callbackParameters: args, body: body);
 }

@@ -17,12 +17,14 @@ public partial class Order : OrderBase {
     public partial string InitialOrderId { get; set; }
   }
   private OrderForm CastedForm => (OrderForm)Form;
-  public Order(Account account) {
+  public KisClients Api { get; set; }
+  public Order(KisClients api, Account account) {
     PendingOrders = [];
-    Form = new OrderForm(account);
+    Api = api;
+    Form = new OrderForm(api, account);
   }
   public void OnReceivedModifiable(string jsonString, bool hasNextData, object? args) {
-    var result = ApiClient.DeserializeJson<GetModifiableResult>(jsonString);
+    var result = ApiModel.DeserializeJson<GetModifiableResult>(jsonString);
     if (result == null) return;
     lock (PendingOrders) {
       foreach (var order in result.ModifiableList!) {
@@ -39,29 +41,38 @@ public partial class Order : OrderBase {
       }
     }
     if (hasNextData) {
-      GetModifiableOrder(new GetModifiableQueries() {
-        AccountBase = CastedForm.Account.AccountBase,
-        AccountCode = CastedForm.Account.AccountCode,
-        SellOrBuy = GetModifiableQueries.ALL,
-        OrderOrTicker = GetModifiableQueries.ORDER,
-        FirstConsecutiveContext = result.FirstConsecutiveContext!,
-        SecondConsecutiveContext = result.SecondConsecutiveContext!,
-      }, OnReceivedModifiable, null);
+      GetModifiableOrder(
+        Api!.ApiClient,
+        new GetModifiableQueries() {
+          AccountBase = CastedForm.Account.AccountBase,
+          AccountCode = CastedForm.Account.AccountCode,
+          SellOrBuy = GetModifiableQueries.ALL,
+          OrderOrTicker = GetModifiableQueries.ORDER,
+          FirstConsecutiveContext = result.FirstConsecutiveContext!,
+          SecondConsecutiveContext = result.SecondConsecutiveContext!,
+        }, OnReceivedModifiable, null
+      );
     }
   }
   // 현재 정정 가능한 주문 목록을 불러옵니다.
   public override void Refresh() {
+    if (Api == null) return;
     lock (PendingOrders) {
       PendingOrders.Clear();
     }
-    GetModifiableOrder(new GetModifiableQueries() {
-      AccountBase = CastedForm.Account.AccountBase,
-      AccountCode = CastedForm.Account.AccountCode,
-      SellOrBuy = GetModifiableQueries.ALL,
-      OrderOrTicker = GetModifiableQueries.ORDER,
-      FirstConsecutiveContext = "",
-      SecondConsecutiveContext = "",
-    }, OnReceivedModifiable, null);
+    GetModifiableOrder(
+      Api.ApiClient,
+      new GetModifiableQueries() {
+        AccountBase = CastedForm.Account.AccountBase,
+        AccountCode = CastedForm.Account.AccountCode,
+        SellOrBuy = GetModifiableQueries.ALL,
+        OrderOrTicker = GetModifiableQueries.ORDER,
+        FirstConsecutiveContext = "",
+        SecondConsecutiveContext = "",
+      },
+      OnReceivedModifiable,
+      null
+    );
   }
   public override Task RefreshAsync() {
     Refresh();

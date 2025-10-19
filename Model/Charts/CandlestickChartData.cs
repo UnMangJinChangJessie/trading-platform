@@ -28,7 +28,7 @@ public class CandlestickChartData {
     [Description("년")]
     Yearly,
   }
-  public ObservableCollection<ChartOHLC> Candles { get; private set; }
+  public List<ChartOHLC> Candles { get; private set; }
   public DateTimeOffset? ChartDateBegin { get; set; }
   public DateTimeOffset? ChartDateEnd { get; set; }
   public CandlePeriod Span { get; set; }

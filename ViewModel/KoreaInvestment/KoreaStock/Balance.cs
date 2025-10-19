@@ -6,12 +6,14 @@ namespace trading_platform.ViewModel.KoreaInvestment.KoreaStock;
 
 using BalanceBase = ViewModel.Balance;
 
-public partial class Balance(Account account) : BalanceBase {
+public partial class Balance(ApiModel api, WebSocketModel ws, Account account) : BalanceBase {
+  public ApiModel RestApi { get; set; } = api;
+  public WebSocketModel WebSocket { get; set; } = ws;
   [ObservableProperty]
   public partial Account Account { get; set; } = account;
 
   public void OnReceivedBalance(string jsonString, bool hasNextData, object? args) {
-    if (ApiClient.DeserializeJson<BalanceResult>(jsonString) is not BalanceResult result) return;
+    if (ApiModel.DeserializeJson<BalanceResult>(jsonString) is not BalanceResult result) return;
     if (result.ReturnCode != 0) {
       Debug.WriteLine($"[{result.ResponseMessageCode}, {nameof(OnReceivedBalance)}] {result.ResponseMessage}");
       return;
@@ -28,6 +30,7 @@ public partial class Balance(Account account) : BalanceBase {
     }
     if (hasNextData) {
       GetBalance(
+        RestApi,
         new BalanceQueries() {
           AccountBase = Account.AccountBase,
           AccountCode = Account.AccountCode,
@@ -55,6 +58,7 @@ public partial class Balance(Account account) : BalanceBase {
       HoldingItems.Clear();
     }
     GetBalance(
+      RestApi,
       new BalanceQueries() {
         AccountBase = Account.AccountBase,
         AccountCode = Account.AccountCode,

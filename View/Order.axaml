@@ -7,15 +7,15 @@
   xmlns:m="using:trading_platform.Model"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
   x:Class="trading_platform.View.Order"
-  x:DataType="vm:Order"
+  x:DataType="vm:OrderForm"
 >
   <StackPanel >
     <TextBlock Classes="h1" HorizontalAlignment="Center" TextWrapping="Wrap" >
       <Run>
         <Run.Text>
           <MultiBinding StringFormat="{}{0}({1}) 주문">
-            <Binding RelativeSource="DataContext" Path="Name" />
-            <Binding RelativeSource="DataContext" Path="Ticker" />
+            <Binding RelativeSource="DataContext" Path="ItemLabel.Name" Mode="OneWay" />
+            <Binding RelativeSource="DataContext" Path="ItemLabel.Ticker" Mode="OneWay" />
           </MultiBinding>
         </Run.Text>
       </Run>
@@ -24,8 +24,8 @@
       HorizontalAlignment="Stretch"
       Name="OrderMethodComboBox"
       PlaceholderText="주문 방식 선택"
-      ItemsSource="{Binding MethodsList}"
-      SelectedItem="{Binding SelectedMethod}"
+      ItemsSource="{Binding OrderMethod}"
+      SelectedItem="{Binding AvailableOrderMethod}"
     >
       <ComboBox.ItemTemplate>
         <DataTemplate>

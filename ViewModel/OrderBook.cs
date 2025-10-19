@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using Avalonia.Controls;
+using trading_platform.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.ViewModel;
@@ -17,6 +16,10 @@ public partial class OrderBookItem(decimal price, decimal ask, decimal bid) : Ob
 public abstract partial class OrderBook(MarketItemLabel label) : ObservableObject, IRefresh {
   [ObservableProperty]
   public partial MarketItemLabel Label { get; set; } = label;
+  [ObservableProperty]
+  public partial decimal CurrentClose { get; set; }
+  [ObservableProperty]
+  public partial decimal PreviousClose { get; set; }
   public ObservableCollection<OrderBookItem> CurrentOrders { get; set; } = [];
   protected void InsertOrder(decimal price, decimal ask, decimal bid) {
     if (!Monitor.IsEntered(CurrentOrders)) {

@@ -15,8 +15,8 @@ public static partial class OverseaStock {
     [JsonPropertyName("output2")]
     public OrderBook? OrderBook { get; set; }
   }
-  public readonly static Action<OrderBookQueries, Action<string, bool, object?>?, object?> GetOrderBook = (queries, callback, args) =>
-    ApiClient.PushRequest(
+  public readonly static Action<ApiModel, OrderBookQueries, Action<string, bool, object?>?, object?> GetOrderBook = (api, queries, callback, args) =>
+    api.PushRequest(
       "HHDFS76200100",
       callback: callback,
       callbackParameters: args,

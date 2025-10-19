@@ -6,7 +6,7 @@
   xmlns:vm="using:trading_platform.ViewModel"
   xmlns:m="using:trading_platform.Model"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
-  x:DataType="vm:MarketData"
+  x:DataType="vm:MarketItem"
   x:Class="trading_platform.Components.PriceDisplay"
 >
   <DockPanel Margin="5" >
@@ -23,8 +23,8 @@
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0} ({1})" >
-            <Binding RelativeSource="DataContext" Path="CurrentOpen" />
-            <Binding RelativeSource="DataContext" Path="OpenChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.CurrentOpen" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.OpenChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
@@ -35,8 +35,8 @@
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0} ({1})" FallbackValue="">
-            <Binding RelativeSource="DataContext" Path="CurrentHigh" />
-            <Binding RelativeSource="DataContext" Path="HighChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.CurrentHigh" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.HighChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
@@ -47,8 +47,8 @@
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0} ({1})" FallbackValue="">
-            <Binding RelativeSource="DataContext" Path="CurrentLow" />
-            <Binding RelativeSource="DataContext" Path="LowChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.CurrentLow" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.LowChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
@@ -59,7 +59,7 @@
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0}">
-            <Binding RelativeSource="DataContext" Path="CurrentVolume" StringFormat="{}{0}" Converter="{x:Static m:Converters.SimpleNumberKoreanConverter}" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.CurrentVolume" StringFormat="{}{0}" Converter="{x:Static m:Converters.SimpleNumberKoreanConverter}" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
@@ -70,22 +70,22 @@
       >
         <TextBlock.Text>
           <MultiBinding StringFormat="{}{0}{1}">
-            <Binding RelativeSource="DataContext" Path="CurrentAmount" StringFormat="{}{0}" Converter="{x:Static m:Converters.SimpleNumberKoreanConverter}" />
-            <Binding RelativeSource="DataContext" Path="Currency" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.CurrentAmount" StringFormat="{}{0}" Converter="{x:Static m:Converters.SimpleNumberKoreanConverter}" />
+            <Binding RelativeSource="DataContext" Path="ItemOHLC.Currency" />
           </MultiBinding>
         </TextBlock.Text>
       </TextBlock>
     </Grid>
     <StackPanel DockPanel.Dock="Left">
-      <TextBlock FontSize="{StaticResource FontSizeLarge}" Text="{Binding Name}" TextWrapping="Wrap" />
+      <TextBlock FontSize="{StaticResource FontSizeLarge}" Text="{Binding ItemLabel.Name}" TextWrapping="Wrap" />
       <TextBlock FontSize="{StaticResource FontSizeXLarge}" >
-        <Run FontWeight="Bold" Text="{Binding CurrentClose}" />
-        <Run Text="{Binding Currency}" />
+        <Run FontWeight="Bold" Text="{Binding ItemOHLC.CurrentClose}" />
+        <Run Text="{Binding ItemOHLC.Currency}" />
         <Run>
           <Run.Text>
             <MultiBinding StringFormat="({0}, {1})" FallbackValue="">
-              <Binding Path="Change" />
-              <Binding Path="CloseChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
+              <Binding Path="ItemOHLC.Change" />
+              <Binding Path="ItemOHLC.CloseChangeRate" StringFormat="{}{0:+0.00%;-0.00%;0.00%}" FallbackValue="N/A" />
             </MultiBinding>
           </Run.Text>
         </Run>

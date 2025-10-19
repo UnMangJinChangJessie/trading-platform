@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using ScottPlot;
+using trading_platform.Extensions;
 using trading_platform.Model;
 using trading_platform.Model.Charts.Indicators;
 
@@ -24,34 +24,11 @@ public partial class CandlestickChart : UserControl {
     CandleSource = [];
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+    if (CastedDataContext == null) return;
     if (System.Diagnostics.Debugger.IsAttached || Design.IsDesignMode) {
       foreach (var candle in CastedDataContext.Candles) AddCandle(candle);
       PriceChart.Refresh();
     }
-    CastedDataContext?.CandleChanged += (s, candle) => {
-      Dispatcher.UIThread.Post(() => {
-        AddCandle(candle);
-        PriceChart.InvalidateVisual();
-      });
-    };
-    CastedDataContext?.CandleInserted += (s, candle) => {
-      Dispatcher.UIThread.Post(() => {
-        AddCandle(candle);
-        PriceChart.InvalidateVisual();
-      });
-    };
-    CastedDataContext?.Cleared += (s, candles) => {
-      Dispatcher.UIThread.Post(() => {
-        CandleSource.Clear();
-        PriceChart.InvalidateVisual();
-      });
-    };
-    CastedDataContext?.CandleRemoved += (s, date) => {
-      Dispatcher.UIThread.Post(() => {
-        CandleSource.RemoveAll(x => x.DateTime == date);
-        PriceChart.InvalidateVisual();
-      });
-    };
     PriceChart.Multiplot.AddPlots(3);
     PriceChart.Multiplot.CollapseVertically();
     ConfigureCandleChart();

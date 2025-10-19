@@ -6,8 +6,7 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public static partial class DomesticStock {
   public class ModifyOrderBody : IAccount {
-    [JsonIgnore]
-    public string TransactionId => ApiClient.Simulation ? "VTTC0013U" : "TTTC0013U";
+    public static string TransactionId(bool isSimulation) => isSimulation ? "VTTC0013U" : "TTTC0013U";
     [JsonPropertyName("CANO")]
     public required string AccountBase { get; set; }
     [JsonPropertyName("ACNT_PRDT_CD")]
@@ -29,6 +28,6 @@ public static partial class DomesticStock {
     [JsonPropertyName("output")]
     public OrderInformation? Response { get; set; }
   }
-  public static readonly Action<ModifyOrderBody, Action<string, bool, object?>?, object?> ModifyOrder = (body, cb, args) => 
-    ApiClient.PushRequest(body.TransactionId, callback: cb, callbackParameters: args, body: body);
+  public static readonly Action<ApiModel, ModifyOrderBody, Action<string, bool, object?>?, object?> ModifyOrder = (api, body, cb, args) => 
+    api.PushRequest(ModifyOrderBody.TransactionId(api.IsSimulation), callback: cb, callbackParameters: args, body: body);
 }

@@ -13,8 +13,8 @@ public static partial class DomesticStock {
     [JsonPropertyName("output")]
     public FinancialIndex? Output { get; set; }
   }
-  public readonly static Action<FinancialIndexQueries, Action<string, bool, object?>, object?> GetFinancialIndex = (queries, cb, args) =>
-    ApiClient.PushRequest(
+  public readonly static Action<ApiModel, FinancialIndexQueries, Action<string, bool, object?>, object?> GetFinancialIndex = (api, queries, cb, args) =>
+    api.PushRequest(
       transId: "FHKST66430300",
       queries: new Dictionary<string, string>() {
         ["FID_DIV_CLS_CODE"] = queries.Period.ToString(),

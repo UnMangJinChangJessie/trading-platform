@@ -1,19 +1,21 @@
 namespace trading_platform.ViewModel.KoreaInvestment.KoreaStock;
 
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.KoreaInvestment.DomesticStock;
 using MarketItemBase = ViewModel.MarketItem;
 
-public partial class MarketItem : MarketItemBase {
+public partial class MarketItem([MaybeNull] KisClients api) : MarketItemBase {
   private string? WebSocketTicker { get; set; }
+  public KisClients Api { get; set; } = api;
   [ObservableProperty]
   public partial StockMetric Metric { get; set; }
+
   public async void OnReceivedChart(string jsonString, bool hasNextData, object? args) {
-    if (ApiClient.DeserializeJson<ChartResult>(jsonString) is not ChartResult result) return;
+    if (ApiModel.DeserializeJson<ChartResult>(jsonString) is not ChartResult result) return;
     if (result.ReturnCode != 0) {
       Debug.WriteLine($"[{result.ResponseMessageCode}, {nameof(OnReceivedChart)}] {result.ResponseMessage}");
       return;
@@ -37,17 +39,20 @@ public partial class MarketItem : MarketItemBase {
       ItemOHLC.PreviousClose = result.Information!.PreviousClose;
       // 기본 재무지표 수신
       // PER, PBR 등 주가에 의존하는 값을 계산하기 위해 부득이 하게 차트를 전부 불러온 뒤에 요청함.
-      GetFinancialIndex(new FinancialIndexQueries() {
-        Period = FinancialIndexQueries.QUARTERLY,
-        Ticker = ItemLabel.Ticker
-      }, OnReceivedFinancialInformation, null);
+      GetFinancialIndex(
+        Api!.ApiClient,
+        new FinancialIndexQueries() {
+          Period = FinancialIndexQueries.YEARLY,
+          Ticker = ItemLabel.Ticker
+        }, OnReceivedFinancialInformation, null
+      );
       // 실시간 체결 데이터 요청
-      if (WebSocketTicker != null) await ApiClient.KisWebSocket.Unsubscribe("H0UNCNT0", WebSocketTicker);
+      if (WebSocketTicker != null) await Api!.WebSocketClient.Unsubscribe("H0UNCNT0", WebSocketTicker);
       WebSocketTicker = ItemLabel.Ticker;
-      await ApiClient.KisWebSocket.Subscribe("H0UNCNT0", ItemLabel.Ticker, OnReceivedRealtimeConclusion);
+      await Api!.WebSocketClient.Subscribe("H0UNCNT0", ItemLabel.Ticker, OnReceivedRealtimeConclusion);
     }
   }
-  public void OnReceivedRealtimeConclusion(object? sender, ApiClient.KisWebSocket.MessageReceivedEventArgs args) {
+  public void OnReceivedRealtimeConclusion(object? sender, WebSocketModel.MessageReceivedEventArgs args) {
     if (args.Tokens.Length == 0) return;
     var lastToken = args.Tokens[^1];
     var open = ulong.Parse(lastToken[7]);
@@ -76,7 +81,7 @@ public partial class MarketItem : MarketItemBase {
     }
   }
   public void OnReceivedFinancialInformation(string jsonString, bool hasNextData, object? args) {
-    if (ApiClient.DeserializeJson<FinancialIndexResult>(jsonString) is not FinancialIndexResult result) return;
+    if (ApiModel.DeserializeJson<FinancialIndexResult>(jsonString) is not FinancialIndexResult result) return;
     if (result.ReturnCode != 0) {
       Debug.WriteLine($"[{result.ResponseMessageCode}, {nameof(OnReceivedChart)}] {result.ResponseMessage}");
       return;
@@ -96,6 +101,7 @@ public partial class MarketItem : MarketItemBase {
     }
   }
   public override void Refresh() {
+    if (Api == null) return;
     lock (ItemChart) {
       ItemChart.Clear();
     }
@@ -107,14 +113,16 @@ public partial class MarketItem : MarketItemBase {
       var currentFrom = to.AddDays(1);
       currentFrom = from < currentFrom ? currentFrom : from;
       // from부터 to까지 주어진 기간을 140일 단위로 나누어 수신함.
-      GetChart(new ChartQueries() {
-        Ticker = ItemLabel.Ticker,
-        Exchange = Exchange.DomesticUnified,
-        CandlePeriod = ItemChart.Span.ToKisCandlePeriod(),
-        From = DateOnly.FromDateTime(currentFrom),
-        To = DateOnly.FromDateTime(to),
-        Adjusted = true,
-      }, OnReceivedChart, from > newTo);
+      GetChart(
+        Api.ApiClient,
+        new ChartQueries() {
+          Ticker = ItemLabel.Ticker,
+          Exchange = Exchange.DomesticUnified,
+          CandlePeriod = ItemChart.Span.ToKisCandlePeriod(),
+          From = DateOnly.FromDateTime(currentFrom),
+          To = DateOnly.FromDateTime(to),
+          Adjusted = true,
+        }, OnReceivedChart, from > newTo);
       to = newTo;
     }
     while (from <= to);

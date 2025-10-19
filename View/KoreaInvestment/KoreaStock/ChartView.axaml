@@ -3,12 +3,12 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:v="using:trading_platform.View"
-  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment.KoreaStock"
   xmlns:com="using:trading_platform.Components"
   xmlns:comkis="using:trading_platform.Components.KoreaInvestment"
   d:DesignHeight="720" d:DesignWidth="1000"
-  x:Class="trading_platform.View.KoreaInvestment.KoreaStockChart"
-  x:DataType="vmkis:StockMarketData"
+  x:Class="trading_platform.View.KoreaInvestment.KoreaStock.ChartView"
+  x:DataType="vmkis:MarketItem"
   x:Name="ControlRoot"
   AttachedToVisualTree="UserControl_AttachedToVisualTree"
   DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
@@ -28,12 +28,12 @@
       </StackPanel>
       <com:PriceDisplay
         Name="PriceDisplay"
-        DataContext="{Binding #ControlRoot.DataContext}"
+        DataContext="{Binding ItemOHLC}"
         Grid.Row="1"
       />
       <com:CandlestickChart
         Name="OHLCChart"
-        DataContext="{Binding #ControlRoot.DataContext.PriceChart}"
+        DataContext="{Binding ItemChart}"
         Grid.Row="2"
         VerticalAlignment="Stretch"
       />
@@ -41,19 +41,10 @@
     <com:OrderBookDisplay
       Focusable="False"
       Name="OrderBookDisplayView"
-      DataContext="{Binding CurrentOrderBook}"
+      DataContext="{Binding ItemOrderBook}"
       PriceDecimalPoint="0"
       QuantityDecimalPoint="0"
       Grid.Column="1"
     />
-    <StackPanel Grid.Column="2" Orientation="Vertical" >
-      <comkis:Account
-        DataContext="{Binding CurrentOrder}"
-      />
-      <v:Order
-        Name="OrderView"
-        DataContext="{Binding CurrentOrder}"
-      />
-    </StackPanel>
   </Grid>
 </UserControl>

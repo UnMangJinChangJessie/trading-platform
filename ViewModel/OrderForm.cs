@@ -1,15 +1,15 @@
 using System.Collections;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.ViewModel;
 
-public abstract partial class OrderForm : ObservableObject {
+public abstract partial class OrderForm(IEnumerable<object> methodsList) : ObservableObject {
   [ObservableProperty]
   public partial MarketItemLabel ItemLabel { get; set; } = new();
   [ObservableProperty]
   public partial object? OrderMethod { get; set; }
-  [ObservableProperty]
-  public partial object? AvailableOrderMethod { get; set; }
+  public ObservableCollection<object> AvailableOrderMethod { get; set; } = new(methodsList);
   [ObservableProperty]
   public partial decimal UnitPrice { get; set; }
   [ObservableProperty]

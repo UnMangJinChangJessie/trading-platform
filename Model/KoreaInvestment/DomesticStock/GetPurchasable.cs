@@ -5,7 +5,7 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public static partial class DomesticStock {
   public class PurchasableQueries : IAccount {
-    public string TransactionId => ApiClient.Simulation ? "VTTTC8908R" : "TTTC8908R";
+    public string TransactionId(bool isSimulation) => isSimulation ? "VTTTC8908R" : "TTTC8908R";
     public required string AccountBase { get; set; }
     public required string AccountCode { get; set; }
 
@@ -20,9 +20,9 @@ public static partial class DomesticStock {
   public class PurchasableResult : KisReturnMessage {
     [JsonPropertyName("output")] public Purchasable? Result { get; set; }
   }
-  public static readonly Action<PurchasableQueries, Action<string, bool, object?>?, object?> GetPurchasable = (queries, cb, args) =>
-    ApiClient.PushRequest(
-      queries.TransactionId,
+  public static readonly Action<ApiModel, PurchasableQueries, Action<string, bool, object?>?, object?> GetPurchasable = (api, queries, cb, args) =>
+    api.PushRequest(
+      queries.TransactionId(api.IsSimulation),
       callback: cb,
       callbackParameters: args,
       queries: new Dictionary<string, string>() {

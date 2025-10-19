@@ -8,7 +8,7 @@
   d:DesignWidth="1080"
   mc:Ignorable="d"
   x:Class="trading_platform.Components.ProfitLossList"
-  x:DataType="vm:ProfitLoss"
+  x:DataType="vm:Balance"
 >
 <DockPanel>
   <StackPanel 
@@ -49,15 +49,15 @@
   </StackPanel>
   <DataGrid 
     Margin="5" 
-    ItemsSource="{Binding ProfitLosses}" 
+    ItemsSource="{Binding HoldingItems}" 
     IsReadOnly="True" 
     CanUserResizeColumns="True" 
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
   >
     <DataGrid.Columns>
-      <DataGridTextColumn Header="종목코드" Binding="{Binding Ticker}" />
-      <DataGridTextColumn Header="종목명" Binding="{Binding Name}" />
+      <DataGridTextColumn Header="종목코드" Binding="{Binding Label.Ticker}" />
+      <DataGridTextColumn Header="종목명" Binding="{Binding Label.Name}" />
       <DataGridTextColumn Header="손익 (PnL%)">
         <DataGridTextColumn.Binding>
           <MultiBinding StringFormat="{}{0:+#,#;-#,#;0} ({1:+0.00%;-0.00%;0.00%})">
