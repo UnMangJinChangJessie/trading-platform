@@ -1,18 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.KoreaInvestment.DomesticStock;
 namespace trading_platform.ViewModel.KoreaInvestment.KoreaStock;
 
 using BalanceBase = ViewModel.Balance;
 
-public partial class Balance(KisClients api, Account account) : BalanceBase {
-  public KisClients Api {
-    get => field;
-    set;
-  } = api;
+public partial class Balance([MaybeNull] KisClients api) : BalanceBase {
   [ObservableProperty]
-  public partial Account Account { get; set; } = account;
+  public partial KisClients Api { get; set; } = api;
 
   public void OnReceivedBalance(string jsonString, bool hasNextData, object? args) {
     if (ApiModel.DeserializeJson<BalanceResult>(jsonString) is not BalanceResult result) return;
@@ -34,8 +31,8 @@ public partial class Balance(KisClients api, Account account) : BalanceBase {
       GetBalance(
         Api.ApiClient,
         new BalanceQueries() {
-          AccountBase = Account.AccountBase,
-          AccountCode = Account.AccountCode,
+          AccountBase = Api.ApiClient.Account.AccountBase,
+          AccountCode = Api.ApiClient.Account.AccountCode,
           DisplayPrice = BalanceQueries.PRICE_DEFAULT,
           InquiryType = BalanceQueries.INQUIRY_TICKER,
           IncludePreviousTrade = true,
@@ -62,8 +59,8 @@ public partial class Balance(KisClients api, Account account) : BalanceBase {
     GetBalance(
       Api.ApiClient,
       new BalanceQueries() {
-        AccountBase = Account.AccountBase,
-        AccountCode = Account.AccountCode,
+        AccountBase = Api.ApiClient.Account.AccountBase,
+        AccountCode = Api.ApiClient.Account.AccountCode,
         DisplayPrice = BalanceQueries.PRICE_DEFAULT,
         InquiryType = BalanceQueries.INQUIRY_TICKER,
         IncludePreviousTrade = true,

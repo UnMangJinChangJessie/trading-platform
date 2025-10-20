@@ -13,7 +13,7 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
     public double Average_2 { get; set; }
     public double Value { get; set; }
   };
-  public BarStyle BarStyle { get; private set; }
+  public BarStyle BarStyle { get; private set; } = new();
   public int Lookback_1 {
     get => field;
     set {
@@ -53,8 +53,9 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
     var snapshot = Snapshot();
     if (snapshot.Length == 0) return;
     var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
-    var startIdx = BaseChart.Candles.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
-    var endIdx = BaseChart.Candles.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
+    xRange = new(Math.Max(xRange.Min, snapshot[0].Date.ToOADate()), Math.Min(xRange.Min, snapshot[^1].Date.ToOADate()));
+    var startIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
+    var endIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
     if (startIdx < 0) startIdx = ~startIdx;
     if (endIdx < 0) endIdx = ~endIdx;
     if (startIdx == endIdx) return;

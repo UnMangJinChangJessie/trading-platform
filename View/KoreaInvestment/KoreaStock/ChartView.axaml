@@ -28,7 +28,7 @@
       </StackPanel>
       <com:PriceDisplay
         Name="PriceDisplay"
-        DataContext="{Binding .}"
+        DataContext="{Binding #ControlRoot.DataContext}"
         Grid.Row="1"
       />
       <com:CandlestickChart
@@ -46,5 +46,14 @@
       QuantityDecimalPoint="0"
       Grid.Column="1"
     />
+    <StackPanel Grid.Column="2" Orientation="Vertical" DockPanel.Dock="Right">
+      <comkis:Account
+        DataContext="{Binding Api.ApiClient.Account}"
+      />
+      <v:Order
+        Name="OrderView"
+        DataContext="{Binding #ControlRoot.OrderDataContext}"
+      />
+    </StackPanel>
   </Grid>
 </UserControl>

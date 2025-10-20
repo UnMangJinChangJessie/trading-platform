@@ -46,6 +46,7 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
     var snapshot = Snapshot();
     if (snapshot.Length == 0) return;
     var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
+    xRange = new(Math.Max(xRange.Min, snapshot[0].Date.ToOADate()), Math.Min(xRange.Min, snapshot[^1].Date.ToOADate()));
     var startIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
     var endIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
     if (startIdx < 0) startIdx = ~startIdx;

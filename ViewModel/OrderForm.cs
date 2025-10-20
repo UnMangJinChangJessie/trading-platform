@@ -4,9 +4,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.ViewModel;
 
-public abstract partial class OrderForm(IEnumerable<object> methodsList) : ObservableObject {
+public abstract partial class OrderForm(IEnumerable<object> methodsList, MarketItemLabel label) : ObservableObject {
   [ObservableProperty]
-  public partial MarketItemLabel ItemLabel { get; set; } = new();
+  public partial MarketItemLabel ItemLabel { get; set; } = label;
   [ObservableProperty]
   public partial object? OrderMethod { get; set; }
   public ObservableCollection<object> AvailableOrderMethod { get; set; } = new(methodsList);

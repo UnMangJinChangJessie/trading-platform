@@ -77,8 +77,8 @@
       </TextBlock>
     </Grid>
     <StackPanel DockPanel.Dock="Left">
-      <TextBlock FontSize="{StaticResource FontSizeLarge}" Text="{Binding ItemLabel.Name}" TextWrapping="Wrap" />
-      <TextBlock FontSize="{StaticResource FontSizeXLarge}" >
+      <SelectableTextBlock FontSize="{StaticResource FontSizeLarge}" Text="{Binding ItemLabel.Name}" TextWrapping="Wrap" />
+      <SelectableTextBlock FontSize="{StaticResource FontSizeXLarge}" >
         <Run FontWeight="Bold" Text="{Binding ItemOHLC.CurrentClose}" />
         <Run Text="{Binding ItemOHLC.Currency}" />
         <Run>
@@ -89,7 +89,7 @@
             </MultiBinding>
           </Run.Text>
         </Run>
-      </TextBlock>
+      </SelectableTextBlock>
     </StackPanel>
   </DockPanel>
 </UserControl>

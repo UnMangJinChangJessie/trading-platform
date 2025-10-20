@@ -25,7 +25,7 @@ public abstract partial class OrderBook(MarketItemLabel label) : ObservableObjec
     if (!Monitor.IsEntered(CurrentOrders)) {
       throw new SynchronizationLockException();
     }
-    int index = CurrentOrders.BinarySearch(price, x => x.Price);
+    int index = CurrentOrders.BinarySearch(-price, x => -x.Price);
     if (index < 0) CurrentOrders.Insert(~index, new(price, ask, bid));
     else CurrentOrders[index] = new(price, ask, bid);
   }
@@ -33,14 +33,14 @@ public abstract partial class OrderBook(MarketItemLabel label) : ObservableObjec
     if (!Monitor.IsEntered(CurrentOrders)) {
       throw new SynchronizationLockException();
     }
-    int maxIndex = CurrentOrders.BinarySearch(max, x => x.Price);
-    int minIndex = CurrentOrders.BinarySearch(min, x => x.Price);
-    maxIndex = maxIndex < 0 ? ~maxIndex : (maxIndex + 1);
-    minIndex = (minIndex < 0 ? ~minIndex : minIndex) - 1;
-    for (int i = maxIndex; i < CurrentOrders.Count; i++) {
+    int maxIndex = CurrentOrders.BinarySearch(-max, x => -x.Price);
+    int minIndex = CurrentOrders.BinarySearch(-min, x => -x.Price);
+    minIndex = minIndex < 0 ? ~minIndex : (minIndex + 1);
+    maxIndex = (maxIndex < 0 ? ~maxIndex : maxIndex) - 1;
+    for (int i = maxIndex; i >= 0; i--) {
       CurrentOrders[i] = new(CurrentOrders[i].Price, 0, 0);
     }
-    for (int i = minIndex; i >= 0; i--) {
+    for (int i = minIndex; i < CurrentOrders.Count; i++) {
       CurrentOrders[i] = new(CurrentOrders[i].Price, 0, 0);
     }
   }

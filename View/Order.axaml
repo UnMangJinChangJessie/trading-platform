@@ -14,8 +14,8 @@
       <Run>
         <Run.Text>
           <MultiBinding StringFormat="{}{0}({1}) 주문">
-            <Binding RelativeSource="DataContext" Path="ItemLabel.Name" Mode="OneWay" />
-            <Binding RelativeSource="DataContext" Path="ItemLabel.Ticker" Mode="OneWay" />
+            <Binding RelativeSource="DataContext" Path="ItemLabel.Name" />
+            <Binding RelativeSource="DataContext" Path="ItemLabel.Ticker" />
           </MultiBinding>
         </Run.Text>
       </Run>

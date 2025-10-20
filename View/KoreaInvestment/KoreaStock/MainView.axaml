@@ -15,21 +15,11 @@
 >
   <TabControl>
     <TabItem Header="차트/주문" >
-      <DockPanel>
-        <StackPanel Grid.Column="2" Orientation="Vertical" DockPanel.Dock="Right">
-          <comkis:Account
-            DataContext="{Binding Api.ApiClient.Account}"
-          />
-          <v:Order
-            Name="OrderView"
-            DataContext="{Binding Order}"
-          />
-        </StackPanel>
-        <vkis:ChartView
-          Name="PART_StockChartAndOrder" 
-          DataContext="{Binding InspectingItems[0]}"
-        />
-      </DockPanel>
+      <vkis:ChartView
+        Name="PART_StockChartAndOrder" 
+        DataContext="{Binding MainItem}"
+        OrderDataContext="{Binding #ControlRoot.DataContext.Order}"
+      />
     </TabItem>
     <!-- <TabItem Header="빠른 주문">
       <vkis:KoreaStockQuickOrder

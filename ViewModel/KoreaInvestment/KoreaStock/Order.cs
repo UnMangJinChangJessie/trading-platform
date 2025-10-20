@@ -1,5 +1,6 @@
 namespace trading_platform.ViewModel.KoreaInvestment.KoreaStock;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using trading_platform.Model.KoreaInvestment;
@@ -17,11 +18,20 @@ public partial class Order : OrderBase {
     public partial string InitialOrderId { get; set; }
   }
   private OrderForm CastedForm => (OrderForm)Form;
-  public KisClients Api { get; set; }
-  public Order(KisClients api, Account account) {
+  public KisClients Api {
+    get => field;
+    set {
+      if (field != value) {
+        field = value;
+        CastedForm.Api = value;
+        OnPropertyChanged(nameof(Api));
+      }
+    }
+  }
+  public Order([MaybeNull] KisClients api, MarketItemLabel label) {
     PendingOrders = [];
     Api = api;
-    Form = new OrderForm(api, account);
+    Form = new OrderForm(api, label);
   }
   public void OnReceivedModifiable(string jsonString, bool hasNextData, object? args) {
     var result = ApiModel.DeserializeJson<GetModifiableResult>(jsonString);
@@ -44,8 +54,8 @@ public partial class Order : OrderBase {
       GetModifiableOrder(
         Api!.ApiClient,
         new GetModifiableQueries() {
-          AccountBase = CastedForm.Account.AccountBase,
-          AccountCode = CastedForm.Account.AccountCode,
+          AccountBase = Api.ApiClient.Account.AccountBase,
+          AccountCode = Api.ApiClient.Account.AccountCode,
           SellOrBuy = GetModifiableQueries.ALL,
           OrderOrTicker = GetModifiableQueries.ORDER,
           FirstConsecutiveContext = result.FirstConsecutiveContext!,
@@ -63,8 +73,8 @@ public partial class Order : OrderBase {
     GetModifiableOrder(
       Api.ApiClient,
       new GetModifiableQueries() {
-        AccountBase = CastedForm.Account.AccountBase,
-        AccountCode = CastedForm.Account.AccountCode,
+        AccountBase = Api.ApiClient.Account.AccountBase,
+        AccountCode = Api.ApiClient.Account.AccountCode,
         SellOrBuy = GetModifiableQueries.ALL,
         OrderOrTicker = GetModifiableQueries.ORDER,
         FirstConsecutiveContext = "",

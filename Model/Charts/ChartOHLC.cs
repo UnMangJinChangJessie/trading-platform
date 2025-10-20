@@ -36,4 +36,7 @@ public partial class ChartOHLC : ObservableObject, IComparable<ChartOHLC> {
     (Open, High, Low, Close) = (ohlc.Open, ohlc.High, ohlc.Low, ohlc.Close);
     (Volume, Amount) = (ohlc.Volume, ohlc.Amount);
   }
+  public ScottPlot.OHLC ScottPlotCandle => new ScottPlot.OHLC((double)Open, (double)High, (double)Low, (double)Close) {
+    DateTime = Date
+  };
 }

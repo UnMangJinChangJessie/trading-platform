@@ -21,6 +21,7 @@ public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label
         InsertOrder(ulong.Parse(args.Tokens[^1][3 + i]), ulong.Parse(args.Tokens[^1][23 + i]), 0);
         InsertOrder(ulong.Parse(args.Tokens[^1][13 + i]), 0, ulong.Parse(args.Tokens[^1][33 + i]));
       }
+      ZeroOutOutOfRange(ulong.Parse(args.Tokens[^1][12]), ulong.Parse(args.Tokens[^1][22]));
     }
   }
   private async void OnReceivedOrderBook(string jsonString, bool hasNextData, object? args) {
@@ -63,6 +64,9 @@ public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label
   }
   public override void Refresh() {
     if (Api == null) return;
+    lock (CurrentOrders) {
+      CurrentOrders.Clear();
+    }
     GetOrderBook(
       Api.ApiClient,
       new OrderBookQueries() {

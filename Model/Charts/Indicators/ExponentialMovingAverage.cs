@@ -73,6 +73,7 @@ public class ExponentialMovingAverage : Indicator {
     var snapshot = Snapshot();
     if (snapshot.Length == 0) return;
     var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
+    xRange = new(Math.Max(xRange.Min, snapshot[0].Date.ToOADate()), Math.Min(xRange.Min, snapshot[^1].Date.ToOADate()));
     var startIdx = MovingAverage.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
     var endIdx = MovingAverage.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
     if (startIdx < 0) startIdx = ~startIdx;

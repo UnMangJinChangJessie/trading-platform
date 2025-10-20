@@ -8,7 +8,7 @@ using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.KoreaInvestment.DomesticStock;
 using OrderFormBase = ViewModel.OrderForm;
 
-public partial class OrderForm([MaybeNull] KisClients api, Account account) : OrderFormBase([
+public partial class OrderForm([MaybeNull] KisClients api, MarketItemLabel label) : OrderFormBase([
   Model.KoreaInvestment.OrderMethod.Limit,
   Model.KoreaInvestment.OrderMethod.IocLimit,
   Model.KoreaInvestment.OrderMethod.FokLimit,
@@ -20,10 +20,9 @@ public partial class OrderForm([MaybeNull] KisClients api, Account account) : Or
   Model.KoreaInvestment.OrderMethod.FokBestOffer,
   Model.KoreaInvestment.OrderMethod.ConditionalLimit,
   Model.KoreaInvestment.OrderMethod.StopLossLimit,
-]) {
-  public KisClients? Api { get; set; } = api;
+], label) {
   [ObservableProperty]
-  public partial Account Account { get; set; } = account;
+  public partial KisClients Api { get; set; } = api;
   public event EventHandler<OrderInformation> SucceedLong = default!;
   public event EventHandler<OrderInformation> SucceedShort = default!;
   protected override void OnPropertyChanged(PropertyChangedEventArgs e) {
@@ -56,8 +55,8 @@ public partial class OrderForm([MaybeNull] KisClients api, Account account) : Or
     OrderCash(
       Api.ApiClient,
       new CashOrderBody() {
-        AccountBase = Account.AccountBase,
-        AccountCode = Account.AccountCode,
+        AccountBase = Api.ApiClient.Account.AccountBase,
+        AccountCode = Api.ApiClient.Account.AccountCode,
         Method = method,
         Position = OrderPosition.Long,
         Quantity = (ulong)decimal.Round(Quantity),
@@ -75,8 +74,8 @@ public partial class OrderForm([MaybeNull] KisClients api, Account account) : Or
     OrderCash(
       Api.ApiClient,
       new CashOrderBody() {
-        AccountBase = Account.AccountBase,
-        AccountCode = Account.AccountCode,
+        AccountBase = Api.ApiClient.Account.AccountBase,
+        AccountCode = Api.ApiClient.Account.AccountCode,
         Method = method,
         Position = OrderPosition.Short,
         Quantity = (ulong)decimal.Round(Quantity),

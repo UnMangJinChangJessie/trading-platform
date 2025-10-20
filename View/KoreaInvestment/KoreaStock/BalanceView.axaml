@@ -12,7 +12,7 @@
 <DockPanel Margin="5">
   <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight" DockPanel.Dock="Top" >
     <comkis:Account
-      DataContext="{Binding Account}"
+      DataContext="{Binding Api.ApiClient.Account}"
       HorizontalAlignment="Left"
       VerticalAlignment="Center"
     />

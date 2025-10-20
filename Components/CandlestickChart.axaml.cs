@@ -1,15 +1,15 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using ScottPlot;
-using trading_platform.Extensions;
-using trading_platform.Model;
+using trading_platform.Model.Charts;
 using trading_platform.Model.Charts.Indicators;
 
 namespace trading_platform.Components;
 
 public partial class CandlestickChart : UserControl {
-  private Model.Charts.CandlestickChartData? CastedDataContext => DataContext as Model.Charts.CandlestickChartData;
+  private Model.Charts.CandlestickChartData? CastedDataContext => DataContext as CandlestickChartData;
   private Plot CandlePlot;
   private List<OHLC> CandleSource;
   private Plot VolumePlot;
@@ -22,11 +22,14 @@ public partial class CandlestickChart : UserControl {
       plot.Grid.YAxisStyle.IsVisible = !plot.Grid.YAxisStyle.IsVisible;
     });
     CandleSource = [];
+    
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
-    if (System.Diagnostics.Debugger.IsAttached || Design.IsDesignMode) {
-      foreach (var candle in CastedDataContext.Candles) AddCandle(candle);
+    CastedDataContext.Loaded += ResetCandles;
+    CastedDataContext.UpdatedEnd += UpdateEnd;
+    if (Design.IsDesignMode) {
+      ResetCandles(this, new() { WholeCandles = [.. CastedDataContext.Candles] });
       PriceChart.Refresh();
     }
     PriceChart.Multiplot.AddPlots(3);
@@ -66,34 +69,21 @@ public partial class CandlestickChart : UserControl {
   }
   public void UserControl_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
   }
-  private void AddCandle(ChartOHLC candle) {
-    int idx;
-    {
-      int lo = 0, hi = CandleSource.Count;
-      while (lo != hi) {
-        int mid = lo + (hi - lo) / 2;
-        if (candle.Date == CandleSource[mid].DateTime) {
-          lo = mid;
-          break;
-        }
-        else if (candle.Date < CandleSource[mid].DateTime) hi = mid;
-        else lo = mid + 1;
-      }
-      idx = lo;
-    }
-    var ohlc = new OHLC((double)candle.Open, (double)candle.High, (double)candle.Low, (double)candle.Close) {
-      DateTime = candle.Date,
-      TimeSpan = CastedDataContext.TimeSpan
-    };
-    var bar = new Bar() { Value = (double)candle.Volume, Position = candle.Date.ToOADate() };
-    if (idx < CandleSource.Count && CandleSource[idx].DateTime == candle.Date) {
-      CandleSource[idx] = ohlc;
-    }
-    else {
-      CandleSource.Insert(idx, ohlc);
-    }
-  }
+  private void ResetCandles(object? sender, CandlestickChartData.LoadedEventArgs args) { Dispatcher.UIThread.Post(() => {
+    if (CastedDataContext == null) return;
+    CandleSource.Clear();
+    CandleSource.AddRange(args.WholeCandles.Select(x => x.ScottPlotCandle.WithTimeSpan(CastedDataContext.TimeSpan)));
+    InvalidateVisual();
+  }); }
+  private void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) { Dispatcher.UIThread.Post(() => {
+    if (CastedDataContext == null) return;
+    if (CandleSource[^1].DateTime == args.Candle.Date) CandleSource[^1] = args.Candle.ScottPlotCandle.WithTimeSpan(CastedDataContext.TimeSpan);
+    else CandleSource.Add(args.Candle.ScottPlotCandle.WithTimeSpan(CastedDataContext.TimeSpan));
+    InvalidateVisual();
+  }); }
   private void ConfigureCandleChart() {
+    if (CastedDataContext == null) return;
+    
     CandlePlot = PriceChart.Multiplot.GetPlot(0);
     CandlePlot.DataBackground.Color = Colors.Transparent;
     CandlePlot.FigureBackground.Color = Colors.Transparent;
@@ -101,9 +91,6 @@ public partial class CandlestickChart : UserControl {
     CandlePlot.Axes.ContinuouslyAutoscale = true;
     CandlePlot.Axes.ContinuousAutoscaleAction = PriceChart_ContinuousAutoscale;
 
-    CandleSource = [..CastedDataContext.Candles.Select(x => new OHLC((double)x.Open, (double)x.High, (double)x.Low, (double)x.Close) {
-      DateTime = x.Date, TimeSpan = CastedDataContext.TimeSpan
-    })];
     var candles = CandlePlot.Add.Candlestick(CandleSource);
     candles.Axes.YAxis = CandlePlot.Axes.Right;
     candles.RisingColor = Colors.LightPink;
@@ -177,5 +164,11 @@ public partial class CandlestickChart : UserControl {
       plot.Grid.XAxis = lastPlot.Axes.Bottom;
     }
     lastPlot.Axes.DateTimeTicksBottom();
+  }
+  ~CandlestickChart() {
+    if (CastedDataContext != null) {
+      CastedDataContext.Loaded -= ResetCandles;
+      CastedDataContext.UpdatedEnd -= UpdateEnd;
+    }
   }
 }
