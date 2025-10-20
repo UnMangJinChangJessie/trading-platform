@@ -17,6 +17,7 @@ public class ExponentialMovingAverage : Indicator {
       ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
       if (field != value) {
         field = value;
+        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
       }
     }
   }
@@ -84,24 +85,25 @@ public class ExponentialMovingAverage : Indicator {
       );
     rp.Plot.Axes.SetLimitsY(min * (1 + PaddingRate) - max * PaddingRate, max * (1 + PaddingRate) - min * PaddingRate);
   }
-  public override void Reset() {
+  public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     double alpha = 2.0 / (1.0 + Lookback);
     lock (MovingAverage) {
       MovingAverage.Clear();
-      for (int i = 0; i < BaseChart.Candles.Count; i++) {
-        var date = BaseChart.Candles[i].Date;
-        var close = (double)BaseChart.Candles[i].Close;
+      var chart = args.WholeCandles;
+      for (int i = 0; i < chart.Count; i++) {
+        var candle = chart[i];
+        var date = candle.Date;
+        var close = (double)candle.Close;
         if (i == 0) MovingAverage[i] = new() { Date = date, Value = close };
         else MovingAverage[i] = new() { Date = date, Value = Ema(MovingAverage[^1].Value, close, alpha) };
       }
     }
   }
-  public override void UpdateEnd() {
-    if (BaseChart.Candles.Count == 0) return;
+  public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     double alpha = 2.0 / (1.0 + Lookback);
     lock (MovingAverage) {
       if (MovingAverage.Count == 0) return;
-      if (BaseChart[0] is not ChartOHLC candle) return;
+      if (args.Candle is not ChartOHLC candle) return;
       var date = candle.Date;
       var close = (double)candle.Close;
       if (MovingAverage[^1].Date == date) {

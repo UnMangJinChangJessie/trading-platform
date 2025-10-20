@@ -13,7 +13,7 @@ public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label
   /// WebSocket의 연결 해제를 위해 저장하는 종목코드
   /// </summary>
   private string? WebSocketTicker = null;
-  private readonly KisClients Api = api;
+  public KisClients Api { get; set; } = api;
   private void OnReceivedRealtimeOrderBook(object? sender, WebSocketModel.MessageReceivedEventArgs args) {
     if (args.Tokens.Length == 0) return;
     lock (CurrentOrders) {

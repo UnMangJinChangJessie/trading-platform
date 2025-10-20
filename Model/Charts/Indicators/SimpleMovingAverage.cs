@@ -17,7 +17,7 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
       ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
       if (field != value) {
         field = value;
-        Reset();
+        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
       }
     }
   } = lookback;
@@ -81,18 +81,19 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
       ));
     Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
   }
-  public override void Reset() {
+  public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     lock (MovingAverage) {
       MovingAverage.Clear();
-      for (int i = 0; i < BaseChart.Candles.Count; i++) {
-        var date = BaseChart.Candles[i].Date;
-        var close = (double)BaseChart.Candles[i].Close;
+      var chart = args.WholeCandles;
+      for (int i = 0; i < chart.Count; i++) {
+        var date = chart[i].Date;
+        var close = (double)chart[i].Close;
         if (i + 1 < Lookback) MovingAverage.Add(new() { Date = date, Close = close, Value = null });
         else if (i + 1 == Lookback) {
           MovingAverage.Add(new() {
-            Date = BaseChart.Candles[i].Date,
+            Date = chart[i].Date,
             Close = close,
-            Value = BaseChart.Candles.Take(Lookback).Average(x => (double)x.Close)
+            Value = chart.Take(Lookback).Average(x => (double)x.Close)
           });
         }
         else {
@@ -102,14 +103,13 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
       }
     }
   }
-  public override void UpdateEnd() {
-    if (BaseChart.Candles.Count == 0) return;
+  public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     if (MovingAverage.Count == 0) return;
-    var date = BaseChart.Candles[^1].Date;
-    var close = (double)BaseChart.Candles[^1].Close;
+    var date = args.Candle.Date;
+    var close = (double)args.Candle.Close;
     lock (MovingAverage) {
       var count = MovingAverage.Count;
-      if (MovingAverage[^1].Date == BaseChart.Candles[^1].Date) {
+      if (MovingAverage[^1].Date == args.Candle.Date) {
         var average = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^1].Close);
         MovingAverage[^1] = new() { Date = date, Close = close, Value = average };
       }

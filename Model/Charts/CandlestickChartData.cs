@@ -1,11 +1,15 @@
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using trading_platform.ViewModel;
 
 namespace trading_platform.Model.Charts;
 
 public class CandlestickChartData {
+  public class LoadedEventArgs() : EventArgs() {
+    public required ImmutableList<ChartOHLC> WholeCandles { get; init; }
+  }
+  public class UpdatedEndEventArgs(ChartOHLC candle) : EventArgs() {
+    public ChartOHLC Candle { get; init; } = candle;
+  }
   public enum CandlePeriod {
     [Description("1분")]
     Minutes_1,
@@ -35,12 +39,20 @@ public class CandlestickChartData {
   public TimeSpan TimeSpan => ToTimeSpan(Span);
   public List<CandlePeriod> AvailableCandlePeriod { get; set; }
 
+  public event EventHandler<LoadedEventArgs> Loaded = default!;
+  public event EventHandler<UpdatedEndEventArgs> UpdatedEnd = default!;
+
   public CandlestickChartData() {
     Span = CandlePeriod.Daily;
     AvailableCandlePeriod = [];
     Candles = [];
     ChartDateBegin = DateTimeOffset.Now.Date.AddDays(-180);
     ChartDateEnd = DateTimeOffset.Now.Date.AddDays(1).AddMilliseconds(-1);
+  }
+  public void NotifyLoadComplete() {
+    lock (Candles) {
+      Loaded?.Invoke(this, new() { WholeCandles = [.. Candles] });
+    }
   }
   public void ExtendBegin(ChartOHLC ohlc) {
     lock (Candles) {
@@ -71,6 +83,7 @@ public class CandlestickChartData {
       if (Candles[^1].Date == inserting.Date) Candles[^1].CopyOHLCFrom(ohlc);
       else Candles.Add(inserting);
     }
+    UpdatedEnd?.Invoke(this, new(ohlc));
   }
   public void Clear() {
     lock (Candles) {

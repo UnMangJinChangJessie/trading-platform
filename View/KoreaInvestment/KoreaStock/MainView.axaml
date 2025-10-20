@@ -5,12 +5,12 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:v="using:trading_platform.View"
   xmlns:vkis="using:trading_platform.View.KoreaInvestment.KoreaStock"
+  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment.KoreaStock"
   xmlns:com="using:trading_platform.Components"
   xmlns:comkis="using:trading_platform.Components.KoreaInvestment"
-  xmlns:vmkis="using:trading_platform.ViewModel.KoreaInvestment.KoreaStock"
   mc:Ignorable="d" d:DesignWidth="1080" d:DesignHeight="720"
   x:Class="trading_platform.View.KoreaInvestment.KoreaStock.MainView"
-  x:DataType="vmkis:Market"
+  x:DataType="vmkis:KoreaStockMarket"
   x:Name="ControlRoot"
 >
   <TabControl>

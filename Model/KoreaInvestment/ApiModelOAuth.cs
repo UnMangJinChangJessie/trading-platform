@@ -7,12 +7,25 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public partial class ApiModel {
   public async ValueTask<bool> IssueToken() {
+    // Base URI 설정
+    RequestClient = new() {
+      BaseAddress = new Uri(IsSimulation ? "https://openapivts.koreainvestment.com:29443" : "https://openapi.koreainvestment.com:9443"),
+      Timeout = TimeSpan.FromSeconds(10),
+    };
+    RequestRateLimit = TimeSpan.FromMilliseconds(IsSimulation ? 500 : 50);
     var body = new {
       grant_type = "client_credentials",
       appkey = AppPublicKey,
       appsecret = AppSecretKey
     };
-    var result = await RequestClient.PostAsJsonAsync("/oauth2/tokenP", body);
+    HttpResponseMessage result;
+    try {
+      result = await RequestClient.PostAsJsonAsync("/oauth2/tokenP", body);
+    }
+    catch (Exception ex) {
+      ExceptionHandler.PrintExceptionMessage(ex);
+      return false;
+    }
     if (!result.IsSuccessStatusCode) {
       return false;
     }
@@ -43,6 +56,7 @@ public partial class ApiModel {
       await PollingTaskCancellationToken.CancelAsync();
       await PollingTask;
     }
+    AccessTokenExpire = null;
     return true;
   }
   public async ValueTask<string?> IssueWebSocketToken() {

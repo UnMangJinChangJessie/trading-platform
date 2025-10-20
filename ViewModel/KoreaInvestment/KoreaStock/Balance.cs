@@ -6,9 +6,11 @@ namespace trading_platform.ViewModel.KoreaInvestment.KoreaStock;
 
 using BalanceBase = ViewModel.Balance;
 
-public partial class Balance(ApiModel api, WebSocketModel ws, Account account) : BalanceBase {
-  public ApiModel RestApi { get; set; } = api;
-  public WebSocketModel WebSocket { get; set; } = ws;
+public partial class Balance(KisClients api, Account account) : BalanceBase {
+  public KisClients Api {
+    get => field;
+    set;
+  } = api;
   [ObservableProperty]
   public partial Account Account { get; set; } = account;
 
@@ -30,7 +32,7 @@ public partial class Balance(ApiModel api, WebSocketModel ws, Account account) :
     }
     if (hasNextData) {
       GetBalance(
-        RestApi,
+        Api.ApiClient,
         new BalanceQueries() {
           AccountBase = Account.AccountBase,
           AccountCode = Account.AccountCode,
@@ -58,7 +60,7 @@ public partial class Balance(ApiModel api, WebSocketModel ws, Account account) :
       HoldingItems.Clear();
     }
     GetBalance(
-      RestApi,
+      Api.ApiClient,
       new BalanceQueries() {
         AccountBase = Account.AccountBase,
         AccountCode = Account.AccountCode,

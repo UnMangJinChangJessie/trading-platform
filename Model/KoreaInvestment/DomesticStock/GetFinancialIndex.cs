@@ -11,7 +11,7 @@ public static partial class DomesticStock {
   }
   public class FinancialIndexResult : KisReturnMessage {
     [JsonPropertyName("output")]
-    public FinancialIndex? Output { get; set; }
+    public IEnumerable<FinancialIndex>? Output { get; set; }
   }
   public readonly static Action<ApiModel, FinancialIndexQueries, Action<string, bool, object?>, object?> GetFinancialIndex = (api, queries, cb, args) =>
     api.PushRequest(

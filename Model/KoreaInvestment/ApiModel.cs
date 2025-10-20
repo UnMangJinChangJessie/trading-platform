@@ -16,7 +16,7 @@ public partial class ApiModel {
     public Action<string, bool, object?>? Callback { get; set; }
     public object? CallbackParameters { get; set; }
   }
-  public static readonly TimeSpan REQUEST_RATE_LIMIT = TimeSpan.FromMilliseconds(50);
+  public static TimeSpan RequestRateLimit = TimeSpan.FromMilliseconds(50);
   private readonly static JsonSerializerOptions JsonSerializerOption = new() {
     NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
     AllowTrailingCommas = true,
@@ -64,9 +64,7 @@ public partial class ApiModel : ObservableObject {
   [JsonIgnore]
   private readonly static CancellationTokenSource PollingTaskCancellationToken = new();
   [JsonIgnore]
-  private readonly HttpClient RequestClient = new() {
-    Timeout = TimeSpan.FromSeconds(10)
-  };
+  private HttpClient RequestClient = new();
 
   public static T? DeserializeJson<T>(string jsonString) where T : class {
     if (jsonString == null) return null;
@@ -78,14 +76,13 @@ public partial class ApiModel : ObservableObject {
       return null;
     }
   }
-  public string GetBaseAddressString() => $"https://openapi.koreainvestment.com:{(IsSimulation ? 29443 : 9443)}";
 
   public async Task PollApiRequest() {
     while (true) {
       SpinWait.SpinUntil(() =>
         PollingTaskCancellationToken.IsCancellationRequested || // 취소 요청
         DateTime.Now >= AccessTokenExpire || //접근 토큰 만료
-        (!PendingRequests.IsEmpty && LastRequestTime + REQUEST_RATE_LIMIT <= DateTime.Now) // 정보 수신 요청 존재
+        (!PendingRequests.IsEmpty && LastRequestTime + RequestRateLimit <= DateTime.Now) // 정보 수신 요청 존재
       );
       if (PollingTaskCancellationToken.IsCancellationRequested) {
         break;
@@ -97,29 +94,40 @@ public partial class ApiModel : ObservableObject {
 
       LastRequestTime = DateTime.Now;
       if (!PendingRequests.TryDequeue(out var request)) continue; // SpinUntil과 위의 예외 처리로 인해 일어나지는 않는 코드
+      var relUri = TransactionIdTable.GetRelativeUri(request.TransactionId);
+      var method = TransactionIdTable.GetHttpMethod(request.TransactionId);
+      HttpRequestMessage message = new(method, relUri + Common.BuildQueryString(request.Queries));
+      message.Headers.Add("appkey", AppPublicKey);
+      message.Headers.Add("appsecret", AppSecretKey);
+      message.Headers.Add("authorization", $"Bearer {AccessToken}");
+      message.Headers.Add("tr_id", request.TransactionId);
+      if (request.RequestNext) message.Headers.Add("tr_cont", "N");
+      message.Headers.Add("custtype", IsPersonal ? "P" : "B");
+      // 그 외에는 사실 넣을 헤더가 없음.
+      if (request.BodyString != null) message.Content = new StringContent(request.BodyString, Encoding.UTF8, "application/json");
+      HttpResponseMessage response;
       try {
-        var relUri = TransactionIdTable.GetRelativeUri(request.TransactionId);
-        var method = TransactionIdTable.GetHttpMethod(request.TransactionId);
-        HttpRequestMessage message = new(method, relUri + Common.BuildQueryString(request.Queries));
-        message.Headers.Add("appkey", AppPublicKey);
-        message.Headers.Add("appsecret", AppSecretKey);
-        message.Headers.Add("authorization", $"Bearer {AccessToken}");
-        message.Headers.Add("tr_id", request.TransactionId);
-        if (request.RequestNext) message.Headers.Add("tr_cont", "N");
-        message.Headers.Add("custtype", IsPersonal ? "P" : "B");
-        // 그 외에는 사실 넣을 헤더가 없음.
-        if (request.BodyString != null) message.Content = new StringContent(request.BodyString, Encoding.UTF8, "application/json");
-        var response = await RequestClient.SendAsync(message);
-        string responseBody;
-        using (var reader = new StreamReader(response.Content.ReadAsStream())) {
-          responseBody = reader.ReadToEnd();
-        }
-        string? nextDataHeader = response.Headers.GetValues("tr_cont").FirstOrDefault();
-        bool hasNextData = nextDataHeader != null ? Enumerable.Contains(["F", "M"], nextDataHeader) : false;
+        response = await RequestClient.SendAsync(message);
+      }
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+        continue;
+      }
+      string responseBody;
+      using (var reader = new StreamReader(response.Content.ReadAsStream())) {
+        responseBody = reader.ReadToEnd();
+      }
+      bool hasNextData = false;
+      if (response.Headers.TryGetValues("tr_cont", out var meow)) {
+        string? nextDataHeader = meow.FirstOrDefault();
+        hasNextData = nextDataHeader != null && Enumerable.Contains(["F", "M"], nextDataHeader);
+      }
+      try {
         request.Callback?.Invoke(responseBody, hasNextData, request.CallbackParameters);
       }
       catch (Exception ex) {
         ExceptionHandler.PrintExceptionMessage(ex);
+        continue;
       }
     }
   }

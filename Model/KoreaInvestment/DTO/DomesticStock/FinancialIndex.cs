@@ -4,6 +4,8 @@ namespace trading_platform.Model.KoreaInvestment;
 
 public static partial class DomesticStock {
   public class FinancialIndex {
+    [JsonPropertyName("stac_yymm")]
+    public required string YearMonth { get; set; }
     [JsonPropertyName("grs")]
     public required float SalesChangeRate { get; set; }
     [JsonPropertyName("bsop_prfi_inrt")]

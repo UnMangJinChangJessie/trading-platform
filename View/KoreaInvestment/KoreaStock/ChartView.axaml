@@ -28,7 +28,7 @@
       </StackPanel>
       <com:PriceDisplay
         Name="PriceDisplay"
-        DataContext="{Binding ItemOHLC}"
+        DataContext="{Binding .}"
         Grid.Row="1"
       />
       <com:CandlestickChart

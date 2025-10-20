@@ -20,7 +20,7 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
       ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 0, nameof(value));
       if (field != value) {
         field = value;
-        Reset();
+        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
       }
     }
   } = lookback_1;
@@ -30,7 +30,7 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
       ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 0, nameof(value));
       if (field != value) {
         field = value;
-        Reset();
+        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
       }
     }
   } = lookback_2;
@@ -104,16 +104,18 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
       color: Colors.Black
     );
   }
-  public override void Reset() {
+  public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     lock (Results) {
       Results.Clear();
       double alpha_1 = 2.0 / (Lookback_1 + 1);
       double alpha_2 = 2.0 / (Lookback_2 + 1);
-      for (int i = 0; i < BaseChart.Candles.Count; i++) {
-        var close = (double)BaseChart.Candles[i].Close;
+      var chart = args.WholeCandles;
+      for (int i = 0; i < chart.Count; i++) {
+        var candle = chart[i];
+        var close = (double)candle.Close;
         if (i == 0) {
           Results.Add(new() {
-            Date = BaseChart.Candles[i].Date,
+            Date = candle.Date,
             Average_1 = close,
             Average_2 = close,
             Value = 0.0
@@ -123,7 +125,7 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
           var average_1 = Results[i - 1].Average_1 * (1 - alpha_1) + close * alpha_1;
           var average_2 = Results[i - 1].Average_2 * (1 - alpha_2) + close * alpha_2;
           Results.Add(new() {
-            Date = BaseChart.Candles[i].Date,
+            Date = candle.Date,
             Average_1 = average_1,
             Average_2 = average_2,
             Value = average_1 - average_2
@@ -132,14 +134,13 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
       }
     }
   }
-  public override void UpdateEnd() {
-    if (BaseChart.Candles.Count == 0) return;
+  public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     double alpha_1 = 2.0 / (Lookback_1 + 1);
     double alpha_2 = 2.0 / (Lookback_2 + 1);
     lock (Results) {
       if (Results.Count == 0) return;
-      var close = (double)BaseChart[0]!.Close;
-      var date = BaseChart[0]!.Date;
+      var close = (double)args.Candle.Close;
+      var date = args.Candle.Date;
       if (Results[^1].Date == date) {
         if (Results.Count == 1) {
           Results[0] = new() {

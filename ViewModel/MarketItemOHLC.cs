@@ -3,6 +3,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace trading_platform.ViewModel;
 
 public partial class MarketItemOHLC : ObservableObject {
+  public MarketItemLabel ItemLabel {
+    get => field;
+    set {
+      if (field != value) {
+        SetProperty(ref field, value, nameof(ItemLabel));
+      }
+    }
+  } = new();
   [ObservableProperty]
   public partial DateTime CurrentDateTime { get; set; } = DateTime.Now;
   [ObservableProperty]

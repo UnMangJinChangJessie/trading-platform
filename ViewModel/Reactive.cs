@@ -4,7 +4,9 @@ namespace trading_platform.ViewModel;
 
 public class Reactive<T> : INotifyPropertyChanged {
   private T _value = default!;
+#pragma warning disable CS8612 // Nullability of reference types in type doesn't match implicitly implemented member.
   public event PropertyChangedEventHandler PropertyChanged;
+#pragma warning restore CS8612 // Nullability of reference types in type doesn't match implicitly implemented member.
   public T Value {
     get => _value;
     set {

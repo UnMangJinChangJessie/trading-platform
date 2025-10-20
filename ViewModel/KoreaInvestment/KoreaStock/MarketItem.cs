@@ -8,11 +8,27 @@ using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.KoreaInvestment.DomesticStock;
 using MarketItemBase = ViewModel.MarketItem;
 
-public partial class MarketItem([MaybeNull] KisClients api) : MarketItemBase {
+public partial class MarketItem : MarketItemBase {
   private string? WebSocketTicker { get; set; }
-  public KisClients Api { get; set; } = api;
+  public KisClients Api {
+    get => field;
+    set {
+      if (field != value) {
+        (ItemOrderBook as OrderBook)?.Api = value;
+        field = value;
+      }
+    }
+  }
   [ObservableProperty]
   public partial StockMetric Metric { get; set; }
+  [ObservableProperty]
+  public override partial ViewModel.OrderBook ItemOrderBook { get; protected set; }
+
+  public MarketItem([MaybeNull] KisClients api) {
+    Api = api;
+    Metric = new();
+    ItemOrderBook = new OrderBook(api, ItemLabel);
+  }
 
   public async void OnReceivedChart(string jsonString, bool hasNextData, object? args) {
     if (ApiModel.DeserializeJson<ChartResult>(jsonString) is not ChartResult result) return;
@@ -30,6 +46,9 @@ public partial class MarketItem([MaybeNull] KisClients api) : MarketItemBase {
       }), assumeSorted: true);
     }
     if ((bool)args!) {
+      lock (ItemChart) {
+        ItemChart.NotifyLoadComplete();
+      }
       ItemOHLC.CurrentOpen = result.Information!.CurrentOpen;
       ItemOHLC.CurrentHigh = result.Information!.CurrentHigh;
       ItemOHLC.CurrentLow = result.Information!.CurrentLow;
@@ -64,7 +83,7 @@ public partial class MarketItem([MaybeNull] KisClients api) : MarketItemBase {
     var volume = ulong.Parse(lastToken[13]);
     var amount = ulong.Parse(lastToken[14]);
     var date = DateOnly.ParseExact(lastToken[33], "yyyyMMdd");
-    var time = TimeOnly.ParseExact(lastToken[1], "hhmmss");
+    var time = TimeOnly.ParseExact(lastToken[1], "HHmmss");
     var dateTime = new DateTime(date, time);
     lock (ItemOHLC) {
       ItemOHLC.CurrentOpen = open;
@@ -86,7 +105,7 @@ public partial class MarketItem([MaybeNull] KisClients api) : MarketItemBase {
       Debug.WriteLine($"[{result.ResponseMessageCode}, {nameof(OnReceivedChart)}] {result.ResponseMessage}");
       return;
     }
-    var output = result.Output!;
+    var output = result.Output!.FirstOrDefault()!;
     decimal currentClose;
     lock (ItemOHLC) {
       currentClose = ItemOHLC.CurrentClose;
@@ -110,7 +129,7 @@ public partial class MarketItem([MaybeNull] KisClients api) : MarketItemBase {
     var to = ItemChart.ChartDateEnd?.DateTime.Date ?? DateTime.Today;
     do {
       var newTo = to.AddDays(-140);
-      var currentFrom = to.AddDays(1);
+      var currentFrom = newTo.AddDays(1);
       currentFrom = from < currentFrom ? currentFrom : from;
       // from부터 to까지 주어진 기간을 140일 단위로 나누어 수신함.
       GetChart(

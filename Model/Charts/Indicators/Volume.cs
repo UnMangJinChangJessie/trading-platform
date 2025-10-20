@@ -25,7 +25,7 @@ public class Volume : Indicator {
       NegativeBarIncreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
       NegativeBarDecreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
     };
-    Reset();
+    if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
   }
   public ImmutableArray<VolumeResult> Snapshot() {
     bool entered = Monitor.TryEnter(Results);
@@ -99,17 +99,15 @@ public class Volume : Indicator {
       Drawing.DrawPath(rp.Canvas, rp.Paint, [rect.BottomLeft, rect.BottomRight, rect.TopRight, rect.TopLeft], line, close: true);
     }
   }
-  public override void Reset() {
+  public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     lock (Results) {
-      Results = [.. BaseChart.Candles.Select(x => new VolumeResult() { Date = x.Date, Value = (double)x.Volume })];
+      Results = [.. args.WholeCandles.Select(x => new VolumeResult() { Date = x.Date, Value = (double)x.Volume })];
     }
   }
-  public override void UpdateEnd() {
-    if (Results.Count == 0) return;
-    if (BaseChart[0] is not ChartOHLC candle) return;
+  public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     lock (Results) {
-      if (Results[^1].Date == candle.Date) Results[^1] = new() { Date = candle.Date, Value = (double)candle.Volume };
-      else Results.Add(new() { Date = candle.Date, Value = (double)candle.Volume });
+      if (Results[^1].Date == args.Candle.Date) Results[^1] = new() { Date = args.Candle.Date, Value = (double)args.Candle.Volume };
+      else Results.Add(new() { Date = args.Candle.Date, Value = (double)args.Candle.Volume });
     }
   }
 }

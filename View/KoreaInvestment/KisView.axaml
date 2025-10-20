@@ -11,15 +11,77 @@
   x:DataType="vmkis:KisViewModel"
   x:Name="ControlRoot"
 >
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <DataTemplate x:Key="ApiClientDataTemplate" DataType="vmkis:KisClients" >
+        <TextBlock Text="{Binding Name}" />
+      </DataTemplate>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <UserControl.DataContext>
+    <vmkis:KisViewModel />
+  </UserControl.DataContext>
   <TabControl DockPanel.Dock="Left">
     <TabItem Header="API 접근 토큰 관리">
       <DockPanel>
-        <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight" DockPanel.Dock="Top" Margin="0,5,0,0" >
-          <Button Classes="Flat" >파일 불러오기</Button>
-          <Button Classes="Flat" >선택한 API 삭제</Button>
-          <Button Classes="Flat" >선택한 API 활성화</Button>
-          <Button Classes="Flat" >선택한 API 비활성화</Button>
+        <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight" DockPanel.Dock="Top" Margin="5,5,0,0" >
+          <Button Classes="Flat" Click="FileLoad_Click">파일 불러오기</Button>
+          <Button Classes="Flat" Click="Delete_Click">선택한 API 삭제</Button>
+          <Button Classes="Flat" Click="Activate_Click">선택한 API 활성화</Button>
+          <Button Classes="Flat" Click="Deactivate_Click">선택한 API 비활성화</Button>
         </StackPanel>
+        <Grid 
+          ColumnDefinitions="100, 200, 5, 100, 200"
+          DockPanel.Dock="Bottom"
+          Margin="5"
+          RowDefinitions="Auto, Auto, Auto"
+        >
+          <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="국내 주식" />
+          <TextBlock Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" Text="해외 주식" />
+          <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="국내 선물옵션" />
+          <TextBlock Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Text="해외 선물옵션" />
+          <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="국내 장내채권" />
+          <ComboBox
+            Grid.Column="1"
+            Grid.Row="0"
+            ItemsSource="{Binding AvailableClients}"
+            ItemTemplate="{DynamicResource ApiClientDataTemplate}"
+            PlaceholderText="API 선택"
+            SelectedItem="{Binding KoreaStockMarketClient}"
+          />
+          <ComboBox
+            Grid.Column="4"
+            Grid.Row="0"
+            ItemsSource="{Binding AvailableClients}"
+            ItemTemplate="{DynamicResource ApiClientDataTemplate}"
+            PlaceholderText="API 선택"
+            SelectedItem="{Binding OverseaStockMarketClient}"
+          />
+          <ComboBox
+            Grid.Column="1"
+            Grid.Row="1"
+            ItemsSource="{Binding AvailableClients}"
+            ItemTemplate="{DynamicResource ApiClientDataTemplate}"
+            PlaceholderText="API 선택"
+            SelectedItem="{Binding KoreaFuturesMarketClient}"
+          />
+          <ComboBox
+            Grid.Column="4"
+            Grid.Row="1"
+            ItemsSource="{Binding AvailableClients}"
+            ItemTemplate="{DynamicResource ApiClientDataTemplate}"
+            PlaceholderText="API 선택"
+            SelectedItem="{Binding OverseaFuturesMarketClient}"
+          />
+          <ComboBox
+            Grid.Column="1"
+            Grid.Row="2"
+            ItemsSource="{Binding AvailableClients}"
+            ItemTemplate="{DynamicResource ApiClientDataTemplate}"
+            PlaceholderText="API 선택"
+            SelectedItem="{Binding KoreaBondMarketClient}"
+          />
+        </Grid>
         <DataGrid
           CanUserResizeColumns="True" 
           ItemsSource="{Binding AvailableClients}"
@@ -29,17 +91,17 @@
         >
           <DataGrid.Columns>
             <DataGridCheckBoxColumn Header="선택" Binding="{Binding Selected}" />
-            <DataGridTextColumn Header="이름" Binding="{Binding Name, FallbackValue='API'}" />
-            <DataGridTextColumn Header="Public Key" Binding="{Binding ApiClient.AppPublicKey}" />
-            <DataGridTextColumn Header="Secret Key" Binding="{Binding ApiClient.AppSecretKey}" />
-            <DataGridCheckBoxColumn Header="모의투자 여부" Binding="{Binding ApiClient.IsSimulation}" />
-            <DataGridCheckBoxColumn Header="개인 여부" Binding="{Binding ApiClient.IsPersonal}" />
-            <DataGridCheckBoxColumn Header="API 접근 토큰" Binding="{Binding ApiClient.AccessToken}" />
+            <DataGridTextColumn Header="이름" Binding="{Binding Name}" />
+            <DataGridTextColumn IsReadOnly="True" Header="Public Key" Binding="{Binding ApiClient.AppPublicKey}" />
+            <DataGridTextColumn IsReadOnly="True" Header="계좌번호" Binding="{Binding ApiClient.Account.AccountBase}" />
+            <DataGridCheckBoxColumn IsReadOnly="True" Header="모의투자 여부" Binding="{Binding ApiClient.IsSimulation}" />
+            <DataGridCheckBoxColumn IsReadOnly="True" Header="개인 여부" Binding="{Binding ApiClient.IsPersonal}" />
+            <DataGridTextColumn IsReadOnly="True" Header="접근 토큰 만료 기한" Binding="{Binding ApiClient.AccessTokenExpire}" />
           </DataGrid.Columns>
         </DataGrid>
       </DockPanel>
     </TabItem>
-    <TabItem Header="한국 주식">
+    <TabItem Header="한국 주식" DataContext="{Binding #ControlRoot.DataContext}">
       <vkisks:MainView DataContext="{Binding KoreaStockMarketViewModel}"/>
     </TabItem>
   </TabControl>
