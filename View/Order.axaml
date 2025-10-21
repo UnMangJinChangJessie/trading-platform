@@ -9,7 +9,9 @@
   x:Class="trading_platform.View.Order"
   x:DataType="vm:OrderForm"
 >
-  <StackPanel >
+  <StackPanel
+    Spacing="5"
+  >
     <TextBlock Classes="h1" HorizontalAlignment="Center" TextWrapping="Wrap" >
       <Run>
         <Run.Text>
@@ -24,8 +26,8 @@
       HorizontalAlignment="Stretch"
       Name="OrderMethodComboBox"
       PlaceholderText="주문 방식 선택"
-      ItemsSource="{Binding OrderMethod}"
-      SelectedItem="{Binding AvailableOrderMethod}"
+      SelectedItem="{Binding OrderMethod}"
+      ItemsSource="{Binding AvailableOrderMethod}"
     >
       <ComboBox.ItemTemplate>
         <DataTemplate>
@@ -33,50 +35,63 @@
         </DataTemplate>
       </ComboBox.ItemTemplate>
     </ComboBox>
+    <TextBlock
+      FontSize="{StaticResource FontSizeSmall}"
+      Text="주문 단가"
+      VerticalAlignment="Center"
+    />
     <NumericUpDown
-      Name="PriceSpinner"
-      HorizontalAlignment="Stretch"
       AllowSpin="True"
-      Value="{Binding UnitPrice}"
+      HorizontalAlignment="Stretch"
       IsReadOnly="{Binding BlockPriceInput}"
-    >
-      <NumericUpDown.InnerLeftContent>
-        <TextBlock Text="주문단가" />
-      </NumericUpDown.InnerLeftContent>
-    </NumericUpDown>
+      Spinned="UnitPrice_Spinned"
+      Value="{Binding UnitPrice}"
+    />
+    <TextBlock
+      FontSize="{StaticResource FontSizeSmall}"
+      Text="주문 수량"
+      VerticalAlignment="Center"
+    />
     <NumericUpDown
-      Name="QuantitySpinner"
-      HorizontalAlignment="Stretch"
       AllowSpin="True"
-      Value="{Binding Quantity}"
+      HorizontalAlignment="Stretch"
       Minimum="0"
-    >
-      <NumericUpDown.InnerLeftContent>
-        <TextBlock Text="주문수량" />
-      </NumericUpDown.InnerLeftContent>
-    </NumericUpDown>
+      Spinned="Quantity_Spinned"
+      Value="{Binding Quantity}"
+    />
+    <TextBlock
+      FontSize="{StaticResource FontSizeSmall}"
+      Text="손실제한단가"
+      VerticalAlignment="Center"
+    />
     <NumericUpDown
-      Name="StopLossSpinner"
-      Value="{Binding StopLossPrice}"
-      InnerLeftContent="손실제한가격"
       AllowSpin="True"
       HorizontalAlignment="Stretch"
+      IsReadOnly="{Binding BlockStopLossPriceInput}"
+      Name="StopLossSpinner"
+      ToolTip.Tip="손실제한단가"
+      Spinned="StopLossPrice_Spinned"
+      Value="{Binding StopLossPrice}"
     />
     <Grid
       RowDefinitions="Auto"
-      ColumnDefinitions="*,*"
+      ColumnDefinitions="*,5,*"
     >
       <Button
-        Grid.Row="0" Grid.Column="0"
-        HorizontalAlignment="Stretch"
+        Classes="Outline Accent"
         Click="LongButton_Click"
+        Grid.Column="0"
+        Grid.Row="0"
+        HorizontalAlignment="Stretch"
       >
         매수
       </Button>
       <Button
-        Grid.Row="0" Grid.Column="1"
-        HorizontalAlignment="Stretch"
+        Classes="Outline Accent"
         Click="ShortButton_Click"
+        Grid.Column="2"
+        Grid.Row="0"
+        HorizontalAlignment="Stretch"
       >
         매도
       </Button>

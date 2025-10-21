@@ -160,7 +160,7 @@ public static partial class StockMarketInformation {
     public static decimal GetTickDecrement(decimal val, KRXSecuritiesType type) {
       if (type == KRXSecuritiesType.ExchangeTradedFund || type == KRXSecuritiesType.OverseaExchangeTradedFund) return val switch {
         > 2_000 => (Math.Ceiling(val / 5) - 1) * 5,
-        > 0 => (Math.Ceiling(val) - 1) * 5,
+        > 0 => Math.Ceiling(val) - 1,
         _ => 0
       };
       else if (type == KRXSecuritiesType.EquityLinkedWarrant) return val switch {
@@ -174,7 +174,7 @@ public static partial class StockMarketInformation {
         > 20_000 => (Math.Ceiling(val / 50) - 1) * 50,
         > 5_000 => (Math.Ceiling(val / 10) - 1) * 10,
         > 2_000 => (Math.Ceiling(val / 5) - 1) * 5,
-        > 0 => (Math.Ceiling(val) - 1) * 5,
+        > 0 => Math.Ceiling(val) - 1,
         _ => 0
       };
     }

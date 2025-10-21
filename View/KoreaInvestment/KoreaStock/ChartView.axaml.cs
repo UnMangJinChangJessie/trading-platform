@@ -33,6 +33,16 @@ public partial class ChartView : UserControl {
     InitializeComponent();
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+    if (PriceChart.DataContext is Model.Charts.CandlestickChartData data) {
+      foreach (var item in new Model.Charts.CandlestickChartData.CandlePeriod[] {
+        Model.Charts.CandlestickChartData.CandlePeriod.Daily,
+        Model.Charts.CandlestickChartData.CandlePeriod.Weekly,
+        Model.Charts.CandlestickChartData.CandlePeriod.Monthly,
+        Model.Charts.CandlestickChartData.CandlePeriod.Yearly,
+      }) {
+        data.AvailableCandlePeriod.Add(item);
+      }
+    }
   }
   public async void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
     if (CastedDataContext == null) return;

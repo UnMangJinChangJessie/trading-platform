@@ -1,9 +1,11 @@
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.Model.Charts;
 
-public class CandlestickChartData {
+public partial class CandlestickChartData : ObservableObject {
   public class LoadedEventArgs() : EventArgs() {
     public required ImmutableList<ChartOHLC> WholeCandles { get; init; }
   }
@@ -32,12 +34,15 @@ public class CandlestickChartData {
     [Description("년")]
     Yearly,
   }
-  public List<ChartOHLC> Candles { get; private set; }
-  public DateTimeOffset? ChartDateBegin { get; set; }
-  public DateTimeOffset? ChartDateEnd { get; set; }
-  public CandlePeriod Span { get; set; }
+  public ObservableCollection<ChartOHLC> Candles { get; private set; }
+  [ObservableProperty]
+  public partial DateTimeOffset? ChartDateBegin { get; set; }
+  [ObservableProperty]
+  public partial DateTimeOffset? ChartDateEnd { get; set; }
+  [ObservableProperty]
+  public partial CandlePeriod Span { get; set; }
   public TimeSpan TimeSpan => ToTimeSpan(Span);
-  public List<CandlePeriod> AvailableCandlePeriod { get; set; }
+  public ObservableCollection<CandlePeriod> AvailableCandlePeriod { get; set; }
 
   public event EventHandler<LoadedEventArgs> Loaded = default!;
   public event EventHandler<UpdatedEndEventArgs> UpdatedEnd = default!;

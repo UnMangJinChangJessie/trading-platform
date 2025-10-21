@@ -32,7 +32,7 @@
         Grid.Row="1"
       />
       <com:CandlestickChart
-        Name="OHLCChart"
+        Name="PriceChart"
         DataContext="{Binding ItemChart}"
         Grid.Row="2"
         VerticalAlignment="Stretch"
@@ -52,7 +52,7 @@
       />
       <v:Order
         Name="OrderView"
-        DataContext="{Binding #ControlRoot.OrderDataContext}"
+        DataContext="{Binding #ControlRoot.OrderDataContext.Form}"
       />
     </StackPanel>
   </Grid>

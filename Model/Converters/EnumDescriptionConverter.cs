@@ -10,7 +10,7 @@ public static partial class Converters {
   public readonly static FuncValueConverter<object, string> EnumDescriptionConverter = new(
     x => {
       if (x == null || x.GetType() == typeof(UnsetValueType)) return "";
-      return x.GetType().GetField(x.ToString() ?? "")?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? x.ToString() ?? "";
+      return x.GetType().GetField(x.ToString() ?? "")?.GetCustomAttribute<DescriptionAttribute>()?.Description ?? x.ToString() ?? "No description or name";
     }
   );
 }
