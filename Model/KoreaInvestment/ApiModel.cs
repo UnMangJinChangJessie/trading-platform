@@ -60,9 +60,9 @@ public partial class ApiModel : ObservableObject {
   public ConcurrentQueue<RequestBlock> PendingRequests { get; private set; } = new();
 
   [JsonIgnore]
-  private static Task? PollingTask;
+  private Task? PollingTask;
   [JsonIgnore]
-  private readonly static CancellationTokenSource PollingTaskCancellationToken = new();
+  private readonly CancellationTokenSource PollingTaskCancellationToken = new();
   [JsonIgnore]
   private HttpClient RequestClient = new();
 

@@ -111,11 +111,15 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
     lock (MovingAverage) {
       var count = MovingAverage.Count;
       if (MovingAverage[^1].Date == args.Candle.Date) {
-        var average = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^1].Close);
+        double? average = 
+          count > Lookback ? Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^Lookback].Close) :
+          count == Lookback ? MovingAverage[..Lookback].Average(x => x.Close) : null;
         MovingAverage[^1] = new() { Date = date, Close = close, Value = average };
       }
       else {
-        var average = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^Lookback].Close);
+        double? average =
+          count >= Lookback ? Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^Lookback].Close) / Lookback :
+          count - 1 == Lookback ? (MovingAverage.Sum(x => x.Close) + close) / Lookback : null;
         MovingAverage.Add(new() { Date = date, Close = close, Value = average });
       }
     }

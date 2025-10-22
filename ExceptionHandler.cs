@@ -42,13 +42,11 @@ public static class ExceptionHandler {
       _ => UNKNOWN
     }; 
   }
-  
+
   public static void PrintExceptionMessage(Exception ex, bool rethrow = false) {
-    var frame = new StackFrame(1, true); // 바로 위에서 exception이 났을 테니
-    string filename = frame.GetFileName() ?? "<unknown>";
-    int lineNumber = frame.GetFileLineNumber();
     int level = GetCriticalLevel(ex);
-    Debugger.Log(level, ex.GetType().ToString(), $"[{ex.GetType()}, {filename}:{lineNumber}] {ex.Source}: {ex.Message}\n");
+    Debugger.Log(level, ex.GetType().ToString(), $"[{ex.GetType()}] {ex.Source}: {ex.Message}\n");
+    Debugger.Log(level, ex.GetType().ToString(), ex.StackTrace + "\n");
     // 추가 정보
     // Debugger.Log(level, ex.GetType().ToString(), $"Additional Information:\n");
     if (rethrow) throw ex;

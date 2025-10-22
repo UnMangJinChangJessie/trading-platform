@@ -11,8 +11,8 @@ public partial class WebSocketModel {
     WebSocketReceiveResult receiveResult;
     byte[] buffer = new byte[1024 * 4];
     ArrayBufferWriter<byte> writer = new();
-    try {
-      while (Client.State == WebSocketState.Open) {
+    while (Client.State == WebSocketState.Open) {
+      try {
         writer.Clear();
         if (Cancellation.Token.IsCancellationRequested) break;
         do {
@@ -49,10 +49,9 @@ public partial class WebSocketModel {
           }
         }
       }
-      await Client.CloseAsync(WebSocketCloseStatus.Empty, ":3", CancellationToken.None);
-    }
-    catch (Exception ex) {
-      ExceptionHandler.PrintExceptionMessage(ex);
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+      }
     }
   }
 }
