@@ -11,6 +11,7 @@ public partial class CandlestickChartData : ObservableObject {
   }
   public class UpdatedEndEventArgs(ChartOHLC candle) : EventArgs() {
     public ChartOHLC Candle { get; init; } = candle;
+    public required bool IsAppending { get; init; }
   }
   public enum CandlePeriod {
     [Description("1분")]
@@ -82,13 +83,20 @@ public partial class CandlestickChartData : ObservableObject {
     }
   }
   public void UpdateEnd(ChartOHLC ohlc) {
+    bool inserted;
     lock (Candles) {
       ChartOHLC inserting = new() { Date = Floor(ohlc.Date, Span) };
       inserting.CopyOHLCFrom(ohlc);
-      if (Candles[^1].Date == inserting.Date) Candles[^1].CopyOHLCFrom(ohlc);
-      else Candles.Add(inserting);
+      if (Candles[^1].Date == inserting.Date) {
+        Candles[^1].CopyOHLCFrom(ohlc);
+        inserted = false;
+      }
+      else {
+        Candles.Add(inserting);
+        inserted = true;
+      }
     }
-    UpdatedEnd?.Invoke(this, new(ohlc));
+    UpdatedEnd?.Invoke(this, new(ohlc) { IsAppending = inserted });
   }
   public void Clear() {
     lock (Candles) {

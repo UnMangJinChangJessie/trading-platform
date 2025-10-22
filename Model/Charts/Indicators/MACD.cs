@@ -7,7 +7,7 @@ namespace trading_platform.Model.Charts.Indicators;
 
 public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int lookback_1, int lookback_2) : Indicator(chart) {
   public override string LegendText => $"MACD({Lookback_1}, {Lookback_2})";
-  public struct MacdResult {
+  public class MacdResult : IIndicatorResult {
     public DateTime Date { get; set; }
     public double Average_1 { get; set; }
     public double Average_2 { get; set; }
@@ -34,34 +34,21 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
       }
     }
   } = lookback_2;
-  public List<MacdResult> Results { get; private set; } = [];
+  public List<MacdResult> BaseResults { get; private set; } = [];
+  public override IEnumerable<IIndicatorResult> Results => BaseResults;
   
   public ImmutableArray<MacdResult> Snapshot() {
-    lock (Results) {
-      return [..Results];
+    lock (BaseResults) {
+      return [..BaseResults];
     }
   }
   public override AxisLimits GetAxisLimits() {
-    if (Results.Count == 0) return AxisLimits.Unset;
+    if (BaseResults.Count == 0) return AxisLimits.Unset;
     else return new(
-      left: Results[0].Date.ToOADate(),
-      right: Results[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: Results.Min(x => x.Value), Results.Max(x => x.Value)
+      left: BaseResults[0].Date.ToOADate(),
+      right: BaseResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
+      bottom: BaseResults.Min(x => x.Value), BaseResults.Max(x => x.Value)
     );
-  }
-  public override void ContinuousAutoscaleAction(RenderPack rp) {
-    var snapshot = Snapshot();
-    if (snapshot.Length == 0) return;
-    var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
-    xRange = new(Math.Max(xRange.Min, snapshot[0].Date.ToOADate()), Math.Min(xRange.Min, snapshot[^1].Date.ToOADate()));
-    var startIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
-    var endIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
-    if (startIdx < 0) startIdx = ~startIdx;
-    if (endIdx < 0) endIdx = ~endIdx;
-    if (startIdx == endIdx) return;
-    var (min, max) = snapshot[startIdx..endIdx]
-      .Aggregate((Minimum: snapshot[0].Value, Maximum: snapshot[0].Value), (prev, x) => (Math.Min(prev.Minimum, x.Value), Math.Max(prev.Maximum, x.Value)));
-    rp.Plot.Axes.SetLimitsY(min * (1 + PaddingRate) - max * PaddingRate, max * (1 + PaddingRate) - min * PaddingRate);
   }
   public override void Render(RenderPack rp) {
     if (rp.Plot.Axes.ContinuouslyAutoscale) {
@@ -69,7 +56,7 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
     }
     // Want to assume that the candles are already sorted by dates but...
     // Also, the base collection can be modified by another thread.
-    ImmutableList<MacdResult> snapshot = [.. Results];
+    ImmutableArray<MacdResult> snapshot = Snapshot();
     var rectValues = snapshot
       .Where(x => {
         var date = x.Date.ToOADate();
@@ -106,73 +93,48 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
     );
   }
   public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
-    lock (Results) {
-      Results.Clear();
+    lock (BaseResults) {
+      BaseResults.Clear();
       double alpha_1 = 2.0 / (Lookback_1 + 1);
       double alpha_2 = 2.0 / (Lookback_2 + 1);
       var chart = args.WholeCandles;
       for (int i = 0; i < chart.Count; i++) {
         var candle = chart[i];
         var close = (double)candle.Close;
-        if (i == 0) {
-          Results.Add(new() {
-            Date = candle.Date,
-            Average_1 = close,
-            Average_2 = close,
-            Value = 0.0
-          });
-        }
-        else {
-          var average_1 = Results[i - 1].Average_1 * (1 - alpha_1) + close * alpha_1;
-          var average_2 = Results[i - 1].Average_2 * (1 - alpha_2) + close * alpha_2;
-          Results.Add(new() {
-            Date = candle.Date,
-            Average_1 = average_1,
-            Average_2 = average_2,
-            Value = average_1 - average_2
-          });
-        }
+        var result = GetExtensionMacd(i, close);
+        result.Date = candle.Date;
+        BaseResults.Add(result);
       }
     }
   }
   public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     double alpha_1 = 2.0 / (Lookback_1 + 1);
     double alpha_2 = 2.0 / (Lookback_2 + 1);
-    lock (Results) {
-      if (Results.Count == 0) return;
+    lock (BaseResults) {
+      if (BaseResults.Count == 0) return;
+      var count = BaseResults.Count;
       var close = (double)args.Candle.Close;
       var date = args.Candle.Date;
-      if (Results[^1].Date == date) {
-        if (Results.Count == 1) {
-          Results[0] = new() {
-            Date = date,
-            Average_1 = close,
-            Average_2 = close,
-            Value = 0.0
-          };
-        }
-        else {
-          var average_1 = Ema(Results[^1].Average_1, close, alpha_1);
-          var average_2 = Ema(Results[^1].Average_2, close, alpha_2);
-          Results[^1] = new() {
-            Date = date,
-            Average_1 = average_1,
-            Average_2 = average_2,
-            Value = average_1 - average_2
-          };
-        }
+      if (args.IsAppending) {
+        var result = GetExtensionMacd(count, close);
+        result.Date = date;
+        BaseResults.Add(result);
       }
       else {
-        var average_1 = Ema(Results[^1].Average_1, close, alpha_1);
-        var average_2 = Ema(Results[^1].Average_2, close, alpha_2);
-        Results.Add(new() {
-          Date = date,
-          Average_1 = average_1,
-          Average_2 = average_2,
-          Value = average_1 - average_2
-        });
+        BaseResults[^1].Value = GetExtensionMacd(count - 1, close).Value;
       }
     }
   }
-  internal static double Ema(double x, double y, double a) => y * a + x * (1 - a);
+  internal MacdResult GetExtensionMacd(int insertingIndex, double close) {
+    if (insertingIndex == 0) return new() { Average_1 = close, Average_2 = close, Value = 0.0 };
+    else {
+      var meow_1 = double.Lerp(BaseResults[insertingIndex - 1].Average_1, close, 2.0 / (1 + Lookback_1));
+      var meow_2 = double.Lerp(BaseResults[insertingIndex - 1].Average_2, close, 2.0 / (1 + Lookback_2));
+      return new() {
+        Average_1 = meow_1,
+        Average_2 = meow_2,
+        Value = meow_1 - meow_2
+      };
+    }
+  }
 }

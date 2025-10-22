@@ -6,10 +6,10 @@ namespace trading_platform.Model.Charts.Indicators;
 
 public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indicator(data) {
   public override string LegendText => $"SMA({Lookback})";
-  public struct SmaResult {
+  public class SmaResult : IIndicatorResult {
     public DateTime Date { get; set; }
-    public double? Value { get; set; }
     public double Close { get; set; }
+    public double Value { get; set; }
   };
   public int Lookback {
     get => field;
@@ -22,6 +22,7 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
     }
   } = lookback;
   public List<SmaResult> MovingAverage { get; private set; } = [];
+  public override IEnumerable<IIndicatorResult> Results => MovingAverage;
   public LineStyle LineStyle { get; set; } = new LineStyle() {
     Color = Colors.DarkBlue,
     Pattern = LinePattern.Solid,
@@ -34,31 +35,13 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
   public override AxisLimits GetAxisLimits() {
     if (MovingAverage.Count == 0) return AxisLimits.Unset;
     var snapshot = Snapshot();
-    ImmutableArray<SmaResult> notNull = [.. MovingAverage.Where(x => x.Value.HasValue)];
-    if (!notNull.Any()) return AxisLimits.Default;
+    ImmutableArray<SmaResult> notNull = [.. MovingAverage.Where(x => double.IsFinite(x.Value))];
+    if (notNull.Length == 0) return AxisLimits.Default;
     else return new(
       left: MovingAverage[0].Date.ToOADate(),
       right: MovingAverage[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: notNull.Min(x => x.Value!.Value), notNull.Max(x => x.Value!.Value)
+      bottom: notNull.Min(x => x.Value), notNull.Max(x => x.Value)
     );
-  }
-  public override void ContinuousAutoscaleAction(RenderPack rp) {
-    var snapshot = Snapshot();
-    if (snapshot.Length == 0) return;
-    var xRange = rp.Plot.Axes.GetLimits().HorizontalRange;
-    xRange = new(Math.Max(xRange.Min, snapshot[0].Date.ToOADate()), Math.Min(xRange.Min, snapshot[^1].Date.ToOADate()));
-    var startIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Min), x => x.Date);
-    var endIdx = snapshot.BinarySearch(DateTime.FromOADate(xRange.Max), x => x.Date);
-    if (startIdx < 0) startIdx = ~startIdx;
-    if (endIdx < 0) endIdx = ~endIdx;
-    if (startIdx == endIdx) return;
-    var (min, max) = snapshot[startIdx..endIdx]
-      .Where(x => x.Value.HasValue)
-      .Aggregate(
-        (Minimum: snapshot[0].Value!.Value, Maximum: snapshot[0].Value!.Value),
-        (prev, x) => (Math.Min(prev.Minimum, x.Value!.Value), Math.Max(prev.Maximum, x.Value!.Value))
-      );
-    rp.Plot.Axes.SetLimitsY(min * (1 + PaddingRate) - max * PaddingRate, max * (1 + PaddingRate) - min * PaddingRate);
   }
   public override void Render(RenderPack rp) {
     if (rp.Plot.Axes.ContinuouslyAutoscale) {
@@ -74,9 +57,9 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
         var margin = 5 * BaseChart.TimeSpan.TotalDays;
         return range.Min - margin <= date && date <= range.Max + margin;
       })
-      .Where(x => x.Value.HasValue)
+      .Where(x => double.IsFinite(x.Value))
       .Select(x => rp.Plot.GetPixel(
-        new Coordinates((double)x.Date.ToOADate(), (double)x.Value!.Value),
+        new Coordinates((double)x.Date.ToOADate(), (double)x.Value),
         rp.Plot.Axes.Bottom,
         rp.Plot.Axes.Left
       ));
@@ -87,20 +70,9 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
       MovingAverage.Clear();
       var chart = args.WholeCandles;
       for (int i = 0; i < chart.Count; i++) {
-        var date = chart[i].Date;
-        var close = (double)chart[i].Close;
-        if (i + 1 < Lookback) MovingAverage.Add(new() { Date = date, Close = close, Value = null });
-        else if (i + 1 == Lookback) {
-          MovingAverage.Add(new() {
-            Date = chart[i].Date,
-            Close = close,
-            Value = chart.Take(Lookback).Average(x => (double)x.Close)
-          });
-        }
-        else {
-          var average = Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[i - Lookback].Close) / Lookback;
-          MovingAverage.Add(new() { Date = date, Close = close, Value = average });
-        }
+        var result = GetExtensionSma(i, (double)chart[i].Close);
+        result.Date = chart[i].Date;
+        MovingAverage.Add(result);
       }
     }
   }
@@ -111,17 +83,29 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
     lock (MovingAverage) {
       var count = MovingAverage.Count;
       if (MovingAverage[^1].Date == args.Candle.Date) {
-        double? average = 
-          count > Lookback ? Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^Lookback].Close) :
-          count == Lookback ? MovingAverage[..Lookback].Average(x => x.Close) : null;
-        MovingAverage[^1] = new() { Date = date, Close = close, Value = average };
+        MovingAverage[^1] = GetExtensionSma(count - 1, close);
+        MovingAverage[^1].Date = date;
       }
       else {
-        double? average =
-          count >= Lookback ? Math.FusedMultiplyAdd(MovingAverage[^1].Value!.Value, Lookback, close - MovingAverage[^Lookback].Close) / Lookback :
-          count - 1 == Lookback ? (MovingAverage.Sum(x => x.Close) + close) / Lookback : null;
-        MovingAverage.Add(new() { Date = date, Close = close, Value = average });
+        MovingAverage.Add(GetExtensionSma(count, close));
+        MovingAverage[^1].Date = date;
       }
     }
+  }
+  // 정보: 수열을 확장할 때 삽입 전 insertingIndex에 현재 MovingAverage의 크기를 넣으면 됨.
+  private SmaResult GetExtensionSma(int insertingIndex, double close) {
+    // 자원을 점유했을 때만 접근해야 다른 스레드에서의 MovingAverage 수정을 막을 수 있음
+    if (!Monitor.IsEntered(MovingAverage)) {
+      throw new SynchronizationLockException();
+    }
+    if (insertingIndex + 1 == Lookback) {
+      double meow = MovingAverage.Sum(x => x.Close) + close;
+      return new SmaResult() { Close = close, Value = meow / Lookback };
+    }
+    else if (insertingIndex + 1 > Lookback) {
+      double meow = Math.FusedMultiplyAdd(MovingAverage[insertingIndex - 1].Value, Lookback, close - MovingAverage[insertingIndex - Lookback].Close);
+      return new SmaResult() { Close = close, Value = meow / Lookback };
+    }
+    else return new SmaResult() { Close = close, Value = double.NaN };
   }
 }

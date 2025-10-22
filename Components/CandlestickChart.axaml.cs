@@ -10,9 +10,6 @@ namespace trading_platform.Components;
 
 public partial class CandlestickChart : UserControl {
   private Model.Charts.CandlestickChartData? CastedDataContext => DataContext as CandlestickChartData;
-  private Plot CandlePlot;
-  private List<OHLC> CandleSource;
-  private Plot VolumePlot;
   private int? DraggingDividerIndex;
   public CandlestickChart() {
     InitializeComponent();
@@ -21,17 +18,9 @@ public partial class CandlestickChart : UserControl {
       plot.Grid.XAxisStyle.IsVisible = !plot.Grid.XAxisStyle.IsVisible;
       plot.Grid.YAxisStyle.IsVisible = !plot.Grid.YAxisStyle.IsVisible;
     });
-    CandleSource = [];
-    
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
-    CastedDataContext.Loaded += ResetCandles;
-    CastedDataContext.UpdatedEnd += UpdateEnd;
-    if (Design.IsDesignMode) {
-      ResetCandles(this, new() { WholeCandles = [.. CastedDataContext.Candles] });
-      PriceChart.Refresh();
-    }
     PriceChart.Multiplot.AddPlots(3);
     PriceChart.Multiplot.CollapseVertically();
     ConfigureCandleChart();
@@ -39,87 +28,49 @@ public partial class CandlestickChart : UserControl {
     var macd = new MovingAverageConvergenceDivergence(CastedDataContext, 12, 26);
     PriceChart.Multiplot.GetPlot(2).Add.Plottable(macd);
     PriceChart.Multiplot.GetPlot(2).Axes.ContinuouslyAutoscale = true;
-    PriceChart.Multiplot.GetPlot(2).Axes.ContinuousAutoscaleAction = macd.ContinuousAutoscaleAction;
+    PriceChart.Multiplot.GetPlot(2).Axes.ContinuousAutoscaleAction = macd.ContinuouslyAutoscaleAction;
     PriceChart.Multiplot.GetPlot(2).Grid.YAxis = PriceChart.Multiplot.GetPlot(2).Axes.Right;
     ConfigureLayout();
     ConfigureBottomAxis();
     PriceChart.Multiplot.SharedAxes.ShareX(PriceChart.Multiplot.GetPlots());
   }
-  public void PriceChart_ContinuousAutoscale(RenderPack rp) {
-    if (CandleSource.Count == 0) return;
-    var plot = rp.Plot;
-    var currentRange = plot.Axes.GetLimits().HorizontalRange;
-    var begin = DateTime.FromOADate(currentRange.Min);
-    var end = DateTime.FromOADate(currentRange.Max);
-    var dateTimeComparer = Comparer<OHLC>.Create((x, y) => x.DateTime.CompareTo(y.DateTime));
-    var candleBeginIdx = CandleSource.BinarySearch(new OHLC { DateTime = begin }, dateTimeComparer);
-    if (candleBeginIdx < 0) candleBeginIdx = ~candleBeginIdx;
-    var candleEndIdx = CandleSource.BinarySearch(new OHLC { DateTime = end }, dateTimeComparer);
-    if (candleEndIdx < 0) candleEndIdx = Math.Min(~candleEndIdx + 1, CandleSource.Count);
-    if (candleEndIdx == candleBeginIdx) return;
-    var slice = CandleSource[candleBeginIdx..candleEndIdx]; // it's shallow copy lol
-    var lowerLimit = slice.Min(x => x.Low);
-    var upperLimit = slice.Max(x => x.High);
-    foreach (var plottable in CandlePlot.PlottableList) {
-      if (plottable == null) continue;
-      plottable.Axes.YAxis.Range.Set(lowerLimit * 1.05 - upperLimit * 0.05, upperLimit * 1.05 - lowerLimit * 0.05);
-    }
-  }
   public void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
   }
   public void UserControl_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
   }
-  private void ResetCandles(object? sender, CandlestickChartData.LoadedEventArgs args) { Dispatcher.UIThread.Post(() => {
-    if (CastedDataContext == null) return;
-    CandleSource.Clear();
-    CandleSource.AddRange(args.WholeCandles.Select(x => x.ScottPlotCandle.WithTimeSpan(CastedDataContext.TimeSpan)));
-    InvalidateVisual();
-  }); }
-  private void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) { Dispatcher.UIThread.Post(() => {
-    if (CastedDataContext == null) return;
-    if (CandleSource[^1].DateTime == args.Candle.Date) CandleSource[^1] = args.Candle.ScottPlotCandle.WithTimeSpan(CastedDataContext.TimeSpan);
-    else CandleSource.Add(args.Candle.ScottPlotCandle.WithTimeSpan(CastedDataContext.TimeSpan));
-    InvalidateVisual();
-  }); }
   private void ConfigureCandleChart() {
     if (CastedDataContext == null) return;
-    
-    CandlePlot = PriceChart.Multiplot.GetPlot(0);
-    CandlePlot.DataBackground.Color = Colors.Transparent;
-    CandlePlot.FigureBackground.Color = Colors.Transparent;
-    CandlePlot.Grid.YAxis = CandlePlot.Axes.Right;
-    CandlePlot.Axes.ContinuouslyAutoscale = true;
-    CandlePlot.Axes.ContinuousAutoscaleAction = PriceChart_ContinuousAutoscale;
+    var plot = PriceChart.Multiplot.GetPlot(0);
+    var candles = new CandlestickPlot(CastedDataContext);
+    plot.Add.Plottable(candles);
 
-    var candles = CandlePlot.Add.Candlestick(CandleSource);
-    candles.Axes.YAxis = CandlePlot.Axes.Right;
+    plot.DataBackground.Color = Colors.Transparent;
+    plot.FigureBackground.Color = Colors.Transparent;
+    plot.Grid.YAxis = plot.Axes.Right;
+    plot.Axes.ContinuouslyAutoscale = true;
+    plot.Axes.ContinuousAutoscaleAction = candles.ContinuouslyAutoscaleAction;
+
     candles.RisingColor = Colors.LightPink;
     candles.FallingColor = Colors.LightBlue;
-    var sma_10  = new SimpleMovingAverage(CastedDataContext, 10);
-    sma_10.LineStyle.Color = Colors.DarkRed;
-    var sma_20  = new SimpleMovingAverage(CastedDataContext, 20);
-    sma_20.LineStyle.Color = Colors.DarkOrange;
-    var sma_60  = new SimpleMovingAverage(CastedDataContext, 60);
-    sma_60.LineStyle.Color = Colors.Gold;
-    var sma_120 = new SimpleMovingAverage(CastedDataContext, 120);
-    sma_120.LineStyle.Color = Colors.Green;
-    var sma_200 = new SimpleMovingAverage(CastedDataContext, 200);
-    sma_200.LineStyle.Color = Colors.DarkBlue;
-    CandlePlot.Add.Plottable(sma_10);
-    CandlePlot.Add.Plottable(sma_20);
-    CandlePlot.Add.Plottable(sma_60);
-    CandlePlot.Add.Plottable(sma_120);
-    CandlePlot.Add.Plottable(sma_200);
+    candles.Axes.XAxis = plot.Axes.Bottom;
+    candles.Axes.YAxis = plot.Axes.Right;
+
+    int[] periods = [10, 20, 30, 60, 120, 200];
+    foreach (var period in periods) {
+      var sma = new SimpleMovingAverage(CastedDataContext, period);
+      plot.Add.Plottable(sma);
+    }
   }
   private void ConfigureVolumeChart() {
-    VolumePlot = PriceChart.Multiplot.GetPlot(1);
+    if (CastedDataContext == null) return;
+    var plot = PriceChart.Multiplot.GetPlot(1);
     var volume = new Volume(CastedDataContext);
-    VolumePlot.Add.Plottable(volume);
-    VolumePlot.Grid.YAxis = VolumePlot.Axes.Right;
-    VolumePlot.Axes.ContinuouslyAutoscale = true;
-    VolumePlot.Axes.ContinuousAutoscaleAction = volume.ContinuousAutoscaleAction;
-    volume.Axes.XAxis = VolumePlot.Axes.Bottom;
-    volume.Axes.YAxis = VolumePlot.Axes.Right;
+    plot.Add.Plottable(volume);
+    plot.Grid.YAxis = plot.Axes.Right;
+    plot.Axes.ContinuouslyAutoscale = true;
+    plot.Axes.ContinuousAutoscaleAction = volume.ContinuouslyAutoscaleAction;
+    volume.Axes.XAxis = plot.Axes.Bottom;
+    volume.Axes.YAxis = plot.Axes.Right;
   }
   private void ConfigureLayout() {
     var layout = new ScottPlot.MultiplotLayouts.DraggableRows() {
@@ -164,11 +115,5 @@ public partial class CandlestickChart : UserControl {
       plot.Grid.XAxis = lastPlot.Axes.Bottom;
     }
     lastPlot.Axes.DateTimeTicksBottom();
-  }
-  ~CandlestickChart() {
-    if (CastedDataContext != null) {
-      CastedDataContext.Loaded -= ResetCandles;
-      CastedDataContext.UpdatedEnd -= UpdateEnd;
-    }
   }
 }
