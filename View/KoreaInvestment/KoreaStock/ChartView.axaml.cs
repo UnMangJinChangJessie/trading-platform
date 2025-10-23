@@ -56,6 +56,7 @@ public partial class ChartView : UserControl {
     if (StockMarketInformation.KRXStock.SearchByTicker(ticker) is not StockMarketInformation.KRXStockInformation info) return;
     CastedDataContext.ItemLabel.Ticker = info.Ticker;
     CastedDataContext.ItemLabel.Name = info.Name;
+    CastedDataContext.InquiringMarket = info.Exchange;
     await CastedDataContext.RefreshAsync();
   }
 }

@@ -5,7 +5,7 @@ using trading_platform.Extensions;
 
 namespace trading_platform.Model.Charts.Indicators;
 
-public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int lookback_1, int lookback_2) : Indicator(chart) {
+public class MovingAverageConvergenceDivergence : Indicator {
   public override string LegendText => $"MACD({Lookback_1}, {Lookback_2})";
   public class MacdResult : IIndicatorResult {
     public DateTime Date { get; set; }
@@ -23,7 +23,7 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
       }
     }
-  } = lookback_1;
+  }
   public int Lookback_2 {
     get => field;
     set {
@@ -33,10 +33,14 @@ public class MovingAverageConvergenceDivergence(CandlestickChartData chart, int 
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
       }
     }
-  } = lookback_2;
-  public List<MacdResult> BaseResults { get; private set; } = [];
+  }
+  public List<MacdResult> BaseResults { get; private set; }
   public override IEnumerable<IIndicatorResult> Results => BaseResults;
-  
+  public MovingAverageConvergenceDivergence(CandlestickChartData chart, int lookback_1, int lookback_2) : base(chart) {
+    BaseResults = [];
+    Lookback_1 = lookback_1;
+    Lookback_2 = lookback_2;
+  }
   public ImmutableArray<MacdResult> Snapshot() {
     lock (BaseResults) {
       return [..BaseResults];

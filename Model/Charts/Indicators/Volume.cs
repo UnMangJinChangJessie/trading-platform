@@ -26,7 +26,11 @@ public class Volume : Indicator {
       NegativeBarIncreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
       NegativeBarDecreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
     };
-    if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
+    lock (BaseChart.Candles) {
+      if (BaseChart.Candles.Count != 0) {
+        Reset(this, new() { WholeCandles = [.. BaseChart.Candles] });
+      }
+    }
   }
   public ImmutableArray<VolumeResult> Snapshot() {
     bool entered = Monitor.TryEnter(BaseResults);

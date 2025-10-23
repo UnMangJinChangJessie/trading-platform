@@ -3,6 +3,7 @@ namespace trading_platform.ViewModel.KoreaInvestment.KoreaStock;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.KoreaInvestment.DomesticStock;
 
@@ -12,7 +13,14 @@ public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label
   /// <summary>
   /// WebSocket의 연결 해제를 위해 저장하는 종목코드
   /// </summary>
-  private string? WebSocketTicker = null;
+  private (string Id, string Key)? WebSocketKeys = null;
+  [ObservableProperty]
+  public partial Exchange InquiringMarket { get; set; }
+  private string TransactionId => InquiringMarket switch {
+    Exchange.KoreaExchange => "H0STASP0",
+    Exchange.NexTrade => "H0NXASP0",
+    _ => "H0UNASP0"
+  };
   public KisClients Api { get; set; } = api;
   private void OnReceivedRealtimeOrderBook(object? sender, WebSocketModel.MessageReceivedEventArgs args) {
     if (args.Tokens.Length == 0) return;
@@ -21,7 +29,7 @@ public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label
         InsertOrder(ulong.Parse(args.Tokens[^1][3 + i]), ulong.Parse(args.Tokens[^1][23 + i]), 0);
         InsertOrder(ulong.Parse(args.Tokens[^1][13 + i]), 0, ulong.Parse(args.Tokens[^1][33 + i]));
       }
-      ZeroOutOutOfRange(ulong.Parse(args.Tokens[^1][12]), ulong.Parse(args.Tokens[^1][22]));
+      ZeroOutOutOfRange(ulong.Parse(args.Tokens[^1][22]), ulong.Parse(args.Tokens[^1][12]));
     }
   }
   private async void OnReceivedOrderBook(string jsonString, bool hasNextData, object? args) {
@@ -55,17 +63,20 @@ public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label
       InsertOrder(result.Output!.BidPrice_10, 0, result.Output!.BidQuantity_10);
       #endregion
     }
-    if (WebSocketTicker != null) {
-      await Api!.WebSocketClient.Unsubscribe("H0UNASP0", WebSocketTicker);
+    if (WebSocketKeys != null) {
+      await Api!.WebSocketClient.Unsubscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key);
     }
-    WebSocketTicker = Label.Ticker;
-    // 실시간 데이터 수신 요청(KRX/NXT 통합)
-    await Api!.WebSocketClient.Subscribe("H0UNASP0", Label.Ticker, OnReceivedRealtimeOrderBook);
+    // 실시간 호가 데이터 요청
+      WebSocketKeys = (TransactionId, Label.Ticker);
+      await Api!.WebSocketClient.Subscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key, OnReceivedRealtimeOrderBook);
   }
   public override void Refresh() {
     if (Api == null) return;
     lock (CurrentOrders) {
       CurrentOrders.Clear();
+    }
+    if (WebSocketKeys != null) {
+      Api!.WebSocketClient.Unsubscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key).Wait();
     }
     GetOrderBook(
       Api.ApiClient,
@@ -75,8 +86,20 @@ public partial class OrderBook([MaybeNull] KisClients api, MarketItemLabel label
       }, OnReceivedOrderBook, null
     );
   }
-  public override Task RefreshAsync() {
-    Refresh();
-    return Task.CompletedTask;
+  public override async Task RefreshAsync() {
+    if (Api == null) return;
+    lock (CurrentOrders) {
+      CurrentOrders.Clear();
+    }
+    if (WebSocketKeys != null) {
+      await Api!.WebSocketClient.Unsubscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key);
+    }
+    GetOrderBook(
+      Api.ApiClient,
+      new OrderBookQueries() {
+        MarketClassification = Exchange.DomesticUnified,
+        Ticker = Label.Ticker,
+      }, OnReceivedOrderBook, null
+    );
   }
 }

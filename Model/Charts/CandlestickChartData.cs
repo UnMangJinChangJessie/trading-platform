@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace trading_platform.Model.Charts;
@@ -54,6 +55,15 @@ public partial class CandlestickChartData : ObservableObject {
     Candles = [];
     ChartDateBegin = DateTimeOffset.Now.Date.AddDays(-180);
     ChartDateEnd = DateTimeOffset.Now.Date.AddDays(1).AddMilliseconds(-1);
+    if (Avalonia.Controls.Design.IsDesignMode || Debugger.IsAttached) {
+      // 예시 데이터: 로그 정규분포 곡선
+      ChartDateBegin = DateTime.Today.AddDays(-499);
+      ChartDateEnd = DateTime.Today;
+      var logNormal = Generators.Series.GenerateBrownianOHLC(100.0, 0.0274, 2.0, TimeSpan.FromDays(1), ChartDateBegin.Value.DateTime, 500);
+      foreach (var candle in logNormal) {
+        Candles.Add(candle);
+      }
+    }
   }
   public void NotifyLoadComplete() {
     lock (Candles) {

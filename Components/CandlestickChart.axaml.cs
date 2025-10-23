@@ -9,7 +9,7 @@ using trading_platform.Model.Charts.Indicators;
 namespace trading_platform.Components;
 
 public partial class CandlestickChart : UserControl {
-  private Model.Charts.CandlestickChartData? CastedDataContext => DataContext as CandlestickChartData;
+  private CandlestickChartData? CastedDataContext => DataContext as CandlestickChartData;
   private int? DraggingDividerIndex;
   public CandlestickChart() {
     InitializeComponent();
@@ -18,21 +18,16 @@ public partial class CandlestickChart : UserControl {
       plot.Grid.XAxisStyle.IsVisible = !plot.Grid.XAxisStyle.IsVisible;
       plot.Grid.YAxisStyle.IsVisible = !plot.Grid.YAxisStyle.IsVisible;
     });
+    PriceChart.UserInputProcessor.DoubleLeftClickBenchmark(false);
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
-    PriceChart.Multiplot.AddPlots(3);
-    PriceChart.Multiplot.CollapseVertically();
     ConfigureCandleChart();
     ConfigureVolumeChart();
-    var macd = new MovingAverageConvergenceDivergence(CastedDataContext, 12, 26);
-    PriceChart.Multiplot.GetPlot(2).Add.Plottable(macd);
-    PriceChart.Multiplot.GetPlot(2).Axes.ContinuouslyAutoscale = true;
-    PriceChart.Multiplot.GetPlot(2).Axes.ContinuousAutoscaleAction = macd.ContinuouslyAutoscaleAction;
-    PriceChart.Multiplot.GetPlot(2).Grid.YAxis = PriceChart.Multiplot.GetPlot(2).Axes.Right;
     ConfigureLayout();
     ConfigureBottomAxis();
     PriceChart.Multiplot.SharedAxes.ShareX(PriceChart.Multiplot.GetPlots());
+    PriceChart.Multiplot.CollapseVertically();
   }
   public void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
   }
@@ -40,35 +35,39 @@ public partial class CandlestickChart : UserControl {
   }
   private void ConfigureCandleChart() {
     if (CastedDataContext == null) return;
-    var plot = PriceChart.Multiplot.GetPlot(0);
-    var candles = new CandlestickPlot(CastedDataContext);
-    plot.Add.Plottable(candles);
-
-    plot.DataBackground.Color = Colors.Transparent;
-    plot.FigureBackground.Color = Colors.Transparent;
-    plot.Grid.YAxis = plot.Axes.Right;
-    plot.Axes.ContinuouslyAutoscale = true;
-    plot.Axes.ContinuousAutoscaleAction = candles.ContinuouslyAutoscaleAction;
-
-    candles.RisingColor = Colors.LightPink;
-    candles.FallingColor = Colors.LightBlue;
-    candles.Axes.XAxis = plot.Axes.Bottom;
-    candles.Axes.YAxis = plot.Axes.Right;
-
+    var meow = new CandlestickChartPlot(CastedDataContext);
+    PriceChart.Multiplot.Reset(meow);
+    meow.PlotControl = PriceChart;
+    meow.MainPlot.RisingColor = Colors.LightPink;
+    meow.MainPlot.FallingColor = Colors.LightBlue;
+    meow.MainPlot.Axes.XAxis = meow.Axes.Bottom;
+    meow.MainPlot.Axes.YAxis = meow.Axes.Right;
+    meow.PriceHorizontalLine.Axes.XAxis = meow.Axes.Bottom;
+    meow.PriceHorizontalLine.Axes.YAxis = meow.Axes.Right;
+    meow.PriceHorizontalLine.LabelRotation = 0;
+    meow.DataBackground.Color = Colors.Transparent;
+    meow.FigureBackground.Color = Colors.Transparent;
+    // lock 횟수를 줄여 성능을 개선하기 전까지 Y축 조정을 비활성화 함
+    // plot.Axes.ContinuouslyAutoscale = true;
+    // plot.Axes.ContinuousAutoscaleAction = candles.ContinuouslyAutoscaleAction;
     int[] periods = [10, 20, 30, 60, 120, 200];
-    foreach (var period in periods) {
+    Color[] colors = [Colors.Red, Colors.OrangeRed, Colors.Yellow, Colors.GreenYellow, Colors.Indigo, Colors.Violet]; 
+    foreach (var (period, color) in periods.Zip(colors)) {
       var sma = new SimpleMovingAverage(CastedDataContext, period);
-      plot.Add.Plottable(sma);
+      sma.LineStyle.Color = color;
+      sma.Axes.XAxis = meow.Axes.Bottom;
+      sma.Axes.YAxis = meow.Axes.Right;
+      meow.Add.Plottable(sma);
     }
   }
   private void ConfigureVolumeChart() {
     if (CastedDataContext == null) return;
-    var plot = PriceChart.Multiplot.GetPlot(1);
+    var plot = PriceChart.Multiplot.AddPlot();
     var volume = new Volume(CastedDataContext);
     plot.Add.Plottable(volume);
     plot.Grid.YAxis = plot.Axes.Right;
-    plot.Axes.ContinuouslyAutoscale = true;
-    plot.Axes.ContinuousAutoscaleAction = volume.ContinuouslyAutoscaleAction;
+    // plot.Axes.ContinuouslyAutoscale = true;
+    // plot.Axes.ContinuousAutoscaleAction = volume.ContinuouslyAutoscaleAction;
     volume.Axes.XAxis = plot.Axes.Bottom;
     volume.Axes.YAxis = plot.Axes.Right;
   }
@@ -103,9 +102,9 @@ public partial class CandlestickChart : UserControl {
     };
     PriceChart.Multiplot.Layout = layout;
     foreach (var plot in PriceChart.Multiplot.GetPlots()) {
-      plot.Layout.Fixed(padding: new(5, 80, 0, 0));
+      plot.Layout.Fixed(padding: new(10, 60, 0, 0));
     }
-    PriceChart.Multiplot.GetPlots()[^1].Layout.Fixed(padding: new(5, 80, 60, 0));
+    PriceChart.Multiplot.GetPlots()[^1].Layout.Fixed(padding: new(10, 60, 60, 0));
   }
   private void ConfigureBottomAxis() {
     var plots = PriceChart.Multiplot.GetPlots();

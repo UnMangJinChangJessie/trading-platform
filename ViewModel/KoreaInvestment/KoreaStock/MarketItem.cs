@@ -9,7 +9,7 @@ using static trading_platform.Model.KoreaInvestment.DomesticStock;
 using MarketItemBase = ViewModel.MarketItem;
 
 public partial class MarketItem : MarketItemBase {
-  private string? WebSocketTicker { get; set; }
+  private (string Id, string Key)? WebSocketKeys { get; set; }
   public KisClients Api {
     get => field;
     set {
@@ -19,6 +19,13 @@ public partial class MarketItem : MarketItemBase {
       }
     }
   }
+  [ObservableProperty]
+  public partial Exchange InquiringMarket { get; set; } = Exchange.None;
+  private string TransactionId => InquiringMarket switch {
+    Exchange.KoreaExchange => "H0STCNT0",
+    Exchange.NexTrade => "H0NXCNT0",
+    _ => "H0UNCNT0"
+  };
   [ObservableProperty]
   public partial StockMetric Metric { get; set; }
   [ObservableProperty]
@@ -66,9 +73,8 @@ public partial class MarketItem : MarketItemBase {
         }, OnReceivedFinancialInformation, null
       );
       // 실시간 체결 데이터 요청
-      if (WebSocketTicker != null) await Api!.WebSocketClient.Unsubscribe("H0UNCNT0", WebSocketTicker);
-      WebSocketTicker = ItemLabel.Ticker;
-      await Api!.WebSocketClient.Subscribe("H0UNCNT0", ItemLabel.Ticker, OnReceivedRealtimeConclusion);
+      WebSocketKeys = (TransactionId, ItemLabel.Ticker);
+      await Api!.WebSocketClient.Subscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key, OnReceivedRealtimeConclusion);
     }
   }
   public void OnReceivedRealtimeConclusion(object? sender, WebSocketModel.MessageReceivedEventArgs args) {
@@ -119,12 +125,7 @@ public partial class MarketItem : MarketItemBase {
       Metric.ReturnOnEquity = output.ReturnOnEquity;
     }
   }
-  public override void Refresh() {
-    if (Api == null) return;
-    lock (ItemChart) {
-      ItemChart.Clear();
-    }
-    // 차트 갱신
+  private void SendChartRefreshRequests() {
     var from = ItemChart.ChartDateBegin?.DateTime.Date?? DateTime.Today.AddDays(-280);
     var to = ItemChart.ChartDateEnd?.DateTime.Date ?? DateTime.Today;
     do {
@@ -145,11 +146,28 @@ public partial class MarketItem : MarketItemBase {
       to = newTo;
     }
     while (from <= to);
+  }
+  public override void Refresh() {
+    if (Api == null) return;
+    if (WebSocketKeys != null) Api!.WebSocketClient.Unsubscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key).Wait();
+    lock (ItemChart) {
+      ItemChart.Clear();
+    }
+    SendChartRefreshRequests();
     // 호가 갱신
     ItemOrderBook.Refresh();
   }
-  public override Task RefreshAsync() {
-    Refresh();
-    return Task.CompletedTask;
+  public override async Task RefreshAsync() {
+    if (Api == null) return;
+    if (WebSocketKeys != null) await Api!.WebSocketClient.Unsubscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key);
+    lock (ItemChart) {
+      ItemChart.Clear();
+    }
+    SendChartRefreshRequests();
+    // 호가 갱신
+    ItemOrderBook.Refresh();
+  }
+  ~MarketItem() {
+    if (WebSocketKeys != null) Api.WebSocketClient.Unsubscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key).Wait();
   }
 }

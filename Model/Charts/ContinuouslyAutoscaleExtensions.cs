@@ -7,8 +7,8 @@ namespace trading_platform.Model.Charts;
 
 public static class ContinuouslyAutoscaleExtensions {
   public static void ContinuouslyAutoscaleAction(this ScottPlot.Plottables.CandlestickPlot plottable, RenderPack rp) {
-    var range = plottable.GetPriceRangeInView();
-    rp.Plot.Axes.SetLimitsY(range.Min, range.Max);
+    // var range = plottable.GetPriceRangeInView();
+    // rp.Plot.Axes.SetLimitsY(range.Min, range.Max);
   }
   public static void ContinuouslyAutoscaleAction(this Indicator plottable, RenderPack rp) {
     ImmutableArray<IIndicatorResult> snapshot;

@@ -32,7 +32,6 @@ public class ExponentialMovingAverage : Indicator {
   public ExponentialMovingAverage(CandlestickChartData data, int lookback) : base(data) {
     MovingAverage = [];
     Lookback = lookback;
-    // Invalidate(); will be called at the lookback allocation.
   }
   public override AxisLimits GetAxisLimits() {
     if (MovingAverage.Count == 0) return AxisLimits.Unset;

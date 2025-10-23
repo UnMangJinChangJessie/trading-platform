@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
 using ScottPlot;
-using trading_platform.Extensions;
 
 namespace trading_platform.Model.Charts.Indicators;
 
-public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indicator(data) {
+public class SimpleMovingAverage : Indicator {
   public override string LegendText => $"SMA({Lookback})";
   public class SmaResult : IIndicatorResult {
     public DateTime Date { get; set; }
@@ -20,8 +19,8 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
       }
     }
-  } = lookback;
-  public List<SmaResult> MovingAverage { get; private set; } = [];
+  }
+  public List<SmaResult> MovingAverage { get; private set; }
   public override IEnumerable<IIndicatorResult> Results => MovingAverage;
   public LineStyle LineStyle { get; set; } = new LineStyle() {
     Color = Colors.DarkBlue,
@@ -29,6 +28,10 @@ public class SimpleMovingAverage(CandlestickChartData data, int lookback) : Indi
     AntiAlias = true,
     Width = 1,
   };
+  public SimpleMovingAverage(CandlestickChartData data, int lookback) : base(data) {
+    MovingAverage = [];
+    Lookback = lookback;
+  }
   public ImmutableArray<SmaResult> Snapshot() {
     lock (MovingAverage) return [.. MovingAverage];
   }
