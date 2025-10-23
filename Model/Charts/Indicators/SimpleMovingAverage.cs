@@ -29,31 +29,32 @@ public class SimpleMovingAverage : Indicator {
     Width = 1,
   };
   public SimpleMovingAverage(CandlestickChartData data, int lookback) : base(data) {
+    RenderingResults = [];
     MovingAverage = [];
     Lookback = lookback;
   }
-  public ImmutableArray<SmaResult> Snapshot() {
-    lock (MovingAverage) return [.. MovingAverage];
-  }
   public override AxisLimits GetAxisLimits() {
-    if (MovingAverage.Count == 0) return AxisLimits.Unset;
-    var snapshot = Snapshot();
-    ImmutableArray<SmaResult> notNull = [.. MovingAverage.Where(x => double.IsFinite(x.Value))];
-    if (notNull.Length == 0) return AxisLimits.Default;
+    if (RenderingResults.Length == 0) return AxisLimits.Unset;
+    IEnumerable<IIndicatorResult> notNull = RenderingResults.Where(x => double.IsFinite(((SmaResult)x).Value));
+    if (!notNull.Any()) return AxisLimits.Default;
     else return new(
-      left: MovingAverage[0].Date.ToOADate(),
-      right: MovingAverage[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
+      left: RenderingResults[0].Date.ToOADate(),
+      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
       bottom: notNull.Min(x => x.Value), notNull.Max(x => x.Value)
     );
   }
   public override void Render(RenderPack rp) {
+    if (ShouldUpdateResult) {
+      lock (MovingAverage) RenderingResults = [.. MovingAverage];
+      ResetUpdateTime();
+    }
+    if (RenderingResults.Length == 0) return;
     if (rp.Plot.Axes.ContinuouslyAutoscale) {
       rp.Plot.Axes.ContinuousAutoscaleAction.Invoke(rp);
     }
     // Want to assume that the candles are already sorted by dates but...
     // Also, the base collection can be modified by another thread.
-    var snapshot = Snapshot();
-    IEnumerable<Pixel> pixels = snapshot
+    IEnumerable<Pixel> pixels = RenderingResults
       .Where(x => {
         var date = x.Date.ToOADate();
         var range = rp.Plot.Axes.GetLimits().HorizontalRange;
@@ -78,6 +79,7 @@ public class SimpleMovingAverage : Indicator {
         MovingAverage.Add(result);
       }
     }
+    base.Reset(sender, args);
   }
   public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     if (MovingAverage.Count == 0) return;
@@ -94,6 +96,7 @@ public class SimpleMovingAverage : Indicator {
         MovingAverage[^1].Date = date;
       }
     }
+    base.UpdateEnd(sender, args);
   }
   // 정보: 수열을 확장할 때 삽입 전 insertingIndex에 현재 MovingAverage의 크기를 넣으면 됨.
   private SmaResult GetExtensionSma(int insertingIndex, double close) {

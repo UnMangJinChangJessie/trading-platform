@@ -17,7 +17,7 @@ public class ExponentialMovingAverage : Indicator {
       ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
       if (field != value) {
         field = value;
-        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
+        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles] });
       }
     }
   }
@@ -30,32 +30,28 @@ public class ExponentialMovingAverage : Indicator {
     Width = 1,
   };
   public ExponentialMovingAverage(CandlestickChartData data, int lookback) : base(data) {
+    RenderingResults = [];
     MovingAverage = [];
     Lookback = lookback;
   }
   public override AxisLimits GetAxisLimits() {
-    if (MovingAverage.Count == 0) return AxisLimits.Unset;
-    var snapshot = Snapshot();
+    if (RenderingResults.Length == 0) return AxisLimits.Unset;
     return new(
-      left: MovingAverage[0].Date.ToOADate(),
-      right: MovingAverage[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: snapshot.Min(x => x.Value), snapshot.Max(x => x.Value)
+      left: RenderingResults[0].Date.ToOADate(),
+      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
+      bottom: RenderingResults.Min(x => x.Value), RenderingResults.Max(x => x.Value)
     );
   }
-  public ImmutableArray<EmaResult> Snapshot() {
-    bool entered = Monitor.TryEnter(MovingAverage);
-    ImmutableArray<EmaResult> result = [.. MovingAverage];
-    if (entered) Monitor.Exit(MovingAverage);
-    return result;
-  }
   public override void Render(RenderPack rp) {
+    if (!ShouldUpdateResult) {
+      lock (MovingAverage) RenderingResults = [.. MovingAverage];
+      ResetUpdateTime();
+    }
+    _lastResultUpdateTime = DateTime.UtcNow;
     if (rp.Plot.Axes.ContinuouslyAutoscale) {
       rp.Plot.Axes.ContinuousAutoscaleAction.Invoke(rp);
     }
-    // Want to assume that the candles are already sorted by dates but...
-    // Also, the base collection can be modified by another thread.
-    ImmutableArray<EmaResult> snapshot = Snapshot();
-    IEnumerable<Pixel> pixels = snapshot
+    IEnumerable<Pixel> pixels = RenderingResults
       .Where(x => {
         var date = x.Date.ToOADate();
         var range = rp.Plot.Axes.GetLimits().HorizontalRange;
@@ -82,6 +78,7 @@ public class ExponentialMovingAverage : Indicator {
         MovingAverage[^1].Date = date;
       }
     }
+    base.Reset(sender, args);
   }
   public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     double alpha = 2.0 / (1.0 + Lookback);
@@ -99,6 +96,7 @@ public class ExponentialMovingAverage : Indicator {
         MovingAverage[^1].Date = date;
       }
     }
+    base.UpdateEnd(sender, args);
   }
   internal EmaResult GetExtensionEma(int insertingIndex, double close) {
     if (insertingIndex == 0) return new EmaResult() { Value = close };

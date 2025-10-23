@@ -18,7 +18,7 @@ public partial class CandlestickChart : UserControl {
       plot.Grid.XAxisStyle.IsVisible = !plot.Grid.XAxisStyle.IsVisible;
       plot.Grid.YAxisStyle.IsVisible = !plot.Grid.YAxisStyle.IsVisible;
     });
-    PriceChart.UserInputProcessor.DoubleLeftClickBenchmark(false);
+    // PriceChart.UserInputProcessor.DoubleLeftClickBenchmark(false);
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
@@ -28,6 +28,7 @@ public partial class CandlestickChart : UserControl {
     ConfigureBottomAxis();
     PriceChart.Multiplot.SharedAxes.ShareX(PriceChart.Multiplot.GetPlots());
     PriceChart.Multiplot.CollapseVertically();
+    PriceChart.Refresh();
   }
   public void UserControl_AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
   }
@@ -48,8 +49,8 @@ public partial class CandlestickChart : UserControl {
     meow.DataBackground.Color = Colors.Transparent;
     meow.FigureBackground.Color = Colors.Transparent;
     // lock 횟수를 줄여 성능을 개선하기 전까지 Y축 조정을 비활성화 함
-    // plot.Axes.ContinuouslyAutoscale = true;
-    // plot.Axes.ContinuousAutoscaleAction = candles.ContinuouslyAutoscaleAction;
+    meow.Axes.ContinuouslyAutoscale = true;
+    meow.Axes.ContinuousAutoscaleAction = meow.ContinuouslyAutoscaleAction;
     int[] periods = [10, 20, 30, 60, 120, 200];
     Color[] colors = [Colors.Red, Colors.OrangeRed, Colors.Yellow, Colors.GreenYellow, Colors.Indigo, Colors.Violet]; 
     foreach (var (period, color) in periods.Zip(colors)) {

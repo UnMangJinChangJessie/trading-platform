@@ -1,6 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using ScottPlot;
 using ScottPlot.DataSources;
 
@@ -25,7 +22,7 @@ public class ChartOHLCSource : OHLCSourceBase, IOHLCSource {
   public override int Count => Candles.Count;
   public ChartOHLCSource(CandlestickChartData data) {
     BaseData = data;
-    lock (data) {
+    lock (data.Candles) {
       Candles = [.. data.Candles.Select(x => x.ScottPlotCandle)];
     }
   }
@@ -50,8 +47,12 @@ public class ChartOHLCSource : OHLCSourceBase, IOHLCSource {
 }
 
 public class CandlestickChartPlot : Plot {
-  public class CandlestickPlot(CandlestickChartData data) : ScottPlot.Plottables.CandlestickPlot(new ChartOHLCSource(data)) {
+  public class CandlestickPlot : ScottPlot.Plottables.CandlestickPlot {
     public ChartOHLCSource? CastedDataSource => Data as ChartOHLCSource;
+    public CandlestickPlot(CandlestickChartData data) : base(new ChartOHLCSource(data)) {}
+    public override void Render(RenderPack rp) {
+      base.Render(rp);
+    }
   }
   public CandlestickPlot MainPlot { get; private set; }
   public ScottPlot.Plottables.HorizontalLine PriceHorizontalLine { get; private set; }
@@ -69,10 +70,11 @@ public class CandlestickChartPlot : Plot {
     MainPlot.Axes.YAxis = Axes.Right;
     PriceHorizontalLine.Axes.XAxis = Axes.Bottom;
     PriceHorizontalLine.Axes.YAxis = Axes.Right;
-    PriceHorizontalLine.LabelOppositeAxis = true;
-    PriceHorizontalLine.Text = data[0]?.Close.ToString() ?? "";
+    PriceHorizontalLine.LabelAlignment = Alignment.MiddleLeft;
     PriceHorizontalLine.LabelFontColor = Colors.White;
-    PriceHorizontalLine.LabelBackgroundColor = Colors.DarkGray;
+    PriceHorizontalLine.LabelOppositeAxis = true;
+    PriceHorizontalLine.LineWidth = 1;
+    PriceHorizontalLine.Text = data[0]?.Close.ToString() ?? "";
   }
   private void OnLoaded(object? sender, CandlestickChartData.LoadedEventArgs args) {
     if (args.WholeCandles.Count == 0) return;

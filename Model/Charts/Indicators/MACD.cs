@@ -37,31 +37,29 @@ public class MovingAverageConvergenceDivergence : Indicator {
   public List<MacdResult> BaseResults { get; private set; }
   public override IEnumerable<IIndicatorResult> Results => BaseResults;
   public MovingAverageConvergenceDivergence(CandlestickChartData chart, int lookback_1, int lookback_2) : base(chart) {
+    RenderingResults = [];
     BaseResults = [];
     Lookback_1 = lookback_1;
     Lookback_2 = lookback_2;
   }
-  public ImmutableArray<MacdResult> Snapshot() {
-    lock (BaseResults) {
-      return [..BaseResults];
-    }
-  }
   public override AxisLimits GetAxisLimits() {
-    if (BaseResults.Count == 0) return AxisLimits.Unset;
+    if (RenderingResults.Length == 0) return AxisLimits.Unset;
     else return new(
-      left: BaseResults[0].Date.ToOADate(),
-      right: BaseResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: BaseResults.Min(x => x.Value), BaseResults.Max(x => x.Value)
+      left: RenderingResults[0].Date.ToOADate(),
+      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
+      bottom: RenderingResults.Min(x => x.Value), RenderingResults.Max(x => x.Value)
     );
   }
   public override void Render(RenderPack rp) {
+    if (ShouldUpdateResult) {
+      lock (BaseResults) RenderingResults = [.. BaseResults];
+      ResetUpdateTime();
+    }
+    if (RenderingResults.Length == 0) return;
     if (rp.Plot.Axes.ContinuouslyAutoscale) {
       rp.Plot.Axes.ContinuousAutoscaleAction.Invoke(rp);
     }
-    // Want to assume that the candles are already sorted by dates but...
-    // Also, the base collection can be modified by another thread.
-    ImmutableArray<MacdResult> snapshot = Snapshot();
-    var rectValues = snapshot
+    var rectValues = RenderingResults
       .Where(x => {
         var date = x.Date.ToOADate();
         var range = rp.Plot.Axes.GetLimits().HorizontalRange;
@@ -91,8 +89,8 @@ public class MovingAverageConvergenceDivergence : Indicator {
     Drawing.DrawLine(
       canvas: rp.Canvas,
       paint: rp.Paint,
-      pt1: rp.Plot.GetPixel(coordinates: new(snapshot[0].Date.ToOADate(), 0)),
-      pt2: rp.Plot.GetPixel(coordinates: new(snapshot[^1].Date.ToOADate(), 0)),
+      pt1: rp.Plot.GetPixel(coordinates: new(RenderingResults[0].Date.ToOADate(), 0)),
+      pt2: rp.Plot.GetPixel(coordinates: new(RenderingResults[^1].Date.ToOADate(), 0)),
       color: Colors.Black
     );
   }
@@ -110,6 +108,7 @@ public class MovingAverageConvergenceDivergence : Indicator {
         BaseResults.Add(result);
       }
     }
+    base.Reset(sender, args);
   }
   public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     double alpha_1 = 2.0 / (Lookback_1 + 1);
@@ -128,6 +127,7 @@ public class MovingAverageConvergenceDivergence : Indicator {
         BaseResults[^1].Value = GetExtensionMacd(count - 1, close).Value;
       }
     }
+    base.UpdateEnd(sender, args);
   }
   internal MacdResult GetExtensionMacd(int insertingIndex, double close) {
     if (insertingIndex == 0) return new() { Average_1 = close, Average_2 = close, Value = 0.0 };

@@ -15,6 +15,7 @@ public class Volume : Indicator {
   public override IEnumerable<IIndicatorResult> Results => BaseResults;
   
   public Volume(CandlestickChartData data) : base(data) {
+    RenderingResults = [];
     BaseResults = [];
     BarStyle = new() {
       PositiveBarIncreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.7) },
@@ -32,35 +33,28 @@ public class Volume : Indicator {
       }
     }
   }
-  public ImmutableArray<VolumeResult> Snapshot() {
-    bool entered = Monitor.TryEnter(BaseResults);
-    ImmutableArray<VolumeResult> result = [.. BaseResults];
-    if (entered) Monitor.Exit(BaseResults);
-    return result;
-  }
   public override AxisLimits GetAxisLimits() {
-    var snapshot = Snapshot();
-    if (snapshot.Length == 0) return AxisLimits.Unset;
+    if (RenderingResults.Length == 0) return AxisLimits.Unset;
     else return new(
-      left: snapshot[0].Date.ToOADate(),
-      right: snapshot[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: snapshot.Min(x => x.Value), snapshot.Max(x => x.Value)
+      left: RenderingResults[0].Date.ToOADate(),
+      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
+      bottom: RenderingResults.Min(x => x.Value), RenderingResults.Max(x => x.Value)
     );
   }
   public override void Render(RenderPack rp) {
+    if (!ShouldUpdateResult) {
+      lock (BaseResults) RenderingResults = [.. BaseResults];
+    }
+    _lastResultUpdateTime = DateTime.UtcNow;
     if (rp.Plot.Axes.ContinuouslyAutoscale) {
       rp.Plot.Axes.ContinuousAutoscaleAction.Invoke(rp);
     }
-    // Want to assume that the candles are already sorted by dates but...
-    // Also, the base collection can be modified by another thread.
-    var snapshot = Snapshot();
-    // filter only the necessary candles
-    var rectValues = snapshot
+    var horizontalRange = rp.Plot.Axes.GetLimits().HorizontalRange;
+    var rectValues = RenderingResults
       .Where(x => {
         var date = x.Date.ToOADate();
-        var range = rp.Plot.Axes.GetLimits().HorizontalRange;
         var margin = 5 * BaseChart.TimeSpan.TotalDays;
-        return range.Min - margin <= date && date <= range.Max + margin;
+        return horizontalRange.Min - margin <= date && date <= horizontalRange.Max + margin;
       })
       .Select(x => {
         var pixelTopLeft = rp.Plot.GetPixel(
@@ -94,11 +88,13 @@ public class Volume : Indicator {
     lock (BaseResults) {
       BaseResults = [.. args.WholeCandles.Select(x => new VolumeResult() { Date = x.Date, Value = (double)x.Volume })];
     }
+    base.Reset(sender, args);
   }
   public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     lock (BaseResults) {
       if (BaseResults[^1].Date == args.Candle.Date) BaseResults[^1] = new() { Date = args.Candle.Date, Value = (double)args.Candle.Volume };
       else BaseResults.Add(new() { Date = args.Candle.Date, Value = (double)args.Candle.Volume });
     }
+    base.UpdateEnd(sender, args);
   }
 }

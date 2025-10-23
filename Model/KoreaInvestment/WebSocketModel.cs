@@ -187,7 +187,10 @@ public partial class WebSocketModel : ObservableObject{
       ExceptionHandler.PrintExceptionMessage(ex);
     }
   }
-  public void Close() {
-    Cancellation.Cancel();
+  ~WebSocketModel() {
+    if (PollingTask is not null) {
+      Cancellation.Cancel();
+      PollingTask.Wait();
+    }
   }
 }
