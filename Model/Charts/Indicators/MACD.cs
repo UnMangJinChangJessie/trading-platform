@@ -9,6 +9,7 @@ public class MovingAverageConvergenceDivergence : Indicator {
   public override string LegendText => $"MACD({Lookback_1}, {Lookback_2})";
   public class MacdResult : IIndicatorResult {
     public DateTime Date { get; set; }
+    public TimeSpan Span { get; set; }
     public double Average_1 { get; set; }
     public double Average_2 { get; set; }
     public double Value { get; set; }
@@ -56,63 +57,35 @@ public class MovingAverageConvergenceDivergence : Indicator {
       ResetUpdateTime();
     }
     if (RenderingResults.Length == 0) return;
-    if (rp.Plot.Axes.ContinuouslyAutoscale) {
-      rp.Plot.Axes.ContinuousAutoscaleAction.Invoke(rp);
-    }
-    var rectValues = RenderingResults
+    var bars = RenderingResults
       .Where(x => {
         var date = x.Date.ToOADate();
         var range = rp.Plot.Axes.GetLimits().HorizontalRange;
         var margin = 5 * BaseChart.TimeSpan.TotalDays;
         return range.Min - margin <= date && date <= range.Max + margin;
       })
-      .Select(x => {
-        var pixelTopLeft = rp.Plot.GetPixel(new Coordinates(x.Date.ToOADate() - BaseChart.TimeSpan.TotalDays / 2, Math.Max(0.0, x.Value)));
-        var pixelBottomRight = rp.Plot.GetPixel(new Coordinates(x.Date.ToOADate() + BaseChart.TimeSpan.TotalDays / 2, Math.Min(0.0, x.Value)));
-        return (
-          new ScottPlot.PixelRect(left: pixelTopLeft.X, right: pixelBottomRight.X, top: pixelTopLeft.Y, bottom: pixelBottomRight.Y),
-          x.Value
-        );
-      });
-    if (!rectValues.Any()) return;
-    var previousValue = 0.0;
-    foreach (var (rect, value) in rectValues) {
-      var fill = value >= 0 ?
-        (previousValue < value ? BarStyle.PositiveBarIncreasingFill : BarStyle.PositiveBarDecreasingFill) :
-        (previousValue < value ? BarStyle.NegativeBarIncreasingFill : BarStyle.NegativeBarDecreasingFill);
-      var line = value >= 0 ?
-        (previousValue < value ? BarStyle.PositiveBarIncreasingLine : BarStyle.PositiveBarDecreasingLine) :
-        (previousValue < value ? BarStyle.NegativeBarIncreasingLine : BarStyle.NegativeBarDecreasingLine);
-      Drawing.FillRectangle(rp.Canvas, rect, rp.Paint, fill);
-      Drawing.DrawPath(rp.Canvas, rp.Paint, [rect.BottomLeft, rect.BottomRight, rect.TopRight, rect.TopLeft], line, close: true);
+      .Select(x => new Bar() { Value = x.Value, Position = x.Date.ToOADate(), Size = x.Span.TotalDays });
+    if (!bars.Any()) return;
+    foreach (Bar bar in bars) {
+      bar.RenderBody(rp, Axes, rp.Paint);
     }
-    Drawing.DrawLine(
-      canvas: rp.Canvas,
-      paint: rp.Paint,
-      pt1: rp.Plot.GetPixel(coordinates: new(RenderingResults[0].Date.ToOADate(), 0)),
-      pt2: rp.Plot.GetPixel(coordinates: new(RenderingResults[^1].Date.ToOADate(), 0)),
-      color: Colors.Black
-    );
   }
   public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     lock (BaseResults) {
       BaseResults.Clear();
-      double alpha_1 = 2.0 / (Lookback_1 + 1);
-      double alpha_2 = 2.0 / (Lookback_2 + 1);
       var chart = args.WholeCandles;
       for (int i = 0; i < chart.Count; i++) {
         var candle = chart[i];
         var close = (double)candle.Close;
         var result = GetExtensionMacd(i, close);
         result.Date = candle.Date;
+        result.Span = candle.Span;
         BaseResults.Add(result);
       }
     }
     base.Reset(sender, args);
   }
   public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
-    double alpha_1 = 2.0 / (Lookback_1 + 1);
-    double alpha_2 = 2.0 / (Lookback_2 + 1);
     lock (BaseResults) {
       if (BaseResults.Count == 0) return;
       var count = BaseResults.Count;
@@ -120,11 +93,13 @@ public class MovingAverageConvergenceDivergence : Indicator {
       var date = args.Candle.Date;
       if (args.IsAppending) {
         var result = GetExtensionMacd(count, close);
+        result.Span = args.Candle.Span;
         result.Date = date;
         BaseResults.Add(result);
       }
       else {
         BaseResults[^1].Value = GetExtensionMacd(count - 1, close).Value;
+        BaseResults[^1].Span = args.Candle.Span;
       }
     }
     base.UpdateEnd(sender, args);

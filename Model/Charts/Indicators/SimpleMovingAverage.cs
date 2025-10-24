@@ -7,6 +7,7 @@ public class SimpleMovingAverage : Indicator {
   public override string LegendText => $"SMA({Lookback})";
   public class SmaResult : IIndicatorResult {
     public DateTime Date { get; set; }
+    public TimeSpan Span { get; set; }
     public double Close { get; set; }
     public double Value { get; set; }
   };
@@ -49,23 +50,11 @@ public class SimpleMovingAverage : Indicator {
       ResetUpdateTime();
     }
     if (RenderingResults.Length == 0) return;
-    if (rp.Plot.Axes.ContinuouslyAutoscale) {
-      rp.Plot.Axes.ContinuousAutoscaleAction.Invoke(rp);
-    }
     // Want to assume that the candles are already sorted by dates but...
     // Also, the base collection can be modified by another thread.
-    IEnumerable<Pixel> pixels = RenderingResults
-      .Where(x => {
-        var date = x.Date.ToOADate();
-        var range = rp.Plot.Axes.GetLimits().HorizontalRange;
-        var margin = 5 * BaseChart.TimeSpan.TotalDays;
-        return range.Min - margin <= date && date <= range.Max + margin;
-      })
-      .Where(x => double.IsFinite(x.Value))
+    IEnumerable<Pixel> pixels = RenderingResults.Where(x => double.IsFinite(x.Value))
       .Select(x => rp.Plot.GetPixel(
-        new Coordinates((double)x.Date.ToOADate(), (double)x.Value),
-        rp.Plot.Axes.Bottom,
-        rp.Plot.Axes.Left
+        new Coordinates((double)x.Date.ToOADate(), (double)x.Value)
       ));
     Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
   }

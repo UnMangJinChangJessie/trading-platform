@@ -9,6 +9,7 @@ public class ExponentialMovingAverage : Indicator {
   public override string LegendText => $"EMA({Lookback})";
   public class EmaResult : IIndicatorResult {
     public DateTime Date { get; set; }
+    public TimeSpan Span { get; set; }
     public double Value { get; set; }
   };
   public int Lookback {
@@ -66,7 +67,6 @@ public class ExponentialMovingAverage : Indicator {
     Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
   }
   public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
-    double alpha = 2.0 / (1.0 + Lookback);
     lock (MovingAverage) {
       MovingAverage.Clear();
       var chart = args.WholeCandles;
@@ -81,7 +81,6 @@ public class ExponentialMovingAverage : Indicator {
     base.Reset(sender, args);
   }
   public override void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
-    double alpha = 2.0 / (1.0 + Lookback);
     lock (MovingAverage) {
       if (MovingAverage.Count == 0) return;
       var date = args.Candle.Date;

@@ -6,32 +6,38 @@ namespace trading_platform.Model.Charts;
 
 public static class ContinuouslyAutoscaleExtensions {
   public static void ContinuouslyAutoscaleAction(this CandlestickChartPlot plottable, RenderPack rp) {
-    var candles = plottable.MainPlot.Data;
+    var candles = plottable.Data.GetOHLCs();
     if (candles.Count == 0) return;
-    var range = rp.Plot.Grid.XAxis.Range;
-    var beginIdx = candles.BinarySearch(range.Min, x => x.Date.ToOADate());
+    var range = rp.Plot.Axes.GetLimits();
+    var beginIdx = candles.BinarySearch(range.Left, x => x.DateTime.ToOADate());
     if (beginIdx < 0) beginIdx = ~beginIdx;
-    var endIdx = plottable.RenderingResults.BinarySearch(range.Max, x => x.Date.ToOADate());
+    var endIdx = candles.BinarySearch(range.Right, x => x.DateTime.ToOADate());
     if (endIdx < 0) endIdx = ~endIdx;
     if (beginIdx == endIdx) return;
-    var (min, max) = plottable.RenderingResults[beginIdx..endIdx].Aggregate(
-      (Min: plottable.RenderingResults[beginIdx].Value, Max: plottable.RenderingResults[beginIdx].Value),
-      (prev, x) => (Math.Min(prev.Min, x.Value), Math.Max(prev.Max, x.Value))
+    var (min, max) = candles.Skip(beginIdx).Take(endIdx - beginIdx).Aggregate(
+      (Min: candles[beginIdx].Low, Max: candles[beginIdx].High),
+      (prev, x) => (Math.Min(prev.Min, x.Low), Math.Max(prev.Max, x.High))
     );
-    rp.Plot.Axes.SetLimitsY(min, max);
+    // rp.Plot.Axes.SetLimitsY(min, max);
+    var bottom = min * 1.05 - max * 0.05;
+    var top = min * (-0.05) + max * 1.05;
+    rp.Plot.Axes.SetLimitsY(bottom, top);
   }
   public static void ContinuouslyAutoscaleAction(this Indicator plottable, RenderPack rp) {
-    if (plottable.RenderingResults.Length == 0) return;
-    var range = rp.Plot.Grid.XAxis.Range;
-    var beginIdx = plottable.RenderingResults.BinarySearch(range.Min, x => x.Date.ToOADate());
+    var results = plottable.RenderingResults;
+    if (results.Length == 0) return;
+    var range = rp.Plot.Axes.GetLimits();
+    var beginIdx = results.BinarySearch(range.Left, x => x.Date.ToOADate());
     if (beginIdx < 0) beginIdx = ~beginIdx;
-    var endIdx = plottable.RenderingResults.BinarySearch(range.Max, x => x.Date.ToOADate());
+    var endIdx = results.BinarySearch(range.Right, x => x.Date.ToOADate());
     if (endIdx < 0) endIdx = ~endIdx;
     if (beginIdx == endIdx) return;
     var (min, max) = plottable.RenderingResults[beginIdx..endIdx].Aggregate(
       (Min: plottable.RenderingResults[beginIdx].Value, Max: plottable.RenderingResults[beginIdx].Value),
       (prev, x) => (Math.Min(prev.Min, x.Value), Math.Max(prev.Max, x.Value))
     );
-    rp.Plot.Axes.SetLimitsY(min, max);
+    var bottom = min * 1.05 - max * 0.05;
+    var top = min * (-0.05) + max * 1.05;
+    rp.Plot.Axes.SetLimitsY(bottom, top, rp.Plot.Grid.YAxis);
   }
 }

@@ -77,16 +77,20 @@ public partial class CandlestickChartData : ObservableObject {
     }
   }
   public void ExtendBegin(IEnumerable<ChartOHLC> ohlcs, bool assumeSorted = false) {
-    ImmutableList<ChartOHLC> sorted = assumeSorted ? [.. ohlcs] : [.. ohlcs
+    ImmutableList<ChartOHLC> sorted = assumeSorted ? [.. ohlcs
       .Select(x => {
-        var candle = new ChartOHLC() { Date = Floor(x.Date, Span) };
-        candle.CopyOHLCFrom(x);
+        var candle = new ChartOHLC(x.Open, x.High, x.Low, x.Close) { Volume = x.Volume, Amount = x.Amount, Date = Floor(x.Date, Span) };
+        candle.Span = Ceiling(x.Date, Span) - candle.Date;
         return candle;
-      })
-      .OrderByDescending(x => x.Date)
-    ];
+      })] :
+      [.. ohlcs
+        .Select(x => {
+          var candle = new ChartOHLC(x.Open, x.High, x.Low, x.Close) { Volume = x.Volume, Amount = x.Amount, Date = Floor(x.Date, Span) };
+          candle.Span = Ceiling(x.Date, Span) - candle.Date;
+          return candle;
+        })
+        .OrderByDescending(x => x.Date)];
     lock (Candles) {
-      if (Candles.Count != 0 && sorted[^1].Date >= Candles[0].Date) return;
       for (int i = 0; i < sorted.Count; i++) {
         Candles.Insert(0, sorted[i]);
       }
@@ -95,10 +99,10 @@ public partial class CandlestickChartData : ObservableObject {
   public void UpdateEnd(ChartOHLC ohlc) {
     bool inserted;
     lock (Candles) {
-      ChartOHLC inserting = new() { Date = Floor(ohlc.Date, Span) };
-      inserting.CopyOHLCFrom(ohlc);
+      ChartOHLC inserting = new(ohlc.Open, ohlc.High, ohlc.Low, ohlc.Close) { Volume = ohlc.Volume, Amount = ohlc.Amount, Date = Floor(ohlc.Date, Span) };
+      inserting.Span = Ceiling(ohlc.Date, Span) - inserting.Date;
       if (Candles[^1].Date == inserting.Date) {
-        Candles[^1].CopyOHLCFrom(ohlc);
+        Candles[^1] = inserting;
         inserted = false;
       }
       else {
@@ -131,6 +135,28 @@ public partial class CandlestickChartData : ObservableObject {
       CandlePeriod.Weekly => GetMostRecentMonday(dt),
       CandlePeriod.Monthly => new(year: dt.Year, month: dt.Month, day: 1),
       CandlePeriod.Yearly => new(year: dt.Year, month: 1, day: 1),
+      _ => throw new ArgumentException("Invalid CandlePeriod value.")
+    };
+    static DateTime GetMostRecentMonday(DateTime date) {
+      var result = date.Date;
+      while (result.DayOfWeek != DayOfWeek.Monday) {
+        result = result.AddDays(-1);
+      }
+      return result;
+    }
+  }
+  private static DateTime Ceiling(DateTime dt, CandlePeriod period) {
+    return period switch {
+      CandlePeriod.Minutes_1 => new DateTime(year: dt.Year, month: dt.Month, day: dt.Day, hour: dt.Hour, minute: dt.Minute + 1, second: 0).AddMinutes(1).AddTicks(-1),
+      CandlePeriod.Minutes_5 => new DateTime(year: dt.Year, month: dt.Month, day: dt.Day, hour: dt.Hour, minute: dt.Minute / 5 * 5, second: 0).AddMinutes(5).AddTicks(-1),
+      CandlePeriod.Minutes_10 => new DateTime(year: dt.Year, month: dt.Month, day: dt.Day, hour: dt.Hour, minute: dt.Minute / 10 * 10, second: 0).AddMinutes(10).AddTicks(-1),
+      CandlePeriod.Minutes_15 => new DateTime(year: dt.Year, month: dt.Month, day: dt.Day, hour: dt.Hour, minute: dt.Minute / 15 * 15, second: 0).AddMinutes(15).AddTicks(-1),
+      CandlePeriod.Minutes_30 => new DateTime(year: dt.Year, month: dt.Month, day: dt.Day, hour: dt.Hour, minute: dt.Minute / 30 * 30, second: 0).AddMinutes(30).AddTicks(-1),
+      CandlePeriod.Hourly => new DateTime(year: dt.Year, month: dt.Month, day: dt.Day, hour: dt.Hour, minute: 0, second: 0).AddHours(1).AddTicks(-1),
+      CandlePeriod.Daily => dt.Date.AddDays(1),
+      CandlePeriod.Weekly => GetMostRecentMonday(dt).AddDays(7).AddTicks(-1),
+      CandlePeriod.Monthly => new DateTime(year: dt.Year + dt.Month / 12, month: dt.Month % 12 + 1, day: 1).AddTicks(-1), 
+      CandlePeriod.Yearly => new DateTime(year: dt.Year + 1, month: 1, day: 1).AddTicks(-1),
       _ => throw new ArgumentException("Invalid CandlePeriod value.")
     };
     static DateTime GetMostRecentMonday(DateTime date) {

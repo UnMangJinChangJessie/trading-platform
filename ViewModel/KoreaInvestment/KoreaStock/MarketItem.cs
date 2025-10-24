@@ -43,7 +43,6 @@ public partial class MarketItem : MarketItemBase {
       Debug.WriteLine($"[{result.ResponseMessageCode}, {nameof(OnReceivedChart)}] {result.ResponseMessage}");
       return;
     }
-    if (!result.Chart!.Any()) return;
     // 캔들은 일자 기준 내림차순으로 정렬되어 주어짐
     lock (ItemChart) {
       ItemChart.ExtendBegin(result.Chart!.Select(x => new Model.ChartOHLC(x.Open, x.High, x.Low, x.Close) {
@@ -52,7 +51,8 @@ public partial class MarketItem : MarketItemBase {
         Date = x.Date.ToDateTime(TimeOnly.MinValue)
       }), assumeSorted: true);
     }
-    if ((bool)args!) {
+    var (inquireFrom, inquireTo) = (ValueTuple<DateOnly, DateOnly>)args!;
+    if (!result.Chart!.Any() || inquireFrom == result.Chart!.LastOrDefault()?.Date) {
       lock (ItemChart) {
         ItemChart.NotifyLoadComplete();
       }
@@ -75,6 +75,22 @@ public partial class MarketItem : MarketItemBase {
       // 실시간 체결 데이터 요청
       WebSocketKeys = (TransactionId, ItemLabel.Ticker);
       await Api!.WebSocketClient.Subscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key, OnReceivedRealtimeConclusion);
+    }
+    else {
+      inquireTo = result.Chart!.Last().Date.AddDays(-1);
+      GetChart(
+        Api.ApiClient,
+        new ChartQueries() {
+          Ticker = ItemLabel.Ticker,
+          Exchange = Exchange.DomesticUnified,
+          CandlePeriod = ItemChart.Span.ToKisCandlePeriod(),
+          From = inquireFrom,
+          To = inquireTo,
+          Adjusted = true,
+        },
+        OnReceivedChart,
+        (From: inquireFrom, To: inquireTo)
+      );
     }
   }
   public void OnReceivedRealtimeConclusion(object? sender, WebSocketModel.MessageReceivedEventArgs args) {
@@ -126,26 +142,21 @@ public partial class MarketItem : MarketItemBase {
     }
   }
   private void SendChartRefreshRequests() {
-    var from = ItemChart.ChartDateBegin?.DateTime.Date?? DateTime.Today.AddDays(-280);
-    var to = ItemChart.ChartDateEnd?.DateTime.Date ?? DateTime.Today;
-    do {
-      var newTo = to.AddDays(-140);
-      var currentFrom = newTo.AddDays(1);
-      currentFrom = from < currentFrom ? currentFrom : from;
-      // from부터 to까지 주어진 기간을 140일 단위로 나누어 수신함.
-      GetChart(
-        Api.ApiClient,
-        new ChartQueries() {
-          Ticker = ItemLabel.Ticker,
-          Exchange = Exchange.DomesticUnified,
-          CandlePeriod = ItemChart.Span.ToKisCandlePeriod(),
-          From = DateOnly.FromDateTime(currentFrom),
-          To = DateOnly.FromDateTime(to),
-          Adjusted = true,
-        }, OnReceivedChart, from > newTo);
-      to = newTo;
-    }
-    while (from <= to);
+    DateOnly from = DateOnly.FromDateTime(ItemChart.ChartDateBegin?.DateTime ?? DateTime.Today.AddDays(-280));
+    DateOnly to = DateOnly.FromDateTime(ItemChart.ChartDateEnd?.DateTime.Date ?? DateTime.Today);
+    GetChart(
+      Api.ApiClient,
+      new ChartQueries() {
+        Ticker = ItemLabel.Ticker,
+        Exchange = Exchange.DomesticUnified,
+        CandlePeriod = ItemChart.Span.ToKisCandlePeriod(),
+        From = from,
+        To = to,
+        Adjusted = true,
+      },
+      OnReceivedChart,
+      (From: from, To: to)
+    );
   }
   public override void Refresh() {
     if (Api == null) return;

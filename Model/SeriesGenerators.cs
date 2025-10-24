@@ -35,7 +35,8 @@ public static partial class Generators {
           Math.Round((decimal)price, 2)
         ) {
           Volume = (int)volumes[i],
-          Date = time
+          Date = time,
+          Span = TimeSpan.FromDays(1)
         };
         time += interval;
       }

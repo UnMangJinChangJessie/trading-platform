@@ -5,6 +5,7 @@ namespace trading_platform.Model.Charts;
 
 public interface IIndicatorResult {
   public DateTime Date { get; set; }
+  public TimeSpan Span { get; set; }
   public double Value { get; set; }
 }
 

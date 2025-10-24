@@ -13,6 +13,7 @@ public partial class CandlestickChart : UserControl {
   private int? DraggingDividerIndex;
   public CandlestickChart() {
     InitializeComponent();
+    PriceChart.UserInputProcessor.LeftClickDragPan(enable: true, horizontal: true, vertical: false);
     PriceChart.Plot.Font.Set("Gowun Dodum");
     PriceChart.Menu?.Add("Show/Hide Grid", plot => {
       plot.Grid.XAxisStyle.IsVisible = !plot.Grid.XAxisStyle.IsVisible;
@@ -39,36 +40,31 @@ public partial class CandlestickChart : UserControl {
     var meow = new CandlestickChartPlot(CastedDataContext);
     PriceChart.Multiplot.Reset(meow);
     meow.PlotControl = PriceChart;
-    meow.MainPlot.RisingColor = Colors.LightPink;
-    meow.MainPlot.FallingColor = Colors.LightBlue;
-    meow.MainPlot.Axes.XAxis = meow.Axes.Bottom;
-    meow.MainPlot.Axes.YAxis = meow.Axes.Right;
-    meow.PriceHorizontalLine.Axes.XAxis = meow.Axes.Bottom;
-    meow.PriceHorizontalLine.Axes.YAxis = meow.Axes.Right;
-    meow.PriceHorizontalLine.LabelRotation = 0;
+    meow.RisingFillStyle.Color = Colors.LightPink;
+    meow.RisingLineStyle.Color = Colors.LightPink;
+    meow.FallingFillStyle.Color = Colors.LightBlue;
+    meow.FallingLineStyle.Color = Colors.LightBlue;
     meow.DataBackground.Color = Colors.Transparent;
     meow.FigureBackground.Color = Colors.Transparent;
-    // lock 횟수를 줄여 성능을 개선하기 전까지 Y축 조정을 비활성화 함
-    meow.Axes.ContinuouslyAutoscale = true;
-    meow.Axes.ContinuousAutoscaleAction = meow.ContinuouslyAutoscaleAction;
     int[] periods = [10, 20, 30, 60, 120, 200];
     Color[] colors = [Colors.Red, Colors.OrangeRed, Colors.Yellow, Colors.GreenYellow, Colors.Indigo, Colors.Violet]; 
     foreach (var (period, color) in periods.Zip(colors)) {
       var sma = new SimpleMovingAverage(CastedDataContext, period);
       sma.LineStyle.Color = color;
-      sma.Axes.XAxis = meow.Axes.Bottom;
-      sma.Axes.YAxis = meow.Axes.Right;
       meow.Add.Plottable(sma);
     }
+    meow.Axes.ContinuouslyAutoscale = true;
+    meow.Axes.ContinuousAutoscaleAction = meow.ContinuouslyAutoscaleAction;
   }
   private void ConfigureVolumeChart() {
     if (CastedDataContext == null) return;
     var plot = PriceChart.Multiplot.AddPlot();
     var volume = new Volume(CastedDataContext);
     plot.Add.Plottable(volume);
+    plot.Grid.XAxis = plot.Axes.Bottom;
     plot.Grid.YAxis = plot.Axes.Right;
-    // plot.Axes.ContinuouslyAutoscale = true;
-    // plot.Axes.ContinuousAutoscaleAction = volume.ContinuouslyAutoscaleAction;
+    plot.Axes.ContinuouslyAutoscale = true;
+    plot.Axes.ContinuousAutoscaleAction = volume.ContinuouslyAutoscaleAction;
     volume.Axes.XAxis = plot.Axes.Bottom;
     volume.Axes.YAxis = plot.Axes.Right;
   }

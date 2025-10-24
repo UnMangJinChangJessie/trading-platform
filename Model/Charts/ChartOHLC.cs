@@ -6,6 +6,8 @@ public partial class ChartOHLC : ObservableObject, IComparable<ChartOHLC> {
   [ObservableProperty]
   public partial DateTime Date { get; set; }
   [ObservableProperty]
+  public partial TimeSpan Span { get; set; }
+  [ObservableProperty]
   public partial decimal Open { get; set; } = default!;
   [ObservableProperty]
   public partial decimal High { get; set; } = default!;
@@ -37,6 +39,6 @@ public partial class ChartOHLC : ObservableObject, IComparable<ChartOHLC> {
     (Volume, Amount) = (ohlc.Volume, ohlc.Amount);
   }
   public ScottPlot.OHLC ScottPlotCandle => new ScottPlot.OHLC((double)Open, (double)High, (double)Low, (double)Close) {
-    DateTime = Date
+    DateTime = Date, TimeSpan = Span
   };
 }
