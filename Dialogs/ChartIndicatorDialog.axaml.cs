@@ -76,7 +76,7 @@ public partial class ChartIndicatorDialog : Window {
         ParameterModificationGrid.Children.Add(label);
 
         var input = new NumericUpDown();
-        input.Bind(NumericUpDown.TextProperty, new Binding(name, BindingMode.Default) { Source = indicator });
+        input.Bind(NumericUpDown.TextProperty, new Binding(name, BindingMode.TwoWay) { Source = indicator });
         Grid.SetRow(input, rowIdx);
         Grid.SetColumn(input, 1);
         ParameterModificationGrid.Children.Add(input);

@@ -14,6 +14,7 @@ public partial class AverageTrueRange : Indicator {
   }
   private List<AtrResult> BaseResults { get; set; }
   public override IEnumerable<IIndicatorResult> Results => BaseResults;
+  [IndicatorParameter(ParameterName = "기간")]
   public int Lookback {
     get => field;
     set {
