@@ -33,6 +33,7 @@ public class SimpleMovingAverage : Indicator {
     AntiAlias = true,
     Width = 1,
   };
+  public override bool IsPriceOverlay => true;
   public SimpleMovingAverage(CandlestickChartData data, int lookback) : base(data) {
     RenderingResults = [];
     MovingAverage = [];

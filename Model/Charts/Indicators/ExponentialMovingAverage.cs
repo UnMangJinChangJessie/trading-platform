@@ -31,6 +31,7 @@ public class ExponentialMovingAverage : Indicator {
     AntiAlias = true,
     Width = 1,
   };
+  public override bool IsPriceOverlay => true;
   public ExponentialMovingAverage(CandlestickChartData data, int lookback) : base(data) {
     RenderingResults = [];
     MovingAverage = [];
@@ -98,6 +99,6 @@ public class ExponentialMovingAverage : Indicator {
   }
   internal EmaResult GetExtensionEma(int insertingIndex, double close) {
     if (insertingIndex == 0) return new EmaResult() { Value = close };
-    else return new EmaResult() { Value = double.Lerp(MovingAverage[insertingIndex].Value, close, 2.0 / (1 + Lookback)) };
+    else return new EmaResult() { Value = double.Lerp(MovingAverage[insertingIndex - 1].Value, close, 2.0 / (1 + Lookback)) };
   }
 }

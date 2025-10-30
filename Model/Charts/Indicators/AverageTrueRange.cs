@@ -24,7 +24,10 @@ public partial class AverageTrueRange : Indicator {
     }
   }
   public LineStyle LineStyle { get; private set; }
+  public override string LegendText => $"ATR({Lookback})";
   public AverageTrueRange(CandlestickChartData chart, int lookback) : base(chart) {
+    RenderingResults = [];
+    BaseResults = [];
     Lookback = lookback;
     LineStyle = new(1.0F, Colors.DarkRed);
   }
@@ -104,6 +107,6 @@ public partial class AverageTrueRange : Indicator {
     else return Enumerable.Max<double>([high - low, Math.Abs(high - prevClose.Value), Math.Abs(low - prevClose.Value)]);
   }
   private double GetExtensionAverageTrueRange(int insertingIndex, double tr) {
-    return insertingIndex == 0 ? tr : double.Lerp(BaseResults[insertingIndex].Value, tr, 1.0 / Lookback);
+    return insertingIndex == 0 ? tr : double.Lerp(BaseResults[insertingIndex - 1].Value, tr, 1.0 / Lookback);
   }
 }

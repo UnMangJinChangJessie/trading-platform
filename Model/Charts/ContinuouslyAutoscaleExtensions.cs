@@ -32,12 +32,12 @@ public static class ContinuouslyAutoscaleExtensions {
     var endIdx = results.BinarySearch(range.Right, x => x.Date.ToOADate());
     if (endIdx < 0) endIdx = ~endIdx;
     if (beginIdx == endIdx) return;
-    var (min, max) = plottable.RenderingResults[beginIdx..endIdx].Aggregate(
-      (Min: plottable.RenderingResults[beginIdx].Value, Max: plottable.RenderingResults[beginIdx].Value),
+    var (min, max) = results[beginIdx..endIdx].Aggregate(
+      (Min: results[beginIdx].Value, Max: results[beginIdx].Value),
       (prev, x) => (Math.Min(prev.Min, x.Value), Math.Max(prev.Max, x.Value))
     );
     var bottom = min * 1.05 - max * 0.05;
     var top = min * (-0.05) + max * 1.05;
-    rp.Plot.Axes.SetLimitsY(bottom, top, rp.Plot.Grid.YAxis);
+    rp.Plot.Axes.SetLimitsY(bottom, top);
   }
 }

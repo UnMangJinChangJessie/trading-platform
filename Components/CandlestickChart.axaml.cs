@@ -21,9 +21,11 @@ public partial class CandlestickChart : UserControl {
   private CandlestickChartData? CastedDataContext => DataContext as CandlestickChartData;
   private Plot? _volumePlot;
   private CandlestickChartPlot? _candlestickPlot;
+  private ScottPlot.MultiplotLayouts.DraggableRows _chartLayout;
   private int? DraggingDividerIndex;
   public CandlestickChart() {
     InitializeComponent();
+    _chartLayout = new();
     PriceChart.Plot.Font.Set("Gowun Dodum");
     PriceChart.Menu?.Add("Show/Hide Grid", plot => {
       plot.Grid.XAxisStyle.IsVisible = !plot.Grid.XAxisStyle.IsVisible;
@@ -48,7 +50,6 @@ public partial class CandlestickChart : UserControl {
     _candlestickPlot.FallingLineStyle.Color = Colors.LightBlue;
     _candlestickPlot.DataBackground.Color = Colors.Transparent;
     _candlestickPlot.FigureBackground.Color = Colors.Transparent;
-    int[] periods = [10, 20, 30, 60, 120, 200];
     Color[] colors = [Colors.Red, Colors.OrangeRed, Colors.Yellow, Colors.GreenYellow, Colors.Indigo, Colors.Violet]; 
     _candlestickPlot.Axes.ContinuouslyAutoscale = true;
     _candlestickPlot.Axes.ContinuousAutoscaleAction = _candlestickPlot.ContinuouslyAutoscaleAction;
@@ -65,14 +66,14 @@ public partial class CandlestickChart : UserControl {
     _volumePlot.Axes.ContinuousAutoscaleAction = plottable.ContinuouslyAutoscaleAction;
   }
   private void ConfigureLayout() {
-    var layout = new ScottPlot.MultiplotLayouts.DraggableRows() {
+    _chartLayout = new ScottPlot.MultiplotLayouts.DraggableRows() {
       ExpandingPlotIndex = 0,
       SnapDistance = 2,
       MinimumHeight = 50,
     };
     PriceChart.PointerPressed += (sender, args) => {
       var y = (float)args.GetPosition(PriceChart).Y;
-      var divider = layout.GetDivider(y);
+      var divider = _chartLayout.GetDivider(y);
       DraggingDividerIndex = divider;
       PriceChart.UserInputProcessor.IsEnabled = divider is null;
     };
@@ -83,17 +84,17 @@ public partial class CandlestickChart : UserControl {
     PriceChart.PointerMoved += (sender, args) => {
       var y = (float)args.GetPosition(PriceChart).Y;
       if (DraggingDividerIndex != null) {
-        layout.SetDivider(DraggingDividerIndex.Value, y);
+        _chartLayout.SetDivider(DraggingDividerIndex.Value, y);
         PriceChart.Refresh();
       }
       else {
-        var divider = layout.GetDivider(y);
+        var divider = _chartLayout.GetDivider(y);
         Cursor = new Avalonia.Input.Cursor(
           divider != null ? Avalonia.Input.StandardCursorType.SizeNorthSouth : Avalonia.Input.StandardCursorType.Arrow
         );
       }
     };
-    PriceChart.Multiplot.Layout = layout;
+    PriceChart.Multiplot.Layout = _chartLayout;
     var background = new Color((Background as Avalonia.Media.SolidColorBrush)?.Color.ToSKColor() ?? SkiaSharp.SKColors.Black);
     foreach (var plot in PriceChart.Multiplot.GetPlots()) {
       plot.Layout.Fixed(padding: new(10, 60, 0, 0));
@@ -102,20 +103,17 @@ public partial class CandlestickChart : UserControl {
       plot.Grid.MajorLineColor = Color.InterpolateRgb(plot.Grid.MajorLineColor, background, 0.7);
       plot.Grid.MinorLineColor = Color.InterpolateRgb(plot.Grid.MajorLineColor, background, 0.99);
     }
-    PriceChart.Multiplot.GetPlots()[0].Layout.Fixed(padding: new(10, 60, 60, 0));
-    PriceChart.Multiplot.GetPlots()[0].Axes.AutoScale();
+    PriceChart.Multiplot.GetPlots()[^1].Layout.Fixed(padding: new(10, 60, 60, 0));
+    PriceChart.Multiplot.GetPlots()[^1].Axes.AutoScale();
   }
   private void ConfigureBottomAxis() {
     var plots = PriceChart.Multiplot.GetPlots();
     var lastPlot = plots[^1];
     lastPlot.Axes.DateTimeTicksBottom();
-    foreach (var plot in plots.SkipLast(1)) {
-      plot.Grid.XAxis = lastPlot.Axes.Bottom;
-    }
     foreach (var plot in plots) {
       plot.Axes.Color(new Color((Foreground as Avalonia.Media.SolidColorBrush)?.Color.ToSKColor() ?? SkiaSharp.SKColors.Black));
     }
-    PriceChart.Multiplot.SharedAxes.ShareX(PriceChart.Multiplot.GetPlots());
+    PriceChart.Multiplot.SharedAxes.ShareX(plots);
     PriceChart.Multiplot.CollapseVertically();
     PriceChart.UserInputProcessor.LeftClickDragPan(enable: true, horizontal: true, vertical: false);
   }
@@ -125,13 +123,13 @@ public partial class CandlestickChart : UserControl {
   private void AmountToggle_Checked(object? sender, RoutedEventArgs args) {
     
   }
-  private void ConfigureIndicators(object? sender, RoutedEventArgs args) {
+  private async void ConfigureIndicators(object? sender, RoutedEventArgs args) {
     var dialog = new ChartIndicatorDialog() {
       DataContext = CastedDataContext,
       Title = "보조지표 설정",
     };
     if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime) {
-      dialog.ShowDialog<int>(lifetime.MainWindow!);
+      await dialog.ShowDialog<int>(lifetime.MainWindow!);
     }
     if (CastedDataContext == null) return;
     PriceChart.Multiplot.Reset();
@@ -143,11 +141,17 @@ public partial class CandlestickChart : UserControl {
       }
       else {
         var plot = PriceChart.Multiplot.AddPlot();
+        plot.Grid.XAxis = plot.Axes.Bottom;
+        plot.Grid.YAxis = plot.Axes.Right;
+        plot.Axes.DefaultGrid = plot.Grid;
         plot.Add.Plottable(indicator);
+        plot.Axes.ContinuouslyAutoscale = true;
+        plot.Axes.ContinuousAutoscaleAction = indicator.ContinuouslyAutoscaleAction;
       }
     }
     ConfigureLayout();
     ConfigureBottomAxis();
+    PriceChart.InvalidateVisual();
   }
   private void PrintHello(object? sender, RoutedEventArgs args) {
     Debug.WriteLine("Meow :3");
