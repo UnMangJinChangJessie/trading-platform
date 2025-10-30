@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
+using System.ComponentModel;
 using ScottPlot;
 
 namespace trading_platform.Model.Charts.Indicators;
 
+[Description("단순이동평균")]
 public class SimpleMovingAverage : Indicator {
   public override string LegendText => $"SMA({Lookback})";
   public class SmaResult : IIndicatorResult {
@@ -11,13 +13,15 @@ public class SimpleMovingAverage : Indicator {
     public double Close { get; set; }
     public double Value { get; set; }
   };
+  [IndicatorParameter(ParameterName = "기간")]
   public int Lookback {
     get => field;
     set {
       ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
       if (field != value) {
         field = value;
-        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
+        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles] });
+        OnPropertyChanged(nameof(Lookback));
       }
     }
   }

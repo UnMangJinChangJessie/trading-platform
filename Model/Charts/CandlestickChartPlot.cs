@@ -77,14 +77,22 @@ public class CandlestickChartPlot : Plot {
   public IOHLCSource Data => MainPlot.Data;
 
   public CandlestickChartPlot(CandlestickChartData data) {
+    Axes.Left.RemoveTickGenerator();
+    Axes.Right.TickGenerator = new ScottPlot.TickGenerators.NumericAutomatic();
+    Grid.XAxis = Axes.Bottom;
+    Grid.YAxis = Axes.Right;
+    Axes.DefaultGrid = Grid;
     BaseChart = data;
     BaseChart.Loaded += OnLoaded;
     BaseChart.UpdatedEnd += OnUpdatedEnd;
     MainPlot = new(data);
+    // MainPlot.Axes.XAxis = Axes.Bottom;
+    // MainPlot.Axes.YAxis = Axes.Right;
     PriceHorizontalLine = Add.HorizontalLine((double)(data[0]?.Close ?? 0), width: 1, color: Colors.Gray, pattern: LinePattern.DenselyDashed);
+    // PriceHorizontalLine.Axes.XAxis = Axes.Bottom;
+    // PriceHorizontalLine.Axes.YAxis = Axes.Right;
     Add.Plottable(MainPlot);
     Add.Plottable(PriceHorizontalLine);
-    Axes.DefaultGrid = new(Axes.Bottom, Axes.Right);
     PriceHorizontalLine.LabelAlignment = Alignment.MiddleLeft;
     PriceHorizontalLine.LabelFontColor = Colors.White;
     PriceHorizontalLine.LabelOppositeAxis = true;

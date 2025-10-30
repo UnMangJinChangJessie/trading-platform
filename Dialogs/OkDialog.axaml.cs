@@ -7,21 +7,6 @@ namespace trading_platform.Dialogs;
 
 public partial class OkDialog {
   /// <summary>
-  /// Title StyledProperty definition
-  /// indicates the title of the dialog.
-  /// </summary>
-  public static readonly StyledProperty<string> TitleProperty =
-      AvaloniaProperty.Register<OkDialog, string>(nameof(Title));
-
-  /// <summary>
-  /// Gets or sets the Title property. This StyledProperty
-  /// indicates the title of the dialog.
-  /// </summary>
-  public string Title {
-    get => this.GetValue(TitleProperty);
-    set => SetValue(TitleProperty, value);
-  }
-  /// <summary>
   /// Message StyledProperty definition
   /// indicates the dialog text.
   /// </summary>

@@ -1,7 +1,14 @@
 using System.Collections.Immutable;
+using CommunityToolkit.Mvvm.ComponentModel;
 using ScottPlot;
 
 namespace trading_platform.Model.Charts;
+
+[AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = false)]
+sealed class IndicatorParameterAttribute : Attribute
+{
+  public required string ParameterName;
+}
 
 public interface IIndicatorResult {
   public DateTime Date { get; set; }
@@ -9,7 +16,9 @@ public interface IIndicatorResult {
   public double Value { get; set; }
 }
 
-public abstract class Indicator : IPlottable, IHasLegendText {
+public interface IOverlayIndicator { }
+
+public abstract partial class Indicator : ObservableObject, IPlottable, IHasLegendText {
   // 마지막으로 결과를 갱신한 시간
   protected DateTime _lastResultUpdateTime = DateTime.UnixEpoch;
   // 결과물이 변경되었는지를 저장하는 속성
@@ -29,6 +38,7 @@ public abstract class Indicator : IPlottable, IHasLegendText {
   public double PaddingRate { get; set; }
   public CandlestickChartData BaseChart { get; }
   public abstract IEnumerable<IIndicatorResult> Results { get; }
+  public virtual bool IsPriceOverlay => false;
   public abstract void Render(RenderPack rp);
   public virtual AxisLimits GetAxisLimits() {
     return AxisLimits.Default;
@@ -39,9 +49,12 @@ public abstract class Indicator : IPlottable, IHasLegendText {
   public virtual void UpdateEnd(object? sender, CandlestickChartData.UpdatedEndEventArgs args) {
     _isResultChanged = true;
   }
+  public virtual void Clear() {
+    _isResultChanged = true;
+  }
   public Indicator(CandlestickChartData chart) {
     BaseChart = chart;
-    BaseChart.Loaded += Reset;
-    BaseChart.UpdatedEnd += UpdateEnd;
+    // BaseChart.Loaded += Reset;
+    // BaseChart.UpdatedEnd += UpdateEnd;
   }
 }

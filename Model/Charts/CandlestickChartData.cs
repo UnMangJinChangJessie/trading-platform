@@ -37,6 +37,7 @@ public partial class CandlestickChartData : ObservableObject {
     Yearly,
   }
   public ObservableCollection<ChartOHLC> Candles { get; private set; }
+  public ObservableCollection<Indicator> Indicators { get; private set; }
   [ObservableProperty]
   public partial DateTimeOffset? ChartDateBegin { get; set; }
   [ObservableProperty]
@@ -53,8 +54,9 @@ public partial class CandlestickChartData : ObservableObject {
     Span = CandlePeriod.Daily;
     AvailableCandlePeriod = [];
     Candles = [];
+    Indicators = [];
     ChartDateBegin = DateTimeOffset.Now.Date.AddDays(-180);
-    ChartDateEnd = DateTimeOffset.Now.Date.AddDays(1).AddMilliseconds(-1);
+    ChartDateEnd = DateTimeOffset.Now.Date.AddDays(1).AddTicks(-1);
     if (Avalonia.Controls.Design.IsDesignMode || Debugger.IsAttached) {
       // 예시 데이터: 로그 정규분포 곡선
       ChartDateBegin = DateTime.Today.AddDays(-499);
@@ -66,8 +68,12 @@ public partial class CandlestickChartData : ObservableObject {
     }
   }
   public void NotifyLoadComplete() {
+    var args = new LoadedEventArgs() { WholeCandles = [.. Candles] };
     lock (Candles) {
-      Loaded?.Invoke(this, new() { WholeCandles = [.. Candles] });
+      Loaded?.Invoke(this, args);
+    }
+    foreach (var indicator in Indicators) {
+      indicator.Reset(this, args);
     }
   }
   public void ExtendBegin(ChartOHLC ohlc) {
@@ -110,11 +116,18 @@ public partial class CandlestickChartData : ObservableObject {
         inserted = true;
       }
     }
-    UpdatedEnd?.Invoke(this, new(ohlc) { IsAppending = inserted });
+    var args = new UpdatedEndEventArgs(ohlc) { IsAppending = inserted };
+    UpdatedEnd?.Invoke(this, args);
+    foreach (var indicator in Indicators) {
+      indicator.UpdateEnd(this, args);
+    }
   }
   public void Clear() {
     lock (Candles) {
       Candles.Clear();
+    }
+    foreach (var indicator in Indicators) {
+      indicator.Clear();
     }
   }
   /// <summary>
@@ -181,5 +194,13 @@ public partial class CandlestickChartData : ObservableObject {
       CandlePeriod.Yearly => TimeSpan.FromDays(365.23),
       _ => throw new ArgumentException("Invalid CandlePeriod value")
     };
+  }
+  public void AddIndicator(Indicator newIndicator) {
+    Indicators.Add(newIndicator);
+    ImmutableList<ChartOHLC> candles;
+    lock (Candles) {
+      candles = [.. Candles];
+    }
+    newIndicator.Reset(this, new() { WholeCandles = candles });
   }
 }

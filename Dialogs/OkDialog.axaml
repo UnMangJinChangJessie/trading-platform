@@ -7,7 +7,6 @@
   x:Class="trading_platform.Dialogs.OkDialog"
   x:Name="ControlRoot"
   Closing="Window_Closing"
-  Title="{Binding #ControlRoot.Title}"
 >
   <StackPanel Orientation="Vertical">
     <TextBlock Text="{Binding #ControlRoot.Message}" Name="DialogTextBlock" HorizontalAlignment="Center" />

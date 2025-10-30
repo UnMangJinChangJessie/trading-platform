@@ -1,0 +1,35 @@
+<Window
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  x:Class="trading_platform.Dialogs.YesNoDialog"
+  x:Name="WindowRoot"
+>
+  <StackPanel Orientation="Vertical">
+    <ContentControl Content="{Binding #WindowRoot.DialogContent}"  Margin="5" />
+    <Grid
+      Classes="Flat"
+      ColumnDefinitions="100, 100"
+      HorizontalAlignment="Center"
+      Margin="5"
+    >
+      <Button
+        Classes="Flat"
+        Click="YesButton_Click"
+        Grid.Column="0"
+        HorizontalAlignment="Center"
+      >
+        Yes
+      </Button>
+      <Button 
+        Classes="Flat"
+        Click="NoButton_Click"
+        Grid.Column="1"
+        HorizontalAlignment="Center"
+      >
+      No
+      </Button>
+    </Grid>
+  </StackPanel>
+</Window>

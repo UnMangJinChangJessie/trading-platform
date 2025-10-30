@@ -1,0 +1,96 @@
+<Window
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:mchart="clr-namespace:trading_platform.Model.Charts;assembly=trading-platform"
+  x:Class="trading_platform.Dialogs.ChartIndicatorDialog"
+  x:Name="WindowRoot"
+  CanResize="False"
+  Height="600" Width="600"
+  x:DataType="mchart:CandlestickChartData"
+>
+  <Grid ColumnDefinitions="198, 2, 400" >
+    <!-- 더블 클릭 하면 지표 추가할 수 있는 창 -->
+    <DockPanel Grid.Column="0" >
+      <Button
+        Classes="Flat"
+        Click="AddIndicator_Click"
+        DockPanel.Dock="Bottom"
+      >
+        지표 추가하기 >>
+      </Button>
+      <TreeView
+        DoubleTapped="IndicatorTreeView_DoubleTapped"
+        Name="IndicatorTreeView"
+      >
+        <TreeViewItem Header="추세지표" >
+          <TreeViewItem Header="MACD" DataContext="{x:Static mchart:IndicatorName.MovingAverageConvergenceDivergence}" />
+          <TreeViewItem Header="단순이동평균" DataContext="{x:Static mchart:IndicatorName.SimpleMovingAverage}" />
+          <TreeViewItem Header="지수이동평균" DataContext="{x:Static mchart:IndicatorName.ExponentialMovingAverage}" />
+          <TreeViewItem Header="ATR" DataContext="{x:Static mchart:IndicatorName.AverageTrueRange}" />
+        </TreeViewItem>
+        <TreeViewItem Header="거래량지표" >
+        </TreeViewItem>
+        <TreeViewItem Header="복합지표" >
+        </TreeViewItem>
+      </TreeView>
+    </DockPanel>
+    <GridSplitter 
+      Grid.Column="1"
+      IsEnabled="False"
+    />
+    <!-- 여기에 편집창 구현 -->
+    <StackPanel
+      Grid.Column="2"
+      HorizontalAlignment="Stretch"
+    >
+      <TextBlock
+        Margin="5"
+        Text="보조지표 목록"
+      />
+      <ListBox
+        Background="{DynamicResource MaterialTextFieldBoxBackgroundBrush}"
+        ItemsSource="{Binding Indicators}"
+        Margin="5"
+        MinHeight="100"
+      >
+        <ListBox.ItemTemplate>
+          <DataTemplate DataType="{x:Type mchart:Indicator}">
+            <TextBlock
+              Text="{Binding LegendText}"
+            />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Grid
+        ColumnDefinitions="*,*,*"
+        Margin="5"
+      >
+        <Button
+          Classes="Flat"
+          Content="보조지표 삭제"
+          Grid.Column="0"
+        />
+        <Button
+          Classes="Flat"
+          Content="위로 이동"
+          Grid.Column="1"
+        />
+        <Button
+          Classes="Flat"
+          Content="아래로 이동"
+          Grid.Column="2"
+        />
+      </Grid>
+      <TextBlock
+        Text="매개변수 편집"
+        Margin="5"
+      />
+      <Grid
+        ColumnDefinitions="300, 200"
+        HorizontalAlignment="Center"
+        Margin="5"
+        Name="ParameterModificationGrid"
+      />
+    </StackPanel>
+  </Grid>
+</Window>

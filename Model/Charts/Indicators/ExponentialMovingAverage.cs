@@ -1,10 +1,9 @@
-using System.Collections.Immutable;
+using System.ComponentModel;
 using ScottPlot;
-using ScottPlot.AxisPanels;
-using trading_platform.Extensions;
 
 namespace trading_platform.Model.Charts.Indicators;
 
+[Description("지수이동평균")]
 public class ExponentialMovingAverage : Indicator {
   public override string LegendText => $"EMA({Lookback})";
   public class EmaResult : IIndicatorResult {
@@ -12,6 +11,7 @@ public class ExponentialMovingAverage : Indicator {
     public TimeSpan Span { get; set; }
     public double Value { get; set; }
   };
+  [IndicatorParameter(ParameterName = "기간")]
   public int Lookback {
     get => field;
     set {
@@ -19,6 +19,7 @@ public class ExponentialMovingAverage : Indicator {
       if (field != value) {
         field = value;
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles] });
+        OnPropertyChanged(nameof(Lookback));
       }
     }
   }
@@ -40,18 +41,16 @@ public class ExponentialMovingAverage : Indicator {
     return new(
       left: RenderingResults[0].Date.ToOADate(),
       right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: RenderingResults.Min(x => x.Value), RenderingResults.Max(x => x.Value)
+      bottom: RenderingResults.Min(x => x.Value),
+      top: RenderingResults.Max(x => x.Value)
     );
   }
   public override void Render(RenderPack rp) {
-    if (!ShouldUpdateResult) {
+    if (ShouldUpdateResult) {
       lock (MovingAverage) RenderingResults = [.. MovingAverage];
       ResetUpdateTime();
     }
     _lastResultUpdateTime = DateTime.UtcNow;
-    if (rp.Plot.Axes.ContinuouslyAutoscale) {
-      rp.Plot.Axes.ContinuousAutoscaleAction.Invoke(rp);
-    }
     IEnumerable<Pixel> pixels = RenderingResults
       .Where(x => {
         var date = x.Date.ToOADate();

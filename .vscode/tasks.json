@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "type": "dotnet",
+      "task": "build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "dotnet: build",
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "type": "dotnet",
+      "task": "watch trading-platform",
+      "file": "/home/jessie-kim/codes/trading-platform/trading-platform.csproj",
+      "problemMatcher": [],
+      "label": "dotnet: watch trading-platform",
+      "presentation": {
+        "clear": true
+      }
+    }
+  ]
+}

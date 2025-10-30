@@ -5,33 +5,42 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
   xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+  xmlns:com="using:trading_platform.Components"
   xmlns:m="using:trading_platform.Model"
   xmlns:mcharts="using:trading_platform.Model.Charts"
   xmlns:vm="using:trading_platform.ViewModel"
+  xmlns:system="clr-namespace:System"
   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
   x:Class="trading_platform.Components.CandlestickChart"
   x:DataType="mcharts:CandlestickChartData"
+  x:Name="ControlRoot"
   Loaded="UserControl_Loaded"
-  AttachedToVisualTree="UserControl_AttachedToVisualTree"
-  DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
 >
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" FlowDirection="LeftToRight" >
-      <TextBlock Text="캔들 기간" VerticalAlignment="Center" />
+      <TextBlock Text="캔들 기간" Margin="5,0,0,5" VerticalAlignment="Center" />
       <ComboBox
         ItemsSource="{Binding AvailableCandlePeriod}"
         SelectedItem="{Binding Span}"
-        Margin="5,0,0,0"
+        Margin="5,0,0,5"
       >
         <ComboBox.ItemTemplate>
           <DataTemplate>
-            <TextBlock Text="{Binding ., Converter={x:Static m:Converters.EnumDescriptionConverter}}" />
+            <TextBlock Text="{Binding ., Converter={x:Static m:Converters.ObjectDescriptionConverter}}" />
           </DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <TextBlock Text="조회 기간" Margin="5,0,0,0" VerticalAlignment="Center" />
+      <TextBlock Text="조회 기간" Margin="5,0,0,5" VerticalAlignment="Center" />
       <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateBegin}" Margin="5,0,0,0" />
       <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateEnd}" Margin="2,0,0,0" />
+      <Menu Margin="5,0,0,0">
+        <MenuItem Header="보조지표(_/)">
+          <MenuItem
+            Click="ConfigureIndicators"
+            Header="보조지표 편집(_E)"
+          />
+        </MenuItem>
+      </Menu>
     </StackPanel>
     <ScottPlot:AvaPlot
       Name="PriceChart"

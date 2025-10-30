@@ -1,9 +1,9 @@
-using System.Collections.Immutable;
+using System.ComponentModel;
 using ScottPlot;
-using trading_platform.Extensions;
 
 namespace trading_platform.Model.Charts.Indicators;
 
+[Description("거래량")]
 public class Volume : Indicator {
   public class VolumeResult : IIndicatorResult {
     public DateTime Date { get; set; }
@@ -88,5 +88,11 @@ public class Volume : Indicator {
       else BaseResults.Add(new() { Date = args.Candle.Date, Value = (double)args.Candle.Volume, Span = args.Candle.Span, PreviousValue = BaseResults[^1].Value });
     }
     base.UpdateEnd(sender, args);
+  }
+  public override void Clear() {
+    lock (BaseResults) {
+      BaseResults.Clear();
+    }
+    base.Clear();
   }
 }

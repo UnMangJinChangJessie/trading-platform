@@ -1,10 +1,9 @@
-using System.Collections.Immutable;
-using Avalonia;
 using ScottPlot;
-using trading_platform.Extensions;
+using System.ComponentModel;
 
 namespace trading_platform.Model.Charts.Indicators;
 
+[Description("이동평균수렴확산지표(MACD)")]
 public class MovingAverageConvergenceDivergence : Indicator {
   public override string LegendText => $"MACD({Lookback_1}, {Lookback_2})";
   public class MacdResult : IIndicatorResult {
@@ -15,6 +14,7 @@ public class MovingAverageConvergenceDivergence : Indicator {
     public double Value { get; set; }
   };
   public BarStyle BarStyle { get; private set; } = new();
+  [IndicatorParameter(ParameterName = "기간 1")]
   public int Lookback_1 {
     get => field;
     set {
@@ -22,9 +22,11 @@ public class MovingAverageConvergenceDivergence : Indicator {
       if (field != value) {
         field = value;
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
+        OnPropertyChanged(nameof(Lookback_1));
       }
     }
   }
+  [IndicatorParameter(ParameterName = "기간 2")]
   public int Lookback_2 {
     get => field;
     set {
@@ -32,6 +34,7 @@ public class MovingAverageConvergenceDivergence : Indicator {
       if (field != value) {
         field = value;
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
+        OnPropertyChanged(nameof(Lookback_2));
       }
     }
   }

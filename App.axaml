@@ -1,6 +1,5 @@
 <Application xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:cat="using:trading_platform.Styles.Catppuccin"
   xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
   xmlns:conv="using:trading_platform.Converters"
   x:Class="trading_platform.App"
@@ -17,6 +16,6 @@
     <x:Double x:Key="FontSizeXXLarge">24</x:Double>
   </Application.Resources>
   <Application.Styles>
-    <themes:MaterialTheme BaseTheme="Light" PrimaryColor="Pink" SecondaryColor="LightBlue" />
+    <themes:MaterialTheme BaseTheme="Dark" PrimaryColor="Pink" SecondaryColor="LightBlue" />
   </Application.Styles>
 </Application>
