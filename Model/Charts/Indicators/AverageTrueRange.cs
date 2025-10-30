@@ -21,10 +21,13 @@ public partial class AverageTrueRange : Indicator {
       if (field != value) {
         field = value;
         OnPropertyChanged(nameof(Lookback));
+        OnPropertyChanged(nameof(LegendText));
       }
     }
   }
-  public LineStyle LineStyle { get; private set; }
+  [IndicatorParameter(ParameterName = "선 설정")]
+  [ObservableProperty]
+  public partial LineStyle LineStyle { get; private set; }
   public override string LegendText => $"ATR({Lookback})";
   public AverageTrueRange(CandlestickChartData chart, int lookback) : base(chart) {
     RenderingResults = [];

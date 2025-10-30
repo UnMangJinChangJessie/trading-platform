@@ -9,9 +9,9 @@ public static class ContinuouslyAutoscaleExtensions {
     var candles = plottable.Data.GetOHLCs();
     if (candles.Count == 0) return;
     var range = rp.Plot.Axes.GetLimits();
-    var beginIdx = candles.BinarySearch(range.Left, x => x.DateTime.ToOADate());
+    var beginIdx = candles.BinarySearch(range.HorizontalRange.Min, x => x.DateTime.ToOADate());
     if (beginIdx < 0) beginIdx = ~beginIdx;
-    var endIdx = candles.BinarySearch(range.Right, x => x.DateTime.ToOADate());
+    var endIdx = candles.BinarySearch(range.HorizontalRange.Max, x => x.DateTime.ToOADate());
     if (endIdx < 0) endIdx = ~endIdx;
     if (beginIdx == endIdx) return;
     var (min, max) = candles.Skip(beginIdx).Take(endIdx - beginIdx).Aggregate(
@@ -27,9 +27,9 @@ public static class ContinuouslyAutoscaleExtensions {
     var results = plottable.RenderingResults;
     if (results.Length == 0) return;
     var range = rp.Plot.Axes.GetLimits();
-    var beginIdx = results.BinarySearch(range.Left, x => x.Date.ToOADate());
+    var beginIdx = results.BinarySearch(range.HorizontalRange.Min, x => x.Date.ToOADate());
     if (beginIdx < 0) beginIdx = ~beginIdx;
-    var endIdx = results.BinarySearch(range.Right, x => x.Date.ToOADate());
+    var endIdx = results.BinarySearch(range.HorizontalRange.Max, x => x.Date.ToOADate());
     if (endIdx < 0) endIdx = ~endIdx;
     if (beginIdx == endIdx) return;
     var (min, max) = results[beginIdx..endIdx].Aggregate(

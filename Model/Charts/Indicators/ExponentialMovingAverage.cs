@@ -1,10 +1,11 @@
 using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using ScottPlot;
 
 namespace trading_platform.Model.Charts.Indicators;
 
 [Description("지수이동평균")]
-public class ExponentialMovingAverage : Indicator {
+public partial class ExponentialMovingAverage : Indicator {
   public override string LegendText => $"EMA({Lookback})";
   public class EmaResult : IIndicatorResult {
     public DateTime Date { get; set; }
@@ -20,12 +21,15 @@ public class ExponentialMovingAverage : Indicator {
         field = value;
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles] });
         OnPropertyChanged(nameof(Lookback));
+        OnPropertyChanged(nameof(LegendText));
       }
     }
   }
   public List<EmaResult> MovingAverage { get; private set; }
   public override IEnumerable<IIndicatorResult> Results => MovingAverage;
-  public LineStyle LineStyle { get; set; } = new LineStyle() {
+  [IndicatorParameter(ParameterName = "곡선")]
+  [ObservableProperty]
+  public partial LineStyle LineStyle { get; set; } = new LineStyle() {
     Color = Colors.DarkBlue,
     Pattern = LinePattern.Solid,
     AntiAlias = true,

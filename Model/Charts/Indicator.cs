@@ -16,8 +16,6 @@ public interface IIndicatorResult {
   public double Value { get; set; }
 }
 
-public interface IOverlayIndicator { }
-
 public abstract partial class Indicator : ObservableObject, IPlottable, IHasLegendText {
   // 마지막으로 결과를 갱신한 시간
   protected DateTime _lastResultUpdateTime = DateTime.UnixEpoch;

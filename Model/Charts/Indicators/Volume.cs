@@ -11,7 +11,7 @@ public class Volume : Indicator {
     public double Value { get; set; }
     public double PreviousValue { get; set; }
   };
-  public override string LegendText => $"Volume";
+  public override string LegendText => $"거래량";
   public BarStyle BarStyle { get; private set; }
   public List<VolumeResult> BaseResults { get; private set; }
   public override IEnumerable<IIndicatorResult> Results => BaseResults;

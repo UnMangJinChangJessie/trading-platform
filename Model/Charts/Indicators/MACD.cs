@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using ScottPlot;
 using System.ComponentModel;
 
@@ -23,6 +24,7 @@ public class MovingAverageConvergenceDivergence : Indicator {
         field = value;
         if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
         OnPropertyChanged(nameof(Lookback_1));
+        OnPropertyChanged(nameof(LegendText));
       }
     }
   }
@@ -33,11 +35,13 @@ public class MovingAverageConvergenceDivergence : Indicator {
       ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 0, nameof(value));
       if (field != value) {
         field = value;
-        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles]});
+        if (BaseChart != null) Reset(this, new() { WholeCandles = [.. BaseChart.Candles] });
         OnPropertyChanged(nameof(Lookback_2));
+        OnPropertyChanged(nameof(LegendText));
       }
     }
   }
+  [IndicatorParameter(ParameterName = "선 설정")]
   public List<MacdResult> BaseResults { get; private set; }
   public override IEnumerable<IIndicatorResult> Results => BaseResults;
   public MovingAverageConvergenceDivergence(CandlestickChartData chart, int lookback_1, int lookback_2) : base(chart) {

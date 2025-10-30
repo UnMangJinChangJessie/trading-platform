@@ -7,10 +7,10 @@
   x:DataType="mchart:CandlestickChartData"
   CanResize="False"
   Height="600"
-  Width="600"
+  Width="800"
   Loaded="Window_Loaded"
 >
-  <Grid ColumnDefinitions="198, 2, 400" >
+  <Grid ColumnDefinitions="198, 2, 600" >
     <!-- 더블 클릭 하면 지표 추가할 수 있는 창 -->
     <DockPanel Grid.Column="0" >
       <Button
@@ -49,22 +49,27 @@
         Margin="5"
         Text="보조지표 목록"
       />
-      <ListBox
-        Background="{DynamicResource MaterialTextFieldBoxBackgroundBrush}"
-        ItemsSource="{Binding Indicators}"
-        Margin="5"
-        MinHeight="100"
-        Name="IndicatorListBox"
-        SelectionChanged="IndicatorListBox_SelectionChanged"
+      <!-- 편집 가능한 보조지표 목록 -->
+      <ScrollViewer
+        MaxHeight="150"
       >
-        <ListBox.ItemTemplate>
-          <DataTemplate DataType="{x:Type mchart:Indicator}">
-            <TextBlock
-              Text="{Binding LegendText}"
-            />
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+        <ListBox
+          Background="{DynamicResource MaterialTextFieldBoxBackgroundBrush}"
+          ItemsSource="{Binding Indicators}"
+          Margin="5"
+          MinHeight="100"
+          Name="IndicatorListBox"
+          SelectionChanged="IndicatorListBox_SelectionChanged"
+        >
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="{x:Type mchart:Indicator}">
+              <TextBlock
+                Text="{Binding LegendText}"
+              />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </ScrollViewer>
       <Grid
         ColumnDefinitions="*,*,*"
         Margin="5"
@@ -86,16 +91,22 @@
           Grid.Column="2"
         />
       </Grid>
-      <TextBlock
-        Text="매개변수 편집"
-        Margin="5"
-      />
-      <Grid
-        ColumnDefinitions="300, 200"
-        HorizontalAlignment="Center"
-        Margin="5"
-        Name="ParameterModificationGrid"
-      />
+      <ScrollViewer
+        MaxHeight="450"
+      >
+        <StackPanel>
+          <TextBlock
+            Text="매개변수 편집"
+            Margin="5"
+          />
+          <Grid
+            ColumnDefinitions="200, 400"
+            HorizontalAlignment="Center"
+            Margin="5"
+            Name="ParameterModificationGrid"
+          />
+        </StackPanel>
+      </ScrollViewer>
     </StackPanel>
   </Grid>
 </Window>
