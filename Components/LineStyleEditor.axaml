@@ -1,0 +1,64 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:ScottPlot="clr-namespace:ScottPlot;assembly=ScottPlot"
+  xmlns:media="clr-namespace:Avalonia.Media;assembly=Avalonia.Base"
+  xmlns:m="using:trading_platform.Model"
+  x:DataType="{x:Type ScottPlot:LineStyle}"
+  x:Class="trading_platform.Components.LineStyleEditor"
+  Loaded="UserControl_Loaded"
+>
+  <Grid
+    RowDefinitions="Auto, Auto, Auto"
+    ColumnDefinitions="*, 2*"
+  >
+    <TextBlock
+      Grid.Column="0"
+      Grid.Row="0"
+      Text="색상"
+    >
+    </TextBlock>
+    <TextBlock
+      Grid.Column="0"
+      Grid.Row="1"
+      Text="너비"
+    >
+    </TextBlock>
+    <TextBlock
+      Grid.Column="0"
+      Grid.Row="2"
+      Text="모양"
+    >
+    </TextBlock>
+    <ColorPicker
+      Color="{Binding Color, Mode = TwoWay, Converter = {x:Static m:Converters.ColorConverter}}"
+      Grid.Column="1"
+      Grid.Row="0"
+      Name="LineStyleColorPicker"
+    >
+      <ColorPicker.Palette>
+        <MaterialColorPalette />
+      </ColorPicker.Palette>
+    </ColorPicker>
+    <NumericUpDown
+      Grid.Column="1"
+      Grid.Row="1"
+      Value="{Binding Width, Mode = TwoWay}"
+    />
+    <ComboBox
+      Grid.Column="1"
+      Grid.Row="2"
+      SelectedItem="{Binding Pattern, Mode = TwoWay}"
+    >
+      <ComboBox.ItemTemplate>
+        <DataTemplate DataType="{x:Type ScottPlot:LinePattern}">
+          <TextBlock Text="{Binding Name, Mode = OneTime}" />
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.Solid}" />
+      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.Dotted}" />
+      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.Dashed}" />
+      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.DenselyDashed}" />
+    </ComboBox>
+  </Grid>
+</UserControl>

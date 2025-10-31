@@ -6,7 +6,7 @@ using Avalonia.Skia;
 namespace trading_platform.Model;
 
 public static partial class Converters {
-  public class ScottPlotAvaloniaColorConverter : IValueConverter {
+  public class ColorConverterClass : IValueConverter {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) {
       return value switch {
         ScottPlot.Color scottColor => Avalonia.Media.Color.FromUInt32(scottColor.ARGB),
@@ -27,4 +27,5 @@ public static partial class Converters {
       };
     }
   }
+  public readonly static ColorConverterClass ColorConverter = new();
 }
