@@ -18,8 +18,8 @@ public static partial class Converters {
   /// Uses the largest applicable unit and includes sign for negative values.
   /// </summary>
   public static FuncValueConverter<decimal, string> SimpleNumberKoreanConverter { get; } = new(val => {
-    var absoluteValue = Math.Abs(val);
     var sign = val >= 0 ? "" : "-";
+    val = Math.Abs(val);
     int first = 0, second = (int)decimal.Floor(val / KOREAN_NUMBER_UNITS[0].Unit);
     val -= KOREAN_NUMBER_UNITS[0].Unit * second;
     for (int i = 1; i < KOREAN_NUMBER_UNITS.Length; i++) {

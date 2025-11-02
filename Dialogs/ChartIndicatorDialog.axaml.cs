@@ -45,6 +45,9 @@ public partial class ChartIndicatorDialog : Window {
       case IndicatorName.MovingAverageConvergenceDivergence:
         newIndicator = new MovingAverageConvergenceDivergence(CastedDataContext, 12, 26);
         break;
+      case IndicatorName.RelativeStrengthIndicator:
+        newIndicator = new RelativeStrengthIndex(CastedDataContext, 14);
+        break;
     }
     if (newIndicator != null) CastedDataContext.AddIndicator(newIndicator);
   }
@@ -89,8 +92,32 @@ public partial class ChartIndicatorDialog : Window {
         AddModificationGridRow(attr!.ParameterName, control);
       }
       else if (type.PropertyType == typeof(BarStyle)) {
-
-
+        AddModificationGridRow(attr!.ParameterName, null);
+        Control control;
+        control = new Components.LineStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.PositiveBarIncreasingLine") { Source = indicator });
+        AddModificationGridRow("양수 외곽선(상승)", control);
+        control = new Components.LineStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.PositiveBarDecreasingLine") { Source = indicator });
+        AddModificationGridRow("양수 외곽선(하락)", control);
+        control = new Components.LineStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.NegativeBarIncreasingLine") { Source = indicator });
+        AddModificationGridRow("음수 외곽선(상승)", control);
+        control = new Components.LineStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.NegativeBarDecreasingLine") { Source = indicator });
+        AddModificationGridRow("음수 외곽선(하락)", control);
+        control = new Components.FillStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.PositiveBarIncreasingFill") { Source = indicator });
+        AddModificationGridRow("양수 내부(상승)", control);
+        control = new Components.FillStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.PositiveBarDecreasingFill") { Source = indicator });
+        AddModificationGridRow("양수 내부(하락)", control);
+        control = new Components.FillStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.NegativeBarIncreasingFill") { Source = indicator });
+        AddModificationGridRow("음수 내부(상승)", control);
+        control = new Components.FillStyleEditor();
+        control.Bind(DataContextProperty, new Binding($"{name}.NegativeBarDecreasingFill") { Source = indicator });
+        AddModificationGridRow("음수 내부(하락)", control);
       }
     }
   }

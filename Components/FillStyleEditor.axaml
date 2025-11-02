@@ -1,0 +1,30 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:m="using:trading_platform.Model"
+  xmlns:ScottPlot="clr-namespace:ScottPlot;assembly=ScottPlot"
+  x:Class="trading_platform.Components.FillStyleEditor"
+  x:DataType="ScottPlot:FillStyle"
+>
+  <Grid
+    RowDefinitions="Auto"
+    ColumnDefinitions="*, 2*"
+  >
+    <TextBlock
+      Grid.Column="0"
+      Grid.Row="0"
+      Text="색상"
+    >
+    </TextBlock>
+    <ColorPicker
+      Color="{Binding Color, Mode = TwoWay, Converter = {x:Static m:Converters.ColorConverter}}"
+      Grid.Column="1"
+      Grid.Row="0"
+      Name="FillStyleColorPicker"
+    >
+      <ColorPicker.Palette>
+        <MaterialColorPalette />
+      </ColorPicker.Palette>
+    </ColorPicker>
+  </Grid>
+</UserControl>

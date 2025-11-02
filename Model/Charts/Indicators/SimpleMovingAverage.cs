@@ -43,16 +43,6 @@ public partial class SimpleMovingAverage : Indicator {
     MovingAverage = [];
     Lookback = lookback;
   }
-  public override AxisLimits GetAxisLimits() {
-    if (RenderingResults.Length == 0) return AxisLimits.Unset;
-    IEnumerable<IIndicatorResult> notNull = RenderingResults.Where(x => double.IsFinite(((SmaResult)x).Value));
-    if (!notNull.Any()) return AxisLimits.Default;
-    else return new(
-      left: RenderingResults[0].Date.ToOADate(),
-      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: notNull.Min(x => x.Value), notNull.Max(x => x.Value)
-    );
-  }
   public override void Render(RenderPack rp) {
     if (ShouldUpdateResult) {
       lock (MovingAverage) RenderingResults = [.. MovingAverage];

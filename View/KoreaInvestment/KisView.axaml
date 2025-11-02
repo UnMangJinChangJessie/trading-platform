@@ -102,7 +102,7 @@
       </DockPanel>
     </TabItem>
     <TabItem Header="한국 주식">
-      <vkisks:MainView DataContext="{Binding KoreaStockMarketViewModel }"/>
+      <vkisks:MainView DataContext="{Binding KoreaStockMarketViewModel}"/>
     </TabItem>
   </TabControl>
 </UserControl>

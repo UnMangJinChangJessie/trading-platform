@@ -48,17 +48,14 @@
     <ComboBox
       Grid.Column="1"
       Grid.Row="2"
+      Name="PatternComboBox"
       SelectedItem="{Binding Pattern, Mode = TwoWay}"
     >
       <ComboBox.ItemTemplate>
-        <DataTemplate DataType="{x:Type ScottPlot:LinePattern}">
-          <TextBlock Text="{Binding Name, Mode = OneTime}" />
+        <DataTemplate x:DataType="{x:Type ScottPlot:LinePattern}" DataType="{x:Type ScottPlot:LinePattern}">
+          <TextBlock Text="{Binding Name}" />
         </DataTemplate>
       </ComboBox.ItemTemplate>
-      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.Solid}" />
-      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.Dotted}" />
-      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.Dashed}" />
-      <ComboBoxItem Content="{x:Static ScottPlot:LinePattern.DenselyDashed}" />
     </ComboBox>
   </Grid>
 </UserControl>

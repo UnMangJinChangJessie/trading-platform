@@ -26,6 +26,12 @@
         DataContext="{Binding #ControlRoot.DataContext"
       />
     </TabItem> -->
+    <TabItem Header="재무정보" >
+      <vkis:FinancialView 
+        Name="PART_FinancialInfo"
+        DataContext="{Binding ((vmkis:MarketItem)MainItem).FinancialInformation}"
+      />
+    </TabItem>
     <TabItem Header="잔고">
       <vkis:BalanceView
         DataContext="{Binding Balance}"

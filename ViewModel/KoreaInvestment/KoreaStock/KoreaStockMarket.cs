@@ -5,8 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MarketBase = Market;
 
-public partial class KoreaStockMarket
-: MarketBase {
+public partial class KoreaStockMarket : MarketBase {
   [ObservableProperty]
   public partial MarketItem MainItem { get; set; } 
   public override ObservableCollection<ViewModel.MarketItem?> InspectingItems { get; set; }

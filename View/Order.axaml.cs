@@ -8,11 +8,11 @@ public partial class Order : UserControl {
   public Order() {
     InitializeComponent();
   }
-  public async void LongButton_Click(object? sender, RoutedEventArgs args) {
+  public void LongButton_Click(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
     CastedDataContext.Long();
   }
-  public async void ShortButton_Click(object? sender, RoutedEventArgs args) {
+  public void ShortButton_Click(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
     CastedDataContext.Short();
   }

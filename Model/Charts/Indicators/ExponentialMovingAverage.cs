@@ -41,15 +41,6 @@ public partial class ExponentialMovingAverage : Indicator {
     MovingAverage = [];
     Lookback = lookback;
   }
-  public override AxisLimits GetAxisLimits() {
-    if (RenderingResults.Length == 0) return AxisLimits.Unset;
-    return new(
-      left: RenderingResults[0].Date.ToOADate(),
-      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: RenderingResults.Min(x => x.Value),
-      top: RenderingResults.Max(x => x.Value)
-    );
-  }
   public override void Render(RenderPack rp) {
     if (ShouldUpdateResult) {
       lock (MovingAverage) RenderingResults = [.. MovingAverage];

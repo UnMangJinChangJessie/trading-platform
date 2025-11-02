@@ -1,0 +1,139 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:m="using:trading_platform.Model"
+  xmlns:vm="using:trading_platform.ViewModel.KoreaInvestment.KoreaStock"
+  x:Class="trading_platform.View.KoreaInvestment.KoreaStock.FinancialView"
+  x:DataType="vm:FinancialViewModel"
+
+>
+  <ScrollViewer
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+  >
+    <StackPanel>
+      <TextBlock
+        FontSize="{StaticResource FontSizeXXLarge}"
+        HorizontalAlignment="Center"
+        Margin="5"
+      >
+      <Run>
+        <Run.Text>
+          <MultiBinding StringFormat="{}{0}({1}) 재무정보">
+            <Binding RelativeSource="DataContext" Path="Label.Name" />
+            <Binding RelativeSource="DataContext" Path="Label.Ticker" />
+          </MultiBinding>
+        </Run.Text>
+      </Run>
+      </TextBlock>
+      <!-- 재무상태표(대차대조표) -->
+      <TextBlock
+        FontSize="{StaticResource FontSizeXLarge}"
+        HorizontalAlignment="Center"
+        Margin="5"
+        Text="재무상태표(대차대조표)"
+      />
+      <DataGrid
+        CanUserReorderColumns="True"
+        CanUserResizeColumns="True"
+        Height="250"
+        VerticalScrollBarVisibility="Visible"
+        IsReadOnly="True"
+        ItemsSource="{Binding Statements}"
+        Margin="10"
+      >
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="결산년월" Binding="{Binding StatementPoint, StringFormat='{}{0:yyyy}년 {0:MM}월'}" />
+          <DataGridTextColumn Header="유동자산" Binding="{Binding CurrentAssets, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="고정자산" Binding="{Binding NonCurrentAssets, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="유동부채" Binding="{Binding CurrentLiabilities, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="고정부채" Binding="{Binding NonCurrentLiabilities, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="자본금" Binding="{Binding CapitalFunds, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="자본총계" Binding="{Binding TotalCapital, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <!-- 손익계산서 -->
+      <TextBlock
+        FontSize="{StaticResource FontSizeXLarge}"
+        HorizontalAlignment="Center"
+        Margin="5"
+        Text="손익계산서"
+      />
+      <DataGrid
+        CanUserReorderColumns="True"
+        CanUserResizeColumns="True"
+        Height="250"
+        VerticalScrollBarVisibility="Visible"
+        IsReadOnly="True"
+        ItemsSource="{Binding ProfitLosses}"
+        Margin="10"
+      >
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="결산년월" Binding="{Binding StatementPoint, StringFormat='{}{0:yyyy}년 {0:MM}월'}" />
+          <DataGridTextColumn Header="매출액(원)" Binding="{Binding Sales, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="매출원가(원)" Binding="{Binding SalesCost, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="매출총이익(원)" Binding="{Binding SaleProfit, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="영업이익(원)" Binding="{Binding Profit, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="경상이익" Binding="{Binding OrdinaryProfit, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <!-- 99억 9900만으로 나오는 것으로 보아 Fallback 값인 99.99가 오는 것으로 보임 -->
+          <!-- <DataGridTextColumn Header="특별이익" Binding="{Binding SpecialProfit, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" /> -->
+          <!-- <DataGridTextColumn Header="특별손실" Binding="{Binding SpecialLoss, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" /> -->
+          <DataGridTextColumn Header="당기순이익" Binding="{Binding NetProfit, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <!-- 재무지표 -->
+      <TextBlock
+        FontSize="{StaticResource FontSizeXLarge}"
+        HorizontalAlignment="Center"
+        Margin="5"
+        Text="재무지표"
+      />
+      <DataGrid
+        CanUserReorderColumns="True"
+        CanUserResizeColumns="True"
+        Height="250"
+        VerticalScrollBarVisibility="Visible"
+        IsReadOnly="True"
+        ItemsSource="{Binding Indices}"
+        Margin="10"
+      >
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="결산년월" Binding="{Binding StatementPoint, StringFormat='{}{0:yyyy}년 {0:MM}월'}" />
+          <DataGridTextColumn Header="매출액증가율" Binding="{Binding SalesChangeRate, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="영업이익증가율" Binding="{Binding EarningChangeRate, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="순이익증가율" Binding="{Binding ProfitChangeRate, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="순자산이익률(ROE)" Binding="{Binding ReturnOnEquity, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="주당순이익(EPS, 원)" Binding="{Binding EarningPerShare, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="주당매출액(SPS, 원)" Binding="{Binding SalesPerShare, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="주가순자산(BPS, 원)" Binding="{Binding BookValuePerShare, Converter={x:Static m:Converters.SimpleNumberKoreanConverter}, Mode = OneWay}" />
+          <DataGridTextColumn Header="유보비율" Binding="{Binding RetentionRate, StringFormat='{}{0:0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="부채비율" Binding="{Binding DebtRate, StringFormat='{}{0:0.00%;-0.00%;0.00%}'}" />
+        </DataGrid.Columns>
+      </DataGrid>
+      <!-- 수익성 -->
+      <TextBlock
+        FontSize="{StaticResource FontSizeXLarge}"
+        HorizontalAlignment="Center"
+        Margin="5"
+        Text="수익성"
+      />
+      <DataGrid
+        CanUserReorderColumns="True"
+        CanUserResizeColumns="True"
+        Height="250"
+        VerticalScrollBarVisibility="Visible"
+        IsReadOnly="True"
+        ItemsSource="{Binding Profitability}"
+        Margin="10"
+      >
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="결산년월" Binding="{Binding StatementPoint, StringFormat='{}{0:yyyy}년 {0:MM}월'}" />
+          <DataGridTextColumn Header="총자본순이익률" Binding="{Binding ProfitCapitalRate, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="자기자본순이익률" Binding="{Binding ProfitOwnCapitalRate, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="매출액순이익률" Binding="{Binding ProfitSalesRate, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+          <DataGridTextColumn Header="매출액총이익률" Binding="{Binding NetProfitSalesRate, StringFormat='{}{0:+0.00%;-0.00%;0.00%}'}" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

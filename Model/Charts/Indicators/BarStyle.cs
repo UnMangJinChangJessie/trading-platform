@@ -1,6 +1,6 @@
 using ScottPlot;
 
-namespace trading_platform.Model.Charts.Indicators;
+namespace trading_platform.Model.Charts;
 
 public struct BarStyle {
   public LineStyle PositiveBarIncreasingLine { get; set; }
@@ -17,9 +17,9 @@ public struct BarStyle {
     PositiveBarDecreasingLine = new() { Color = Colors.LightPink, Width = 2 };
     NegativeBarIncreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 };
     NegativeBarDecreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 };
-    PositiveBarIncreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.3) };
+    PositiveBarIncreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.5) };
     PositiveBarDecreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.7) };
-    NegativeBarIncreasingFill = new() { Color = Colors.LightSkyBlue.WithAlpha(0.3)};
+    NegativeBarIncreasingFill = new() { Color = Colors.LightSkyBlue.WithAlpha(0.5)};
     NegativeBarDecreasingFill = new() { Color = Colors.LightSkyBlue.WithAlpha(0.7) };
   }
 }

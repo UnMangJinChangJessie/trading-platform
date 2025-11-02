@@ -48,7 +48,7 @@ public partial class ChartView : UserControl {
     if (CastedDataContext == null) return;
     await CastedDataContext.RefreshAsync();
   }
-  public async void UserControl_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
+  public void UserControl_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs args) {
   }
   public async void TickerInquireButton_Click(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;

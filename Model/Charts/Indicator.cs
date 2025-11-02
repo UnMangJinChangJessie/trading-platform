@@ -38,8 +38,13 @@ public abstract partial class Indicator : ObservableObject, IPlottable, IHasLege
   public abstract IEnumerable<IIndicatorResult> Results { get; }
   public virtual bool IsPriceOverlay => false;
   public abstract void Render(RenderPack rp);
-  public virtual AxisLimits GetAxisLimits() {
-    return AxisLimits.Default;
+  public AxisLimits GetAxisLimits() {
+    if (RenderingResults.Length == 0) return AxisLimits.Unset;
+    else return new(
+      left: RenderingResults[0].Date.ToOADate(),
+      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
+      bottom: RenderingResults.Min(x => x.Value), RenderingResults.Max(x => x.Value)
+    );
   }
   public virtual void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     _isResultChanged = true;

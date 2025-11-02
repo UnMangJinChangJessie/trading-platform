@@ -14,7 +14,6 @@ public class MovingAverageConvergenceDivergence : Indicator {
     public double Average_2 { get; set; }
     public double Value { get; set; }
   };
-  public BarStyle BarStyle { get; private set; } = new();
   [IndicatorParameter(ParameterName = "기간 1")]
   public int Lookback_1 {
     get => field;
@@ -41,7 +40,9 @@ public class MovingAverageConvergenceDivergence : Indicator {
       }
     }
   }
-  [IndicatorParameter(ParameterName = "선 설정")]
+  [IndicatorParameter(ParameterName = "막대 모양새")]
+  public BarStyle BarStyle { get; private set; } = new();
+
   public List<MacdResult> BaseResults { get; private set; }
   public override IEnumerable<IIndicatorResult> Results => BaseResults;
   public MovingAverageConvergenceDivergence(CandlestickChartData chart, int lookback_1, int lookback_2) : base(chart) {
@@ -49,14 +50,6 @@ public class MovingAverageConvergenceDivergence : Indicator {
     BaseResults = [];
     Lookback_1 = lookback_1;
     Lookback_2 = lookback_2;
-  }
-  public override AxisLimits GetAxisLimits() {
-    if (RenderingResults.Length == 0) return AxisLimits.Unset;
-    else return new(
-      left: RenderingResults[0].Date.ToOADate(),
-      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: RenderingResults.Min(x => x.Value), RenderingResults.Max(x => x.Value)
-    );
   }
   public override void Render(RenderPack rp) {
     if (ShouldUpdateResult) {
@@ -73,8 +66,16 @@ public class MovingAverageConvergenceDivergence : Indicator {
       })
       .Select(x => new Bar() { Value = x.Value, Position = x.Date.ToOADate(), Size = x.Span.TotalDays });
     if (!bars.Any()) return;
+    double? previousValue = null;
     foreach (Bar bar in bars) {
+      var positive = bar.Value > 0;
+      var notDecreased = !previousValue.HasValue || (previousValue.Value <= bar.Value);
+      bar.FillStyle = positive ? (notDecreased ? BarStyle.PositiveBarIncreasingFill : BarStyle.PositiveBarDecreasingFill) :
+        (notDecreased ? BarStyle.NegativeBarIncreasingFill : BarStyle.NegativeBarDecreasingFill);
+      bar.LineStyle = positive ? (notDecreased ? BarStyle.PositiveBarIncreasingLine : BarStyle.PositiveBarDecreasingLine) :
+        (notDecreased ? BarStyle.NegativeBarIncreasingLine : BarStyle.NegativeBarDecreasingLine);
       bar.RenderBody(rp, Axes, rp.Paint);
+      previousValue = bar.Value;
     }
   }
   public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {

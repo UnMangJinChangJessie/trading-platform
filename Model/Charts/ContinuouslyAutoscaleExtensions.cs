@@ -22,6 +22,7 @@ public static class ContinuouslyAutoscaleExtensions {
     var bottom = min * 1.05 - max * 0.05;
     var top = min * (-0.05) + max * 1.05;
     rp.Plot.Axes.SetLimitsY(bottom, top);
+    rp.Plot.Axes.DefaultGrid.YAxis.Range.Set(bottom, top);
   }
   public static void ContinuouslyAutoscaleAction(this Indicator plottable, RenderPack rp) {
     var results = plottable.RenderingResults;
@@ -32,12 +33,19 @@ public static class ContinuouslyAutoscaleExtensions {
     var endIdx = results.BinarySearch(range.HorizontalRange.Max, x => x.Date.ToOADate());
     if (endIdx < 0) endIdx = ~endIdx;
     if (beginIdx == endIdx) return;
-    var (min, max) = results[beginIdx..endIdx].Aggregate(
+    var (min, max) = results[beginIdx..endIdx].Where(x => double.IsFinite(x.Value)).Aggregate(
       (Min: results[beginIdx].Value, Max: results[beginIdx].Value),
-      (prev, x) => (Math.Min(prev.Min, x.Value), Math.Max(prev.Max, x.Value))
+      (prev, x) => {
+        double min = prev.Min, max = prev.Max;
+        bool isFinite = double.IsFinite(x.Value);
+        if (!double.IsFinite(min) && isFinite) min = x.Value;
+        if (!double.IsFinite(max) && isFinite) max = x.Value;
+        return (Math.Min(min, x.Value), Math.Max(max, x.Value));
+      }
     );
     var bottom = min * 1.05 - max * 0.05;
     var top = min * (-0.05) + max * 1.05;
     rp.Plot.Axes.SetLimitsY(bottom, top);
+    rp.Plot.Axes.DefaultGrid.YAxis.Range.Set(bottom, top);
   }
 }

@@ -15,6 +15,7 @@ public partial class MarketItem : MarketItemBase {
     set {
       if (field != value) {
         (ItemOrderBook as OrderBook)?.Api = value;
+        FinancialInformation?.Api = value;
         field = value;
       }
     }
@@ -29,12 +30,15 @@ public partial class MarketItem : MarketItemBase {
   [ObservableProperty]
   public partial StockMetric Metric { get; set; }
   [ObservableProperty]
+  public partial FinancialViewModel FinancialInformation { get; set; }
+  [ObservableProperty]
   public override partial ViewModel.OrderBook ItemOrderBook { get; protected set; }
 
   public MarketItem([MaybeNull] KisClients api) {
-    Api = api;
     Metric = new();
     ItemOrderBook = new OrderBook(api, ItemLabel);
+    FinancialInformation = new FinancialViewModel(api, ItemLabel);
+    Api = api;
   }
 
   public async void OnReceivedChart(string jsonString, bool hasNextData, object? args) {
@@ -82,7 +86,7 @@ public partial class MarketItem : MarketItemBase {
         Api.ApiClient,
         new ChartQueries() {
           Ticker = ItemLabel.Ticker,
-          Exchange = Exchange.DomesticUnified,
+          Exchange = InquiringMarket,
           CandlePeriod = ItemChart.Span.ToKisCandlePeriod(),
           From = inquireFrom,
           To = inquireTo,
@@ -148,7 +152,7 @@ public partial class MarketItem : MarketItemBase {
       Api.ApiClient,
       new ChartQueries() {
         Ticker = ItemLabel.Ticker,
-        Exchange = Exchange.DomesticUnified,
+        Exchange = InquiringMarket,
         CandlePeriod = ItemChart.Span.ToKisCandlePeriod(),
         From = from,
         To = to,
@@ -167,6 +171,8 @@ public partial class MarketItem : MarketItemBase {
     SendChartRefreshRequests();
     // 호가 갱신
     ItemOrderBook.Refresh();
+    // 재무정보 갱신
+    FinancialInformation.Refresh();
   }
   public override async Task RefreshAsync() {
     if (Api == null) return;
@@ -176,7 +182,11 @@ public partial class MarketItem : MarketItemBase {
     }
     SendChartRefreshRequests();
     // 호가 갱신
-    ItemOrderBook.Refresh();
+    var task_1 = ItemOrderBook.RefreshAsync();
+    // 재무정보 갱신
+    var task_2 = FinancialInformation.RefreshAsync();
+    await task_1;
+    await task_2;
   }
   ~MarketItem() {
     if (WebSocketKeys != null) Api.WebSocketClient.Unsubscribe(WebSocketKeys.Value.Id, WebSocketKeys.Value.Key).Wait();

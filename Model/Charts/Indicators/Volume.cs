@@ -20,12 +20,12 @@ public class Volume : Indicator {
     RenderingResults = [];
     BaseResults = [];
     BarStyle = new() {
-      PositiveBarIncreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.7) },
-      PositiveBarDecreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.7) },
+      PositiveBarIncreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.5) },
+      PositiveBarDecreasingFill = new() { Color = Colors.LightPink.WithAlpha(0.9) },
       PositiveBarIncreasingLine = new() { Color = Colors.LightPink, Width = 2 },
       PositiveBarDecreasingLine = new() { Color = Colors.LightPink, Width = 2 },
-      NegativeBarIncreasingFill = new() { Color = Colors.LightSkyBlue.WithAlpha(0.7) },
-      NegativeBarDecreasingFill = new() { Color = Colors.LightSkyBlue.WithAlpha(0.7) },
+      NegativeBarIncreasingFill = new() { Color = Colors.LightSkyBlue.WithAlpha(0.5) },
+      NegativeBarDecreasingFill = new() { Color = Colors.LightSkyBlue.WithAlpha(0.9) },
       NegativeBarIncreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
       NegativeBarDecreasingLine = new() { Color = Colors.LightSkyBlue, Width = 2 },
     };
@@ -34,14 +34,6 @@ public class Volume : Indicator {
         Reset(this, new() { WholeCandles = [.. BaseChart.Candles] });
       }
     }
-  }
-  public override AxisLimits GetAxisLimits() {
-    if (RenderingResults.Length == 0) return AxisLimits.Unset;
-    else return new(
-      left: RenderingResults[0].Date.ToOADate(),
-      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: RenderingResults.Min(x => x.Value), RenderingResults.Max(x => x.Value)
-    );
   }
   public override void Render(RenderPack rp) {
     if (ShouldUpdateResult) {
@@ -58,16 +50,18 @@ public class Volume : Indicator {
         return horizontalRange.Min - margin <= date && date <= horizontalRange.Max + margin;
       })
       .Select(x => {
-        var fill = x.Value >= 0 ?
-          (x.PreviousValue < x.Value ? BarStyle.PositiveBarIncreasingFill : BarStyle.PositiveBarDecreasingFill) :
-          (x.PreviousValue < x.Value ? BarStyle.NegativeBarIncreasingFill : BarStyle.NegativeBarDecreasingFill);
-        var line = x.Value >= 0 ?
-          (x.PreviousValue < x.Value ? BarStyle.PositiveBarIncreasingLine : BarStyle.PositiveBarDecreasingLine) :
-          (x.PreviousValue < x.Value ? BarStyle.NegativeBarIncreasingLine : BarStyle.NegativeBarDecreasingLine);
-        return new Bar() { Value = x.Value, Size = x.Span.TotalDays, Position = x.Date.ToOADate(), FillStyle = fill, LineStyle = line };
+        return new Bar() { Value = x.Value, Size = x.Span.TotalDays, Position = x.Date.ToOADate() };
       });
+    double? previousValue = null;
     foreach (Bar bar in bars) {
+      var positive = bar.Value > 0;
+      var notDecreased = !previousValue.HasValue || (previousValue.Value <= bar.Value);
+      bar.FillStyle = positive ? (notDecreased ? BarStyle.PositiveBarIncreasingFill : BarStyle.PositiveBarDecreasingFill) :
+        (notDecreased ? BarStyle.NegativeBarIncreasingFill : BarStyle.NegativeBarDecreasingFill);
+      bar.LineStyle = positive ? (notDecreased ? BarStyle.PositiveBarIncreasingLine : BarStyle.PositiveBarDecreasingLine) :
+        (notDecreased ? BarStyle.NegativeBarIncreasingLine : BarStyle.NegativeBarDecreasingLine);
       bar.RenderBody(rp, Axes, rp.Paint);
+      previousValue = bar.Value;
     }
   }
   public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {

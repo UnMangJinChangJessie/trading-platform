@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using System.IO.Compression;
-using System.Net;
 using System.Text;
 using trading_platform.Model.KoreaInvestment;
 

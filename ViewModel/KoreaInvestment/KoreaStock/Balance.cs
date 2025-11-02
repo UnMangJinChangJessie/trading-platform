@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +18,7 @@ public partial class Balance([MaybeNull] KisClients api) : BalanceBase {
       Debug.WriteLine($"[{result.ResponseMessageCode}, {nameof(OnReceivedBalance)}] {result.ResponseMessage}");
       return;
     }
-    lock (HoldingItems) {
+    Dispatcher.UIThread.Post(() => {
       foreach (var item in result.HoldingStocks!) {
         HoldingItems.Add(new Item() {
           CurrentEvaluation = item.CurrentEvaluation,
@@ -26,7 +27,10 @@ public partial class Balance([MaybeNull] KisClients api) : BalanceBase {
           Quantity = item.Quantity,
         });
       }
-    }
+      FreeFunds = result.AccountBalance!.Single().OvermorrowAmount;
+      TotalEntryAmount = HoldingItems.Sum(x => x.EntryAmount);
+      TotalEvaluation = HoldingItems.Sum(x => x.CurrentEvaluation);
+    });
     if (hasNextData) {
       GetBalance(
         Api.ApiClient,
@@ -43,13 +47,6 @@ public partial class Balance([MaybeNull] KisClients api) : BalanceBase {
         OnReceivedBalance,
         null
       );
-    }
-    else {
-      lock (HoldingItems) {
-        FreeFunds = result.AccountBalance!.Single().OvermorrowAmount;
-        TotalEntryAmount = HoldingItems.Sum(x => x.EntryAmount);
-        TotalEvaluation = HoldingItems.Sum(x => x.CurrentEvaluation);
-      }
     }
   }
   public override void Refresh() {

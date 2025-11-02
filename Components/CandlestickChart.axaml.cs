@@ -53,15 +53,18 @@ public partial class CandlestickChart : UserControl {
     Color[] colors = [Colors.Red, Colors.OrangeRed, Colors.Yellow, Colors.GreenYellow, Colors.Indigo, Colors.Violet]; 
     _candlestickPlot.Axes.ContinuouslyAutoscale = true;
     _candlestickPlot.Axes.ContinuousAutoscaleAction = _candlestickPlot.ContinuouslyAutoscaleAction;
+    _candlestickPlot.ShowLegend(Alignment.UpperLeft, Orientation.Horizontal);
   }
   private void ConfigureVolumeChart() {
     if (CastedDataContext == null) return;
     _volumePlot = PriceChart.Multiplot.AddPlot();
+    _volumePlot.Axes.Left.RemoveTickGenerator();
     _volumePlot.Grid.XAxis = _volumePlot.Axes.Bottom;
     _volumePlot.Grid.YAxis = _volumePlot.Axes.Right;
-    _volumePlot.Axes.DefaultGrid = _volumePlot.Grid;
     var plottable = new Volume(CastedDataContext);
     _volumePlot.Add.Plottable(plottable);
+    plottable.Axes.XAxis = _volumePlot.Axes.Bottom;
+    plottable.Axes.YAxis = _volumePlot.Axes.Right;
     _volumePlot.Axes.ContinuouslyAutoscale = true;
     _volumePlot.Axes.ContinuousAutoscaleAction = plottable.ContinuouslyAutoscaleAction;
   }
@@ -141,9 +144,11 @@ public partial class CandlestickChart : UserControl {
       }
       else {
         var plot = PriceChart.Multiplot.AddPlot();
+        plot.Axes.Left.RemoveTickGenerator();
         plot.Grid.XAxis = plot.Axes.Bottom;
         plot.Grid.YAxis = plot.Axes.Right;
-        plot.Axes.DefaultGrid = plot.Grid;
+        indicator.Axes.XAxis = plot.Axes.Bottom;
+        indicator.Axes.YAxis = plot.Axes.Right;
         plot.Add.Plottable(indicator);
         plot.Axes.ContinuouslyAutoscale = true;
         plot.Axes.ContinuousAutoscaleAction = indicator.ContinuouslyAutoscaleAction;

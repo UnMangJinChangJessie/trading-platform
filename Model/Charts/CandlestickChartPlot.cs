@@ -62,8 +62,9 @@ public class CandlestickChartPlot : Plot {
       }
     }
   }
-  private class CandlestickPlot : ScottPlot.Plottables.CandlestickPlot {
+  private class CandlestickPlot : ScottPlot.Plottables.CandlestickPlot, IHasLegendText {
     public ChartOHLCSource? CastedDataSource => Data as ChartOHLCSource;
+    public string LegendText { get; set; } = "캔들차트";
     public CandlestickPlot(CandlestickChartData data) : base(new ChartOHLCSource(data)) {}
   }
   private CandlestickPlot MainPlot { get; set; }
@@ -81,16 +82,15 @@ public class CandlestickChartPlot : Plot {
     Axes.Right.TickGenerator = new ScottPlot.TickGenerators.NumericAutomatic();
     Grid.XAxis = Axes.Bottom;
     Grid.YAxis = Axes.Right;
-    Axes.DefaultGrid = Grid;
     BaseChart = data;
     BaseChart.Loaded += OnLoaded;
     BaseChart.UpdatedEnd += OnUpdatedEnd;
     MainPlot = new(data);
-    // MainPlot.Axes.XAxis = Axes.Bottom;
-    // MainPlot.Axes.YAxis = Axes.Right;
+    MainPlot.Axes.XAxis = Axes.Bottom;
+    MainPlot.Axes.YAxis = Axes.Right;
     PriceHorizontalLine = Add.HorizontalLine((double)(data[0]?.Close ?? 0), width: 1, color: Colors.Gray, pattern: LinePattern.DenselyDashed);
-    // PriceHorizontalLine.Axes.XAxis = Axes.Bottom;
-    // PriceHorizontalLine.Axes.YAxis = Axes.Right;
+    PriceHorizontalLine.Axes.XAxis = Axes.Bottom;
+    PriceHorizontalLine.Axes.YAxis = Axes.Right;
     Add.Plottable(MainPlot);
     Add.Plottable(PriceHorizontalLine);
     PriceHorizontalLine.LabelAlignment = Alignment.MiddleLeft;

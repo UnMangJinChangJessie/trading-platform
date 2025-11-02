@@ -3,19 +3,19 @@ using System.Text.Json.Serialization;
 namespace trading_platform.Model.KoreaInvestment;
 
 public static partial class DomesticStock {
-  public class FinancialIndexQueries {
+  public class FinancialStatementsQueries {
     public const int YEARLY = 0;
     public const int QUARTERLY = 1;
     public required int Period { get; set; }
     public required string Ticker { get; set; }
   }
-  public class FinancialIndexResult : KisReturnMessage {
+  public class FinancialStatementsResult : KisReturnMessage {
     [JsonPropertyName("output")]
-    public IEnumerable<FinancialIndexItem>? Output { get; set; }
+    public IEnumerable<FinancialStatementsItem>? Output { get; set; }
   }
-  public readonly static Action<ApiModel, FinancialIndexQueries, Action<string, bool, object?>, object?> GetFinancialIndex = (api, queries, cb, args) =>
+  public readonly static Action<ApiModel, FinancialStatementsQueries, Action<string, bool, object?>, object?> GetFinancialStatements = (api, queries, cb, args) =>
     api.PushRequest(
-      transId: "FHKST66430300",
+      transId: "FHKST66430100",
       queries: new Dictionary<string, string>() {
         ["FID_DIV_CLS_CODE"] = queries.Period.ToString(),
         ["fid_cond_mrkt_div_code"] = "J",

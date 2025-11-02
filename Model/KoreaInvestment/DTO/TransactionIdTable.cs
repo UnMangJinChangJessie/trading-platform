@@ -15,7 +15,9 @@ public static class TransactionIdTable {
     "FHKST03030100" => "/uapi/overseas-price/v1/quotations/inquire-daily-chartprice", // 해외주식 종목/지수/환율기간별시세(일/주/월/년)
     "FHKST121600C0" => "/uapi/etfetn/v1/quotations/inquire-component-stock-price", // ETF 구성종목시세
     "FHKST66430100" => "/uapi/domestic-stock/v1/finance/balance-sheet", // 국내주식 대차대조표
+    "FHKST66430200" => "/uapi/domestic-stock/v1/finance/income-statement", // 국내주식 손익계산서
     "FHKST66430300" => "/uapi/domestic-stock/v1/finance/financial-ratio", // 국내주식 재무비율
+    "FHKST66430400" => "/uapi/domestic-stock/v1/finance/profit-ratio", // 국내주식 수익성비율
     "FHMIF10000000" => "/uapi/domestic-futureoption/v1/quotations/inquire-price", // 선물옵션 시세
     "FHMIF10010000" => "/uapi/domestic-futureoption/v1/quotations/inquire-asking-price", // 선물옵션 시세호가
     "FHPST02440000" => "/uapi/etfetn/v1/quotations/nav-comparison-trend", // NAV 비교추이(종목)
@@ -60,7 +62,9 @@ public static class TransactionIdTable {
     "FHKST03030100" => HttpMethod.Get, // 해외주식 종목/지수/환율기간별시세(일/주/월/년)
     "FHKST121600C0" => HttpMethod.Get, // ETF 구성종목시세
     "FHKST66430100" => HttpMethod.Get, // 국내주식 대차대조표
+    "FHKST66430200" => HttpMethod.Get, // 국내주식 손익계산서
     "FHKST66430300" => HttpMethod.Get, // 국내주식 재무비율
+    "FHKST66430400" => HttpMethod.Get, // 국내주식 수익성비율
     "FHMIF10000000" => HttpMethod.Get, // 선물옵션 시세
     "FHMIF10010000" => HttpMethod.Get, // 선물옵션 시세호가
     "FHPST02440000" => HttpMethod.Get, // NAV 비교추이(종목)

@@ -25,14 +25,19 @@
         Name="IndicatorTreeView"
       >
         <TreeViewItem Header="추세지표" >
+          <TreeViewItem Header="단순이동평균(SMA)" DataContext="{x:Static mchart:IndicatorName.SimpleMovingAverage}" />
+          <TreeViewItem Header="지수이동평균(EMA)" DataContext="{x:Static mchart:IndicatorName.ExponentialMovingAverage}" />
           <TreeViewItem Header="MACD" DataContext="{x:Static mchart:IndicatorName.MovingAverageConvergenceDivergence}" />
-          <TreeViewItem Header="단순이동평균" DataContext="{x:Static mchart:IndicatorName.SimpleMovingAverage}" />
-          <TreeViewItem Header="지수이동평균" DataContext="{x:Static mchart:IndicatorName.ExponentialMovingAverage}" />
+        </TreeViewItem>
+        <TreeViewItem Header="변동성지표" >
           <TreeViewItem Header="ATR" DataContext="{x:Static mchart:IndicatorName.AverageTrueRange}" />
+          <TreeViewItem Header="표준편차" DataContext="{x:Static mchart:IndicatorName.StandardDeviation }" />
+        </TreeViewItem>
+        <TreeViewItem Header="추세강도지표" >
+          <TreeViewItem Header="상대강도지표(RSI)" DataContext="{x:Static mchart:IndicatorName.RelativeStrengthIndicator}" />
+          <TreeViewItem Header="Stochastics" DataContext="{x:Static mchart:IndicatorName.StochasticsOscillator}" />
         </TreeViewItem>
         <TreeViewItem Header="거래량지표" >
-        </TreeViewItem>
-        <TreeViewItem Header="복합지표" >
         </TreeViewItem>
       </TreeView>
     </DockPanel>
@@ -72,6 +77,7 @@
       </ScrollViewer>
       <Grid
         ColumnDefinitions="*,*,*"
+        RowDefinitions="30"
         Margin="5"
       >
         <Button
@@ -92,7 +98,7 @@
         />
       </Grid>
       <ScrollViewer
-        MaxHeight="450"
+        Height="420"
       >
         <StackPanel>
           <TextBlock

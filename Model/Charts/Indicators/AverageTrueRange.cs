@@ -35,15 +35,6 @@ public partial class AverageTrueRange : Indicator {
     Lookback = lookback;
     LineStyle = new(1.0F, Colors.DarkRed);
   }
-  public override AxisLimits GetAxisLimits() {
-    if (RenderingResults.Length == 0) return AxisLimits.Unset;
-    return new(
-      left: RenderingResults[0].Date.ToOADate(),
-      right: RenderingResults[^1].Date.ToOADate() + BaseChart.TimeSpan.TotalDays,
-      bottom: RenderingResults.Min(x => x.Value),
-      top: RenderingResults.Max(x => x.Value)
-    );
-  }
   public override void Render(RenderPack rp) {
     if (ShouldUpdateResult) {
       lock (BaseResults) RenderingResults = [.. BaseResults];
@@ -53,8 +44,7 @@ public partial class AverageTrueRange : Indicator {
       .Where(x => {
         var date = x.Date.ToOADate();
         var range = rp.Plot.Axes.GetLimits().HorizontalRange;
-        var margin = 5 * BaseChart.TimeSpan.TotalDays;
-        return range.Min - margin <= date && date <= range.Max + margin;
+        return range.Min <= date && date <= range.Max && double.IsFinite(x.Value);
       })
       .Select(x => rp.Plot.GetPixel(
         new Coordinates((double)x.Date.ToOADate(), (double)x.Value),
@@ -111,6 +101,10 @@ public partial class AverageTrueRange : Indicator {
     else return Enumerable.Max<double>([high - low, Math.Abs(high - prevClose.Value), Math.Abs(low - prevClose.Value)]);
   }
   private double GetExtensionAverageTrueRange(int insertingIndex, double tr) {
-    return insertingIndex == 0 ? tr : double.Lerp(BaseResults[insertingIndex - 1].Value, tr, 1.0 / Lookback);
+    if (insertingIndex + 1 < Lookback) return double.NaN;
+    else if (insertingIndex + 1 == Lookback) {
+      return (BaseResults[..insertingIndex].Sum(x => x.TrueRange) + tr) / Lookback;
+    }
+    else return double.Lerp(BaseResults[insertingIndex - 1].Value, tr, 1.0 / Lookback);
   }
 }

@@ -5,7 +5,7 @@ using trading_platform.View;
 namespace trading_platform.ViewModel;
 
 public abstract partial class Market : ObservableObject, IRefresh {
-  public virtual ObservableCollection<MarketItem?> InspectingItems { get; set; }
+  public virtual ObservableCollection<MarketItem?> InspectingItems { get; set; } = [];
   [ObservableProperty]
   public virtual partial Order Order { get; set; }
   [ObservableProperty]
