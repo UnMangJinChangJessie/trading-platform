@@ -10,7 +10,14 @@ public static partial class StockMarketInformation {
       Timeout = TimeSpan.FromSeconds(5.0)
     };
     if (!File.Exists(localPath) || (DateTime.UtcNow - File.GetLastWriteTimeUtc(localPath)) > TimeSpan.FromHours(4)) {
-      var resp = await client.GetStreamAsync(downloadPath);
+      Stream resp;
+      try {
+        resp = await client.GetStreamAsync(downloadPath);
+      }
+      catch (Exception ex) {
+        ExceptionHandler.PrintExceptionMessage(ex);
+        return null;
+      }
       var zip = new ZipArchive(resp);
       var eucKr = zip.Entries.SingleOrDefault()?.Open();
       if (eucKr == null) return null;

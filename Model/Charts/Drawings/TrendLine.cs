@@ -20,6 +20,7 @@ public partial class TrendLine : Drawing {
   [ObservableProperty]
   public partial LineStyle TrendLineStyle { get; set; }
   public override int CoordinateCount => 2;
+  public override IEnumerable<Coordinates> DrawingCoordinates => [ StartCoordinate, EndCoordinate ];
 
   public TrendLine() {
     StartCoordinate = new();
@@ -37,6 +38,7 @@ public partial class TrendLine : Drawing {
     EndCoordinate = iterator.Current;
   }
   public override void Render(RenderPack rp) {
+    base.Render(rp);
     // get the pixel positions
     Pixel start = rp.Plot.GetPixel(StartCoordinate);
     Pixel end = rp.Plot.GetPixel(EndCoordinate);
@@ -45,6 +47,10 @@ public partial class TrendLine : Drawing {
     if (ExtendLeft && axisLimits.Right < start.X) {
       float alpha = (float)((end.X - axisLimits.Left) / (end.X - start.X));
       start += (end - start) * alpha;
+    }
+    if (ExtendRight && end.X < axisLimits.Left) {
+      float alpha = (float)((axisLimits.Right - start.X) / (end.X - start.X));
+      end += start + (end - start) * alpha;
     }
     var copy = rp.Paint.Clone();
     ScottPlot.Drawing.DrawLine(rp.Canvas, rp.Paint, start, end, TrendLineStyle);

@@ -13,19 +13,25 @@ using trading_platform.Model.Charts.Indicators;
 
 namespace trading_platform.Components;
 
+internal enum DrawingMode {
+  None,
+  Add,
+  Modify
+}
+
 public partial class CandlestickChart : UserControl {
   private CandlestickChartData? CastedDataContext => DataContext as CandlestickChartData;
   private CandlestickChartPlot? _candlestickPlot;
   private ScottPlot.MultiplotLayouts.DraggableRows _chartLayout;
   private int? _draggingDividerIndex;
-  private bool _drawingMode;
-  private Model.Charts.Drawing? _drawing;
-  private List<Coordinates> _drawingCoordinates;
+  private DrawingMode _drawingMode = DrawingMode.None;
+  private Model.Charts.Drawing? _drawing = null;
+  private bool _drawingRegisterOnRelease = false;
+  private List<Coordinates> _drawingCoordinates = [];
+  private int? _drawingModifyingIndex = null;
   public CandlestickChart() {
     InitializeComponent();
     _chartLayout = new();
-    _drawingMode = false;
-    _drawingCoordinates = [];
     PriceChart.Plot.Font.Set("Gowun Dodum");
     PriceChart.Menu?.Add("Toggle Grid", plot => {
       foreach (var mpPlot in PriceChart.Multiplot.GetPlots()) {
@@ -35,7 +41,6 @@ public partial class CandlestickChart : UserControl {
     });
     PriceChart.Menu?.Add("Toggle Automatic Scaling", plot => {
       plot.Axes.ContinuouslyAutoscale = !plot.Axes.ContinuouslyAutoscale;
-      PriceChart.UserInputProcessor.LeftClickDragPan(true, horizontal: true, vertical: !plot.Axes.ContinuouslyAutoscale);
     });
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
@@ -86,29 +91,6 @@ public partial class CandlestickChart : UserControl {
       ExpandingPlotIndex = 0,
       SnapDistance = 2,
       MinimumHeight = 50,
-    };
-    PriceChart.PointerPressed += (sender, args) => {
-      var y = (float)args.GetPosition(PriceChart).Y;
-      var divider = _chartLayout.GetDivider(y);
-      _draggingDividerIndex = divider;
-      PriceChart.UserInputProcessor.IsEnabled = divider is null;
-    };
-    PriceChart.PointerReleased += (sender, args) => {
-      _draggingDividerIndex = null;
-      PriceChart.UserInputProcessor.IsEnabled = true;
-    };
-    PriceChart.PointerMoved += (sender, args) => {
-      var y = (float)args.GetPosition(PriceChart).Y;
-      if (_draggingDividerIndex != null) {
-        _chartLayout.SetDivider(_draggingDividerIndex.Value, y);
-        PriceChart.Refresh();
-      }
-      else {
-        var divider = _chartLayout.GetDivider(y);
-        Cursor = new Avalonia.Input.Cursor(
-          divider != null ? Avalonia.Input.StandardCursorType.SizeNorthSouth : Avalonia.Input.StandardCursorType.Arrow
-        );
-      }
     };
     PriceChart.Multiplot.Layout = _chartLayout;
     var background = new Color((Background as Avalonia.Media.SolidColorBrush)?.Color.ToSKColor() ?? SkiaSharp.SKColors.Black);
@@ -202,36 +184,96 @@ public partial class CandlestickChart : UserControl {
     }
   }
   private void PriceChart_PointerPressed(object? sender, PointerPressedEventArgs args) {
-    
+    var position = args.GetPosition(PriceChart);
+    var pixel = new Pixel(position.X, position.Y);
+    // Select drawing if it's close enough
+    if (_candlestickPlot != null) {
+      if (_drawingMode == DrawingMode.Add) return;
+      var drawings = _candlestickPlot.GetPlottables<Model.Charts.Drawing>();
+      bool clicked = false;
+      if (_drawingMode == DrawingMode.None) {
+        foreach (var drawing in drawings) {
+          var (pixelOnDrawing, pixelIndex) = IsPixelOnDrawing(drawing, pixel);
+          if (!pixelOnDrawing) continue;
+          clicked = true;
+          EnableModification(drawing);
+          return;
+        }
+      }
+      else if (_drawingMode == DrawingMode.Modify) {
+        var (pixelOnDrawing, pixelIndex) = IsPixelOnDrawing(_drawing, pixel);
+        if (!pixelOnDrawing) {
+          CancelModification();
+          return;
+        }
+        if (_drawingModifyingIndex != null) {
+          _drawingModifyingIndex = null;
+        }
+        else if (args.ClickCount == 2) {
+          _drawingModifyingIndex = pixelIndex;
+        }
+      }
+      if (clicked) return;
+      CancelModification();
+    }
+    var y = (float)args.GetPosition(PriceChart).Y;
+    var divider = _chartLayout.GetDivider(y);
+    _draggingDividerIndex = divider;
+    PriceChart.UserInputProcessor.IsEnabled = divider is null;
   }
   private void PriceChart_PointerReleased(object? sender, PointerReleasedEventArgs args) {
-    if (_drawingMode) {
+    var position = args.GetPosition(PriceChart);
+    Pixel pixel = new(position.X, position.Y);
+    bool isLeft = args.InitialPressMouseButton == MouseButton.Left;
+    bool isRight = args.InitialPressMouseButton == MouseButton.Right;
+    if (_drawingMode == DrawingMode.Add) {
       // if (args.) return;
       if (_candlestickPlot == null) return;
-      var position = args.GetPosition(PriceChart);
-      Pixel pixel = new(position.X, position.Y);
+      if (!_drawingRegisterOnRelease) {
+        _drawingRegisterOnRelease = true;
+        return;
+      }
       var plot = PriceChart.Multiplot.GetPlotAtPixel(pixel);
       if (plot != _candlestickPlot) return;
-      bool isLeft = args.InitialPressMouseButton == MouseButton.Left;
-      bool isRight = args.InitialPressMouseButton == MouseButton.Right;
       if (isLeft) {
         var finished = RegisterDrawingCoordinate(_candlestickPlot.GetCoordinates(pixel));
         if (finished) CancelDrawing(interrupted: false);
       }
       else if (isRight) CancelDrawing(interrupted: true);
     }
+    else if (_draggingDividerIndex != null) {
+      _draggingDividerIndex = null;
+      PriceChart.UserInputProcessor.IsEnabled = true;
+    }
   }
   private void PriceChart_PointerMoved(object? sender, PointerEventArgs args) {
-    if (_drawingMode) {
+    var position = args.GetPosition(PriceChart);
+    Pixel pixel = new(position.X, position.Y);
+    if (_drawingMode == DrawingMode.Add) {
+      if (args.Properties.IsLeftButtonPressed) _drawingRegisterOnRelease = false;
       if (_candlestickPlot == null) return;
-      var position = args.GetPosition(PriceChart);
-      Pixel pixel = new(position.X, position.Y);
       var plot = PriceChart.Multiplot.GetPlotAtPixel(pixel);
       if (plot != _candlestickPlot) return;
       // 미리보기
       _drawing?.SetCoordinates(_drawingCoordinates.Append(_candlestickPlot.GetCoordinates(pixel)));
       PriceChart.InvalidateVisual();
     }
+    else if (_drawingMode == DrawingMode.Modify) {
+      if (_candlestickPlot == null) return;
+      if (_drawingModifyingIndex != null) {
+        _drawingCoordinates[_drawingModifyingIndex.Value] = _candlestickPlot.GetCoordinates(pixel);
+        _drawing?.SetCoordinates(_drawingCoordinates);
+        PriceChart.InvalidateVisual();
+      }
+    }
+    else if (_draggingDividerIndex != null) {
+      _chartLayout.SetDivider(_draggingDividerIndex.Value, (float)position.Y);
+      PriceChart.Refresh();
+    }
+    var divider = _chartLayout.GetDivider((float)position.Y);
+    Cursor = new Cursor(
+      divider != null ? StandardCursorType.SizeNorthSouth : StandardCursorType.Arrow
+    );
   }
   internal bool RegisterDrawingCoordinate(Coordinates coordinates) {
     _drawingCoordinates.Add(coordinates);
@@ -240,18 +282,65 @@ public partial class CandlestickChart : UserControl {
   }
   internal void EnableDrawing() {
     DrawingMenuItem.IsEnabled = false;
-    _drawingMode = true;
+    _drawingMode = DrawingMode.Add;
+    _drawingRegisterOnRelease = true;
+    _drawingCoordinates.Clear();
     // 처음에 이상하게 추세선이 보이지 않도록 초기값을 NaN으로 모두 설정해버리자
     _drawing?.SetCoordinates(Enumerable.Repeat<Coordinates>(new(double.NaN, double.NaN), _drawing.CoordinateCount));
   }
+  internal void EnableModification(Model.Charts.Drawing drawing) {
+    _drawingMode = DrawingMode.Modify;
+    _drawing = drawing;
+    _drawing.IsCoordinatesVisible = true;
+    _drawingCoordinates = [.. drawing.DrawingCoordinates];
+    _drawingRegisterOnRelease = true;
+    PriceChart.UserInputProcessor.LeftClickDragPan(false, false, false);
+  }
   internal void CancelDrawing(bool interrupted = false) {
-    if (!_drawingMode) return;
-    _drawingMode = false;
+    if (_drawingMode != DrawingMode.Add) return;
+    _drawingMode = DrawingMode.None;
     if (_drawing != null && interrupted) {
       _candlestickPlot?.Remove(_drawing);
     }
     _drawing = null;
     _drawingCoordinates.Clear();
+    _drawingRegisterOnRelease = true;
     DrawingMenuItem.IsEnabled = true;
+  }
+  internal void CancelModification() {
+    if (_drawingMode != DrawingMode.Modify) return;
+    _drawing?.IsCoordinatesVisible = false;
+    _drawingMode = DrawingMode.None;
+    _drawing = null;
+    _drawingCoordinates.Clear();
+    _drawingRegisterOnRelease = true;
+    PriceChart.UserInputProcessor.LeftClickDragPan(true, true, true);
+  }
+  private static readonly (bool OnDrawing, int? CoordinatesIndex) IS_PIXEL_ON_DRAWING_DEFAULT_VALUE = (false, null);
+  internal (bool OnDrawing, int? CoordinatesIndex) IsPixelOnDrawing(Model.Charts.Drawing drawing, Pixel pixel, double grace = 10.0) {
+    if (_candlestickPlot == null) return IS_PIXEL_ON_DRAWING_DEFAULT_VALUE;
+    var iter = drawing.DrawingCoordinates.GetEnumerator();
+    if (!iter.MoveNext()) return IS_PIXEL_ON_DRAWING_DEFAULT_VALUE ;
+    var prevPixel = _candlestickPlot.GetPixel(iter.Current);
+    var prevIndex = 0;
+    if (prevPixel.DistanceFrom(pixel) < grace) return (true, prevIndex);
+    while (iter.MoveNext()) {
+      var currentPixel = _candlestickPlot.GetPixel(iter.Current);
+      var directionVector = currentPixel - prevPixel;
+      var directionVectorLength = directionVector.DistanceFrom(Pixel.Zero);
+      if (directionVectorLength < 1e-10) continue;
+      var currentPixelVector = pixel - prevPixel;
+      var currentPixelVectorLength = currentPixelVector.DistanceFrom(Pixel.Zero);
+      if (currentPixelVectorLength < 1e-10) return (true, prevIndex); // 점이 어떤 픽셀과 가까이 있는 것이니 바로 반환
+      var innerProduct = directionVector.X * currentPixelVector.X + directionVector.Y * currentPixelVector.Y;
+      var vectorSine = Math.Sin(Math.Acos(innerProduct / currentPixelVectorLength / directionVectorLength));
+      var distance = currentPixelVector.DistanceFrom(Pixel.Zero) * vectorSine;
+      if (distance < grace) return (true, null);
+      prevPixel = currentPixel;
+      prevIndex++;
+    }
+    // 가장 마지막 픽셀
+    if (prevPixel.DistanceFrom(pixel) < grace) return (true, prevIndex);
+    return IS_PIXEL_ON_DRAWING_DEFAULT_VALUE;
   }
 }
