@@ -21,31 +21,46 @@ internal enum DrawingMode {
 
 public partial class CandlestickChart : UserControl {
   private CandlestickChartData? CastedDataContext => DataContext as CandlestickChartData;
-  private CandlestickChartPlot? _candlestickPlot;
+  private CandlestickChartPlot _candlestickPlot;
   private ScottPlot.MultiplotLayouts.DraggableRows _chartLayout;
   private int? _draggingDividerIndex;
   private DrawingMode _drawingMode = DrawingMode.None;
   private Model.Charts.Drawing? _drawing = null;
   private bool _drawingRegisterOnRelease = false;
-  private List<Coordinates> _drawingCoordinates = [];
+  private readonly List<Coordinates> _drawingCoordinates = [];
   private int? _drawingModifyingIndex = null;
+  private ScottPlot.Plottables.Crosshair _cursorCrosshair;
+  private bool _cursorCrosshairVisible;
   public CandlestickChart() {
     InitializeComponent();
+    _cursorCrosshair = new();
+    _cursorCrosshairVisible = true;
     _chartLayout = new();
     PriceChart.Plot.Font.Set("Gowun Dodum");
-    PriceChart.Menu?.Add("Toggle Grid", plot => {
+    PriceChart.UserInputProcessor.DoubleLeftClickBenchmark(false);
+    PriceChart.Menu?.Add("격자 보이기/숨기기", plot => {
       foreach (var mpPlot in PriceChart.Multiplot.GetPlots()) {
         mpPlot.Grid.XAxisStyle.IsVisible = !mpPlot.Grid.XAxisStyle.IsVisible;
         mpPlot.Grid.YAxisStyle.IsVisible = !mpPlot.Grid.YAxisStyle.IsVisible;
       }
     });
-    PriceChart.Menu?.Add("Toggle Automatic Scaling", plot => {
+    PriceChart.Menu?.Add("상하 범위 자동 조정", plot => {
       plot.Axes.ContinuouslyAutoscale = !plot.Axes.ContinuouslyAutoscale;
+    });
+    PriceChart.Menu?.Add("십자선 보이기/숨기기", plot => {
+      _cursorCrosshairVisible = !_cursorCrosshairVisible;
+      _cursorCrosshair.IsVisible = _cursorCrosshairVisible;
     });
   }
   public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
     if (CastedDataContext == null) return;
-    CastedDataContext.AddIndicator(new Volume(CastedDataContext));
+    _candlestickPlot = new CandlestickChartPlot(CastedDataContext);
+    if (!CastedDataContext.Indicators.OfType<Volume>().Any()) {
+      CastedDataContext.AddIndicator(new Volume(CastedDataContext));
+    }
+    _cursorCrosshair = _candlestickPlot.Add.Crosshair(0, 0);
+    _cursorCrosshair.Axes.XAxis = _candlestickPlot.Axes.GetXAxes().First();
+    _cursorCrosshair.Axes.YAxis = _candlestickPlot.Axes.GetYAxes().First();
     ConfigureCandleChart();
     ConfigureIndicatorPlots();
     ConfigureLayout();
@@ -53,7 +68,6 @@ public partial class CandlestickChart : UserControl {
   }
   private void ConfigureCandleChart() {
     if (CastedDataContext == null) return;
-    _candlestickPlot = new CandlestickChartPlot(CastedDataContext);
     PriceChart.Multiplot.Reset(_candlestickPlot);
     _candlestickPlot.PlotControl = PriceChart;
     _candlestickPlot.RisingFillStyle.Color = Colors.LightPink;
@@ -113,7 +127,7 @@ public partial class CandlestickChart : UserControl {
     }
     PriceChart.Multiplot.SharedAxes.ShareX(plots);
     PriceChart.Multiplot.CollapseVertically();
-    PriceChart.UserInputProcessor.LeftClickDragPan(enable: true, horizontal: true, vertical: false);
+    PriceChart.UserInputProcessor.LeftClickDragPan(enable: true, horizontal: true, vertical: true);
   }
   private void VolumeToggle_Checked(object? sender, RoutedEventArgs args) {
     
@@ -202,10 +216,7 @@ public partial class CandlestickChart : UserControl {
       }
       else if (_drawingMode == DrawingMode.Modify) {
         var (pixelOnDrawing, pixelIndex) = IsPixelOnDrawing(_drawing, pixel);
-        if (!pixelOnDrawing) {
-          CancelModification();
-          return;
-        }
+        clicked = pixelOnDrawing;
         if (_drawingModifyingIndex != null) {
           _drawingModifyingIndex = null;
         }
@@ -266,7 +277,8 @@ public partial class CandlestickChart : UserControl {
         PriceChart.InvalidateVisual();
       }
     }
-    else if (_draggingDividerIndex != null) {
+
+    if (_draggingDividerIndex != null) {
       _chartLayout.SetDivider(_draggingDividerIndex.Value, (float)position.Y);
       PriceChart.Refresh();
     }
@@ -274,6 +286,33 @@ public partial class CandlestickChart : UserControl {
     Cursor = new Cursor(
       divider != null ? StandardCursorType.SizeNorthSouth : StandardCursorType.Arrow
     );
+    if (_cursorCrosshairVisible) {
+      _cursorCrosshair.Position = _candlestickPlot.GetCoordinates(pixel);
+      PriceChart.InvalidateVisual();
+    }
+  }
+  private void PriceChart_PointerEntered(object? sender, PointerEventArgs args) {
+    _cursorCrosshair.IsVisible = _cursorCrosshairVisible;
+  }
+  private void PriceChart_PointerExited(object? sender, PointerEventArgs args) {
+    _cursorCrosshair.IsVisible = false;
+  }
+  private void PriceChart_KeyDown(object? sender, KeyEventArgs args) {
+    if (_drawingMode == DrawingMode.Modify) {
+      if (_drawing != null) {
+        if (args.Key == Key.Escape || (args.Key == Key.X && args.KeyModifiers == KeyModifiers.Control)) {
+          _candlestickPlot.RemoveDrawing(_drawing);
+          CancelModification();
+        }
+        else if (args.Key == Key.C || args.KeyModifiers == KeyModifiers.Control) {
+          var clone = _drawing.Clone();
+          clone.SetCoordinates(clone.DrawingCoordinates.Select(x => x with { X = x.X + 1 }));
+          _candlestickPlot.AddDrawing(clone);
+          CancelModification();
+          EnableModification(clone);
+        }
+      }
+    }
   }
   internal bool RegisterDrawingCoordinate(Coordinates coordinates) {
     _drawingCoordinates.Add(coordinates);
@@ -292,9 +331,11 @@ public partial class CandlestickChart : UserControl {
     _drawingMode = DrawingMode.Modify;
     _drawing = drawing;
     _drawing.IsCoordinatesVisible = true;
-    _drawingCoordinates = [.. drawing.DrawingCoordinates];
+    _drawingCoordinates.Clear();
+    _drawingCoordinates.AddRange(drawing.DrawingCoordinates);
     _drawingRegisterOnRelease = true;
     PriceChart.UserInputProcessor.LeftClickDragPan(false, false, false);
+    PriceChart.Refresh();
   }
   internal void CancelDrawing(bool interrupted = false) {
     if (_drawingMode != DrawingMode.Add) return;
@@ -306,6 +347,7 @@ public partial class CandlestickChart : UserControl {
     _drawingCoordinates.Clear();
     _drawingRegisterOnRelease = true;
     DrawingMenuItem.IsEnabled = true;
+    PriceChart.Refresh();
   }
   internal void CancelModification() {
     if (_drawingMode != DrawingMode.Modify) return;
@@ -315,14 +357,16 @@ public partial class CandlestickChart : UserControl {
     _drawingCoordinates.Clear();
     _drawingRegisterOnRelease = true;
     PriceChart.UserInputProcessor.LeftClickDragPan(true, true, true);
+    PriceChart.Refresh();
   }
   private static readonly (bool OnDrawing, int? CoordinatesIndex) IS_PIXEL_ON_DRAWING_DEFAULT_VALUE = (false, null);
-  internal (bool OnDrawing, int? CoordinatesIndex) IsPixelOnDrawing(Model.Charts.Drawing drawing, Pixel pixel, double grace = 10.0) {
+  internal (bool OnDrawing, int? CoordinatesIndex) IsPixelOnDrawing(Model.Charts.Drawing drawing, Pixel pixel, double grace = 5.0) {
     if (_candlestickPlot == null) return IS_PIXEL_ON_DRAWING_DEFAULT_VALUE;
     var iter = drawing.DrawingCoordinates.GetEnumerator();
     if (!iter.MoveNext()) return IS_PIXEL_ON_DRAWING_DEFAULT_VALUE ;
     var prevPixel = _candlestickPlot.GetPixel(iter.Current);
     var prevIndex = 0;
+    bool pixelOnDrawing = false;
     if (prevPixel.DistanceFrom(pixel) < grace) return (true, prevIndex);
     while (iter.MoveNext()) {
       var currentPixel = _candlestickPlot.GetPixel(iter.Current);
@@ -335,12 +379,20 @@ public partial class CandlestickChart : UserControl {
       var innerProduct = directionVector.X * currentPixelVector.X + directionVector.Y * currentPixelVector.Y;
       var vectorSine = Math.Sin(Math.Acos(innerProduct / currentPixelVectorLength / directionVectorLength));
       var distance = currentPixelVector.DistanceFrom(Pixel.Zero) * vectorSine;
-      if (distance < grace) return (true, null);
+      if (distance < grace) {
+        pixelOnDrawing = true;
+        break;
+      }
       prevPixel = currentPixel;
       prevIndex++;
     }
-    // 가장 마지막 픽셀
-    if (prevPixel.DistanceFrom(pixel) < grace) return (true, prevIndex);
-    return IS_PIXEL_ON_DRAWING_DEFAULT_VALUE;
+    if (prevPixel.DistanceFrom(pixel) < grace) {
+      pixelOnDrawing = true;
+    }
+    int? index = pixelOnDrawing ? drawing.DrawingCoordinates.Select((x, i) => (coord: x, distance: _candlestickPlot.GetPixel(x).DistanceFrom(pixel), index: i))
+      .Where(t => t.distance < grace)
+      .FirstOrDefault()
+      .index : null;
+    return (pixelOnDrawing, index);
   }
 }

@@ -19,7 +19,7 @@ public static class ContinuouslyAutoscaleExtensions {
       (prev, x) => (Math.Min(prev.Min, x.Low), Math.Max(prev.Max, x.High))
     );
     // rp.Plot.Axes.SetLimitsY(min, max);
-    var bottom = min * 1.05 - max * 0.05;
+    var bottom = min * (1.0 + 0.05) - max * 0.05;
     var top = min * (-0.05) + max * 1.05;
     rp.Plot.Axes.SetLimitsY(bottom, top);
     rp.Plot.Axes.DefaultGrid.YAxis.Range.Set(bottom, top);

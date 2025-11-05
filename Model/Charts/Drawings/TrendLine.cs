@@ -12,7 +12,7 @@ public partial class TrendLine : Drawing {
   public partial Coordinates EndCoordinate { get; set; }
   [DrawingParameter(ParameterName = "우측 연장")]
   [ObservableProperty]
-  public partial bool ExtendRight { get; set; } = true;
+  public partial bool ExtendRight { get; set; } = false;
   [DrawingParameter(ParameterName = "좌측 연장")]
   [ObservableProperty]
   public partial bool ExtendLeft { get; set; } = false;
@@ -30,6 +30,13 @@ public partial class TrendLine : Drawing {
       Width = 1.5F,
     };
   }
+  public override Drawing Clone() {
+    return new TrendLine() {
+      StartCoordinate = StartCoordinate,
+      EndCoordinate = EndCoordinate,
+      TrendLineStyle = TrendLineStyle.Clone()
+    };
+  }
   public override void SetCoordinates(IEnumerable<Coordinates> coordinates) {
     IEnumerator<Coordinates> iterator = coordinates.GetEnumerator();
     if (!iterator.MoveNext()) return;
@@ -38,6 +45,8 @@ public partial class TrendLine : Drawing {
     EndCoordinate = iterator.Current;
   }
   public override void Render(RenderPack rp) {
+    _markerStyle.FillColor = Colors.Transparent;
+    _markerStyle.LineColor = TrendLineStyle.Color;
     base.Render(rp);
     // get the pixel positions
     Pixel start = rp.Plot.GetPixel(StartCoordinate);

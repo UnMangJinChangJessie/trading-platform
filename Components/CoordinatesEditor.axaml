@@ -1,0 +1,31 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:m="using:trading_platform.Model"
+  xmlns:ScottPlot="clr-namespace:ScottPlot;assembly=ScottPlot"
+  x:Class="trading_platform.Components.CoordinatesEditor"
+  x:DataType="ScottPlot:Coordinates"
+>
+  <Grid
+    ColumnDefinitions="Auto, *, Auto, *"
+  >
+    <TextBlock
+      Grid.Column="0"
+      Text="X"
+    />
+    <NumericUpDown
+      Grid.Column="1"
+      Value="{Binding X}"
+      Increment="0.1"
+    />
+    <TextBlock
+      Grid.Column="2"
+      Text="Y"
+    />
+    <NumericUpDown
+      Grid.Column="3"
+      Value="{Binding Y}"
+      Increment="0.1"
+    />
+  </Grid>
+</UserControl>

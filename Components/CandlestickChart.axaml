@@ -67,6 +67,9 @@
       PointerMoved="PriceChart_PointerMoved"
       PointerPressed="PriceChart_PointerPressed"
       PointerReleased="PriceChart_PointerReleased"
+      PointerEntered="PriceChart_PointerEntered"
+      PointerExited="PriceChart_PointerExited"
+      KeyDown="PriceChart_KeyDown"
       VerticalAlignment="Stretch"
     >
     </ScottPlot:AvaPlot>

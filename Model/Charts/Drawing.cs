@@ -18,10 +18,13 @@ public abstract class Drawing : ObservableObject, IPlottable, IHasLegendText {
   public virtual int CoordinateCount => 0;
   public virtual IEnumerable<Coordinates> DrawingCoordinates => [];
   public abstract void SetCoordinates(IEnumerable<Coordinates> coordinates);
+
+  protected static MarkerStyle _markerStyle = new(MarkerShape.OpenSquare, 5, Colors.Black);
   public virtual void Render(RenderPack rp) {
     if (IsCoordinatesVisible) {
       var pixel = DrawingCoordinates.Select(p => rp.Plot.GetPixel(p));
-      ScottPlot.Drawing.DrawMarkers(rp.Canvas, rp.Paint, pixel, MarkerStyle.Default);
+      ScottPlot.Drawing.DrawMarkers(rp.Canvas, rp.Paint, pixel, _markerStyle);
     }
   }
+  public abstract Drawing Clone();
 }

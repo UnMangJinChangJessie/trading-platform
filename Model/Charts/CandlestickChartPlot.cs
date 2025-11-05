@@ -1,8 +1,6 @@
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using ScottPlot;
 using ScottPlot.DataSources;
 using ScottPlot.Rendering;
