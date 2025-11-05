@@ -2,7 +2,9 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using trading_platform.Model.Charts.Indicators;
 
 namespace trading_platform.Model.Charts;
 
@@ -202,5 +204,56 @@ public partial class CandlestickChartData : ObservableObject {
       candles = [.. Candles];
     }
     newIndicator.Reset(this, new() { WholeCandles = candles });
+  }
+  public bool WriteBacktestPy(Stream stream) {
+    if (!stream.CanWrite) return false;
+    using var writer = new StreamWriter(stream);
+    writer.WriteLine($"Date,Open,High,Low,Close,Volume");
+    lock (Candles) {
+      for (int i = 0; i < Candles.Count; i++) {
+        var candle = Candles[i];
+        var dateString = candle.Date.ToString("yyyy-MM-dd");
+        var open = candle.Open.ToString(CultureInfo.InvariantCulture);
+        var high = candle.High.ToString(CultureInfo.InvariantCulture);
+        var low = candle.Low.ToString(CultureInfo.InvariantCulture);
+        var close = candle.Close.ToString(CultureInfo.InvariantCulture);
+        var volume = candle.Volume.ToString(CultureInfo.InvariantCulture);
+        writer.WriteLine($"{dateString},{open},{high},{low},{close},{volume}");
+      }
+    }
+    return true;
+  }
+  public bool WriteEverything(Stream stream) {
+    if (!stream.CanWrite) return false;
+    using var writer = new StreamWriter(stream);
+    writer.Write($"영업일자,시가,고가,저가,종가,거래량,거래대금,평균단가");
+    foreach (var indicator in Indicators) {
+      // 거래량이나 거래대금의 경우에는 이미 열이 존재하므로 무시함.
+      if (indicator is Volume) continue;
+      writer.Write($",{indicator.LegendText}");
+    }
+    writer.WriteLine();
+    lock (Candles) {
+      for (int i = 0; i < Candles.Count; i++) {
+        var candle = Candles[i];
+        var dateString = $"{candle.Date:yyyy-MM-dd}T{candle.Date:hh:mm:sszzz}";
+        var averagePrice = candle.Volume == 0 ? 0 : candle.Amount / candle.Volume;
+        var open = candle.Open.ToString(CultureInfo.InvariantCulture);
+        var high = candle.High.ToString(CultureInfo.InvariantCulture);
+        var low = candle.Low.ToString(CultureInfo.InvariantCulture);
+        var close = candle.Close.ToString(CultureInfo.InvariantCulture);
+        var volume = candle.Volume.ToString(CultureInfo.InvariantCulture);
+        var amount = candle.Amount.ToString(CultureInfo.InvariantCulture);
+        writer.Write($"{dateString},{open},{high},{low},{close},{volume},{amount},{averagePrice}");
+        foreach (var indicator in Indicators) {
+          if (indicator is Volume) continue;
+          var indicatorValue = indicator.RenderingResults[i].Value;
+          if (double.IsFinite(indicatorValue)) writer.Write($",{indicatorValue}");
+          else writer.Write(",");
+        }
+        writer.WriteLine();
+      }
+    }
+    return true;
   }
 }

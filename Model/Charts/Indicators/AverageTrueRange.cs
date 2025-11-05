@@ -51,7 +51,7 @@ public partial class AverageTrueRange : Indicator {
         rp.Plot.Axes.Bottom,
         rp.Plot.Axes.Left
       ));
-    Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
+    ScottPlot.Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
   }
   public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     Clear();

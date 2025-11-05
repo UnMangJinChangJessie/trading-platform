@@ -11,13 +11,6 @@ public partial class MainWindow : Window {
     InitializeComponent();
   }
   public static async void Window_Loaded(object? sender, RoutedEventArgs args) {
-    var loadedKrx = await Model.StockMarketInformation.KRXStock.Load();
-    if (!loadedKrx) {
-      Debug.WriteLine("Failed to fetch KRX listings data.");
-    }
-    var loadedOversea = await Model.StockMarketInformation.OverseaStock.Load();
-    if (!loadedOversea) {
-      Debug.WriteLine("Failed to fetch oversea listings data.");
-    }
+    
   }
 }

@@ -34,17 +34,40 @@
       <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateBegin}" Margin="5,0,0,0" />
       <DatePicker YearFormat="yyyy" MonthFormat="MMM" DayFormat="dd(ddd)" SelectedDate="{Binding ChartDateEnd}" Margin="2,0,0,0" />
       <Menu Margin="5,0,0,0">
-        <MenuItem Header="보조지표(_/)">
+        <MenuItem Header="보조지표(_T)">
           <MenuItem
             Click="ConfigureIndicators"
             Header="보조지표 편집(_E)"
           />
         </MenuItem>
+        <MenuItem Header="차트 저장(_S)">
+          <MenuItem
+            Click="SaveFull"
+            Header="기본(_1)"
+          />
+          <MenuItem
+            Click="SaveBacktestPy"
+            Header="backtest.py 데이터(_2)"
+          />
+        </MenuItem>
+        <MenuItem Name="DrawingMenuItem" Header="그리기(_D)">
+          <MenuItem Header="추세선(_T)" >
+            <MenuItem
+              Click="StartDrawing"
+              DataContext="{x:Static mcharts:DrawingName.TrendLine}"
+              Header="직선(_L)"
+            />
+          </MenuItem>
+        </MenuItem>
       </Menu>
     </StackPanel>
     <ScottPlot:AvaPlot
+      HorizontalAlignment="Stretch"
       Name="PriceChart"
-      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+      PointerMoved="PriceChart_PointerMoved"
+      PointerPressed="PriceChart_PointerPressed"
+      PointerReleased="PriceChart_PointerReleased"
+      VerticalAlignment="Stretch"
     >
     </ScottPlot:AvaPlot>
   </DockPanel>

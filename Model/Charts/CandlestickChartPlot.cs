@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using ScottPlot;
 using ScottPlot.DataSources;
 using ScottPlot.Rendering;
@@ -70,6 +73,7 @@ public class CandlestickChartPlot : Plot {
   private CandlestickPlot MainPlot { get; set; }
   private ScottPlot.Plottables.HorizontalLine PriceHorizontalLine { get; set; }
   private CandlestickChartData BaseChart;
+  public ObservableCollection<Drawing> Drawings { get; private set; }
 
   public FillStyle RisingFillStyle => MainPlot.RisingFillStyle;
   public LineStyle RisingLineStyle => MainPlot.RisingLineStyle;
@@ -78,6 +82,7 @@ public class CandlestickChartPlot : Plot {
   public IOHLCSource Data => MainPlot.Data;
 
   public CandlestickChartPlot(CandlestickChartData data) {
+    Drawings = [];
     Axes.Left.RemoveTickGenerator();
     Axes.Right.TickGenerator = new ScottPlot.TickGenerators.NumericAutomatic();
     Grid.XAxis = Axes.Bottom;
@@ -116,6 +121,26 @@ public class CandlestickChartPlot : Plot {
     PriceHorizontalLine.Y = (double)args.Candle.Close;
     PriceHorizontalLine.Text = args.Candle.Close.ToString();
     PlotControl?.Refresh();
+  }
+  private void OnModifiedDrawing(object? sender, NotifyCollectionChangedEventArgs args) {
+    if (args.Action == NotifyCollectionChangedAction.Reset) {
+      Remove<Drawing>();
+      return;
+    }
+    if (args.Action == NotifyCollectionChangedAction.Remove || args.Action == NotifyCollectionChangedAction.Replace) {
+      foreach (var drawing in args.OldItems!.OfType<Drawing>()) Remove(drawing);
+    }
+    if (args.Action == NotifyCollectionChangedAction.Add || args.Action == NotifyCollectionChangedAction.Replace) {
+      foreach (var drawing in args.NewItems!.OfType<Drawing>()) Add.Plottable(drawing);
+    }
+  }
+  public void AddDrawing(Drawing newDrawing) {
+    Drawings.Add(newDrawing);
+    Add.Plottable(newDrawing);
+  }
+  public void RemoveDrawing(Drawing newDrawing) {
+    Drawings.Remove(newDrawing);
+    Remove(newDrawing);
   }
   ~CandlestickChartPlot() {
     BaseChart.Loaded -= OnLoaded;

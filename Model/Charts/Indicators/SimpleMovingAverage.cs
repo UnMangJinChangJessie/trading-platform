@@ -55,7 +55,7 @@ public partial class SimpleMovingAverage : Indicator {
       .Select(x => rp.Plot.GetPixel(
         new Coordinates((double)x.Date.ToOADate(), (double)x.Value)
       ));
-    Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
+    ScottPlot.Drawing.DrawLines(rp.Canvas, rp.Paint, pixels, LineStyle);
   }
   public override void Reset(object? sender, CandlestickChartData.LoadedEventArgs args) {
     lock (MovingAverage) {
