@@ -12,7 +12,7 @@
   x:Class="trading_platform.View.KoreaInvestment.KoreaStock.MainView"
   x:DataType="vmkis:KoreaStockMarket"
   x:Name="ControlRoot"
-  Loaded="UserControl_Loaded"
+  Initialized="UserControl_Initialized"
 >
   <TabControl>
     <TabItem Header="차트/주문" >

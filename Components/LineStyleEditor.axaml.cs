@@ -11,6 +11,6 @@ public partial class LineStyleEditor : UserControl {
       LinePattern.Solid, LinePattern.Dotted, LinePattern.DenselyDashed, LinePattern.Dashed
     };
   }
-  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+  public void UserControl_Initialized(object? sender, EventArgs args) {
   }
 }

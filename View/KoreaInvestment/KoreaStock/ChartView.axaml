@@ -12,7 +12,7 @@
   x:Name="ControlRoot"
   AttachedToVisualTree="UserControl_AttachedToVisualTree"
   DetachedFromVisualTree="UserControl_DetachedFromVisualTree"
-  Loaded="UserControl_Loaded"
+  Initialized="UserControl_Initialized"
 >
   <Grid ColumnDefinitions="*,180,200" RowDefinitions="*" Margin="5">
     <Grid

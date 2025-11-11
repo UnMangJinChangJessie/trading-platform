@@ -5,7 +5,7 @@
   xmlns:view="using:trading_platform.View.KoreaInvestment"
   mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
   x:Class="trading_platform.MainWindow"
-  Loaded="Window_Loaded"
+  Initialized="Window_Initialized"
   TextElement.FontSize="{StaticResource FontSizeMedium}"
   Title="Trading Platform"
 >

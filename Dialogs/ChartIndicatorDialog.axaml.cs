@@ -17,7 +17,7 @@ public partial class ChartIndicatorDialog : Window {
   public ChartIndicatorDialog() {
     InitializeComponent();
   }
-  public void Window_Loaded(object? sender, RoutedEventArgs args) {
+  public void Window_Initialized(object? sender, EventArgs args) {
     
   }
   private void AddIndicator_Click(object? sender, RoutedEventArgs args) {

@@ -14,7 +14,7 @@
   x:Class="trading_platform.Components.CandlestickChart"
   x:DataType="mcharts:CandlestickChartData"
   x:Name="ControlRoot"
-  Loaded="UserControl_Loaded"
+  Initialized="UserControl_Initialized"
 >
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" FlowDirection="LeftToRight" >

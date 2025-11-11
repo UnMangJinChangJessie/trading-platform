@@ -8,7 +8,7 @@
   CanResize="False"
   Height="600"
   Width="800"
-  Loaded="Window_Loaded"
+  Initialized="Window_Initialized"
 >
   <Grid ColumnDefinitions="198, 2, 600" >
     <!-- 더블 클릭 하면 지표 추가할 수 있는 창 -->

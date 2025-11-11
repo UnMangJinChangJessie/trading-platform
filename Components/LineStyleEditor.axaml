@@ -6,7 +6,7 @@
   xmlns:m="using:trading_platform.Model"
   x:DataType="{x:Type ScottPlot:LineStyle}"
   x:Class="trading_platform.Components.LineStyleEditor"
-  Loaded="UserControl_Loaded"
+  Initialized="UserControl_Initialized"
 >
   <Grid
     RowDefinitions="Auto, Auto, Auto"

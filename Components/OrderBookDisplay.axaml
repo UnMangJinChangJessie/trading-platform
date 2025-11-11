@@ -12,7 +12,7 @@
   x:Name="ControlRoot"
   d:DesignWidth="200"
   Focusable="False"
-  Loaded="UserControl_Loaded"
+  Initialized="UserControl_Initialized"
 >
   <ScrollViewer Margin="5" >
     <ItemsControl ItemsSource="{Binding CurrentOrders}" >

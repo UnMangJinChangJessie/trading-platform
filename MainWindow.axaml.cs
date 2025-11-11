@@ -10,7 +10,7 @@ public partial class MainWindow : Window {
   public MainWindow() {
     InitializeComponent();
   }
-  public static async void Window_Loaded(object? sender, RoutedEventArgs args) {
+  public static async void Window_Initialized(object? sender, EventArgs args) {
     
   }
 }

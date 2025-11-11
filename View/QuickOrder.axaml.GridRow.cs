@@ -1,8 +1,7 @@
 using System.Globalization;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace trading_platform.View;
 
@@ -14,19 +13,24 @@ public partial class QuickOrderView {
     TextBlock bidRemain = new();
     Button bidOrder = new();
     offerOrder.SetValue(DataContextProperty, false); // 마우스로 끌고 있는지 여부(주문 취소 기능)
+    offerOrder.SetValue(VerticalAlignmentProperty, VerticalAlignment.Stretch); // 마우스로 끌고 있는지 여부(주문 취소 기능)
     offerOrder.Classes.AddRange(["Flat","Accent"]);
     bidOrder.SetValue(DataContextProperty, false);
+    bidOrder.SetValue(VerticalAlignmentProperty, VerticalAlignment.Stretch); // 마우스로 끌고 있는지 여부(주문 취소 기능)
     bidOrder.Classes.AddRange(["Flat","Accent"]);
     offerRemain.SetValue(TextBlock.TextProperty, "0");
     offerRemain.SetValue(DataContextProperty, 0M);
-    offerRemain.SetValue(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Center);
+    offerRemain.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+    offerRemain.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
     bidOrder.SetValue(TextBlock.TextProperty, "0");
     bidRemain.SetValue(TextBlock.TextProperty, "0");
     bidRemain.SetValue(DataContextProperty, 0M);
-    bidRemain.SetValue(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Center);
+    bidRemain.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+    bidRemain.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
     price.SetValue(TextBlock.TextProperty, "0");
     price.SetValue(DataContextProperty, 0M);
-    price.SetValue(HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Center);
+    price.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+    price.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
     Border priceBorder = new();
     EventHandler<PointerEventArgs> enterEvent = (sender, args) => {
       priceBorder.SetValue(IsVisibleProperty, true);
@@ -34,7 +38,6 @@ public partial class QuickOrderView {
     EventHandler<PointerEventArgs> exitEvent = (sender, args) => {
       priceBorder.SetValue(IsVisibleProperty, false);
     }; 
-    priceBorder.Padding = new(2);
     priceBorder.BorderThickness = new Avalonia.Thickness(1);
     priceBorder.BorderBrush = Foreground;
     priceBorder.IsVisible = false;
@@ -54,64 +57,41 @@ public partial class QuickOrderView {
     Grid.SetColumn(priceBorder, 2);
     Grid.SetColumn(bidRemain, 3);
     Grid.SetColumn(bidOrder, 4);
-    grid.Children.AddRange([offerOrder, offerRemain, price, priceBorder, bidRemain, bidOrder]);
+    _orderBookGridRows.Add([offerOrder, offerRemain, price, priceBorder, bidRemain, bidOrder]);
+    grid.Children.AddRange(_orderBookGridRows[^1]);
   }
-  private TextBlock? GetPriceGridCell(int idx) {
-    return OrderBookGrid.Children.OfType<Control>()
-      .Where(x => Grid.GetRow(x) == idx + 1 && Grid.GetColumn(x) == 2)
-      .OfType<TextBlock>()
-      .SingleOrDefault();
-  }
-  private void SetPriceGridCell(int idx, decimal price) {
-    if (GetPriceGridCell(idx) is not TextBlock cell) return;
+  private void RotatePriceDown() {
     if (CastedDataContext == null) return;
-    cell.Text = price.ToString(new NumberFormatInfo() {
-      NumberDecimalDigits = CastedDataContext.CurrentItem.PriceDecimalDigits,
-    });
-    cell.DataContext = price;
-  }
-  private void IncrementPriceGridCell(int idx) {
-    if (GetPriceGridCell(idx) is not TextBlock cell) return;
-    if (CastedDataContext == null) return;
-    if (cell.DataContext is not decimal price) return;
-    price = CastedDataContext.CurrentOrderForm.GetNextPriceTick(price);
-    cell.Text = price.ToString(new NumberFormatInfo() {
-      NumberDecimalDigits = CastedDataContext.CurrentItem.PriceDecimalDigits,
-    });
-    cell.DataContext = price;
-  }
-  private void DecrementPriceGridCell(int idx) {
-    if (GetPriceGridCell(idx) is not TextBlock cell) return;
-    if (CastedDataContext == null) return;
-    if (cell.DataContext is not decimal price) return;
-    price = CastedDataContext.CurrentOrderForm.GetPreviousPriceTick(price);
-    cell.Text = price.ToString(new NumberFormatInfo() {
-      NumberDecimalDigits = CastedDataContext.CurrentItem.PriceDecimalDigits,
-    });
-    cell.DataContext = price;
-  }
-  private TextBlock? GetQuantityGridCell(int idx, bool isOffer) {
-    int colIdx = isOffer ? 1 : 3;
-    return OrderBookGrid.Children.OfType<Control>()
-      .Where(x => Grid.GetRow(x) == idx + 1 && Grid.GetColumn(x) == colIdx)
-      .SingleOrDefault() as TextBlock;
-  }
-  private void SetQuantityGridCell(int idx, bool isOffer, decimal quantity) {
-    if (GetQuantityGridCell(idx, isOffer) is not TextBlock cell) return;
-    if (CastedDataContext == null) return;
-    cell.Text = quantity.ToString(new NumberFormatInfo() {
-      NumberDecimalDigits = CastedDataContext.CurrentItem.PriceDecimalDigits,
-    });
-    cell.DataContext = quantity;
-  }
-  private void RotateRowsDown() {
-    foreach (var cell in OrderBookGrid.Children.OfType<Control>().Where(x => Grid.GetRow(x) > 0)) {
-      Grid.SetRow(cell, Grid.GetRow(cell) % 20 + 1);
+    for (int i = 0; i < _orderBookGridRows.Count; i++) {
+      decimal price;
+      if (i + 1 == _orderBookGridRows.Count) {
+        price = (decimal)_orderBookGridRows[i][2].DataContext!;
+        price = CastedDataContext.CurrentOrderForm.GetPreviousPriceTick(price);
+      }
+      else {
+        price = (decimal)_orderBookGridRows[i + 1][2].DataContext!;
+      }
+      _orderBookGridRows[i][2].SetValue(DataContextProperty, price);
+      ((TextBlock)_orderBookGridRows[i][2]).SetValue(TextBlock.TextProperty, price.ToString(new NumberFormatInfo() {
+        NumberDecimalDigits = CastedDataContext.CurrentItem.PriceDecimalDigits
+      }));
     }
   }
-  private void RotateRowsUp() {
-    foreach (var cell in OrderBookGrid.Children.OfType<Control>().Where(x => Grid.GetRow(x) != 0)) {
-      Grid.SetRow(cell, (Grid.GetRow(cell) + 18) % 20 + 1);
+  private void RotatePriceUp() {
+    if (CastedDataContext == null) return;
+    for (int i = 1; i <= _orderBookGridRows.Count; i++) {
+      decimal price;
+      if (i == _orderBookGridRows.Count) {
+        price = (decimal)_orderBookGridRows[^i][2].DataContext!;
+        price = CastedDataContext.CurrentOrderForm.GetNextPriceTick(price);
+      }
+      else {
+        price = (decimal)_orderBookGridRows[^(i + 1)][2].DataContext!;
+      }
+      _orderBookGridRows[^i][2].SetValue(DataContextProperty, price);
+      ((TextBlock)_orderBookGridRows[^i][2]).SetValue(TextBlock.TextProperty, price.ToString(new NumberFormatInfo() {
+        NumberDecimalDigits = CastedDataContext.CurrentItem.PriceDecimalDigits
+      }));
     }
   }
 }

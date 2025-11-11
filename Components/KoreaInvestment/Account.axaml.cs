@@ -10,5 +10,5 @@ public partial class Account : UserControl {
   public Account() {
     InitializeComponent();
   }
-  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {  }
+  public void UserControl_Initialized(object? sender, EventArgs args) {  }
 }

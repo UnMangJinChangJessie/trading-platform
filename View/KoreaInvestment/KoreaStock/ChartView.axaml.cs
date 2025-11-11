@@ -32,7 +32,7 @@ public partial class ChartView : UserControl {
   public ChartView() {
     InitializeComponent();
   }
-  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+  public void UserControl_Initialized(object? sender, EventArgs args) {
     if (PriceChart.DataContext is Model.Charts.CandlestickChartData data) {
       foreach (var item in new Model.Charts.CandlestickChartData.CandlePeriod[] {
         Model.Charts.CandlestickChartData.CandlePeriod.Daily,

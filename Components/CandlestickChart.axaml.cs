@@ -52,7 +52,7 @@ public partial class CandlestickChart : UserControl {
       _cursorCrosshair.IsVisible = _cursorCrosshairVisible;
     });
   }
-  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+  public void UserControl_Initialized(object? sender, EventArgs args) {
     if (CastedDataContext == null) return;
     _candlestickPlot = new CandlestickChartPlot(CastedDataContext);
     if (!CastedDataContext.Indicators.OfType<Volume>().Any()) {

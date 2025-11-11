@@ -115,7 +115,7 @@ public partial class OrderBookDisplay {
   public OrderBookDisplay() {
     InitializeComponent();
   }
-  public void UserControl_Loaded(object? sender, RoutedEventArgs args) {
+  public void UserControl_Initialized(object? sender, EventArgs args) {
     LongBrush ??= new SolidColorBrush(Colors.Pink);
     ShortBrush ??= new SolidColorBrush(Colors.SkyBlue);
     NeutralBrush ??= new SolidColorBrush(Colors.Black);

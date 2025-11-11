@@ -18,5 +18,5 @@ public partial class MainView : UserControl {
       ));
     };
   }
-  public void UserControl_Loaded(object? sender, RoutedEventArgs args) { }
+  public void UserControl_Initialized(object? sender, EventArgs args) { }
 }

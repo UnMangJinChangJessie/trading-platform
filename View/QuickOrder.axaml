@@ -10,55 +10,67 @@
   x:Class="trading_platform.View.QuickOrderView"
   x:DataType="vm:QuickOrderViewModel"
 >
-  <StackPanel Orientation="Vertical" PointerWheelChanged="StackPanel_PointerWheelChanged" Spacing="10" >
-    <StackPanel Orientation="Horizontal">
-      <TextBlock Text="주문 방식" VerticalAlignment="Center" />
-      <RadioButton GroupName="OrderMethod" Content="매수/매도" />
-      <RadioButton GroupName="OrderMethod" Content="공매수/매도상환" />
-      <RadioButton GroupName="OrderMethod" Content="매수상환/공매도" />
-      <CheckBox
-        Margin="50, 0"
-        IsChecked="True"
-        Name="StopLossCheckBox"
-        Click="StopLossCheckBox_Click"
+  <DockPanel
+    PointerWheelChanged="StackPanel_PointerWheelChanged"
+  >
+    <StackPanel
+      DockPanel.Dock="Top"
+      Spacing="10"
+    >
+      <StackPanel 
+        Orientation="Horizontal"
+        Spacing="10"
       >
-        STOP
-      </CheckBox>
-      <NumericUpDown
-        Increment="1"
-        Minimum="1"
-        Maximum="100"
-        Name="StopLossNumericUpDown"
-        Value="{Binding StopLossTick}"
-      />
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" >
-      <RadioButton 
-        Content="수량"
-        GroupName="QuantityMethod"
-        Name="QuantityRadioButton"
-        Checked="QuantityRadioButton_Checked"
-      />
-      <NumericUpDown
-        Name="QuantityNumericUpDown"
-        Value="{Binding CurrentOrderForm.Quantity}"
-        Spinned="QuantityNumericUpDown_Spined"
-      />
-      <RadioButton 
-        Name="AmountRadioButton"
-        GroupName="QuantityMethod"
-        Content="금액"
-      />
-      <NumericUpDown
-        Value="{Binding Amount}"
-        Increment="1"
-      />
+        <TextBlock Text="주문 방식" VerticalAlignment="Center" />
+        <RadioButton GroupName="OrderMethod" Content="매수/매도" />
+        <RadioButton GroupName="OrderMethod" Content="공매수/매도상환" />
+        <RadioButton GroupName="OrderMethod" Content="매수상환/공매도" />
+        <CheckBox
+          Margin="50, 0"
+          IsChecked="True"
+          Name="StopLossCheckBox"
+          Click="StopLossCheckBox_Click"
+        >
+          STOP
+        </CheckBox>
+        <NumericUpDown
+          Increment="1"
+          Minimum="1"
+          Maximum="100"
+          Name="StopLossNumericUpDown"
+          Value="{Binding StopLossTick}"
+        />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" >
+        <RadioButton 
+          Content="수량"
+          GroupName="QuantityMethod"
+          Name="QuantityRadioButton"
+          Checked="QuantityRadioButton_Checked"
+        />
+        <NumericUpDown
+          Name="QuantityNumericUpDown"
+          Value="{Binding CurrentOrderForm.Quantity}"
+          Spinned="QuantityNumericUpDown_Spined"
+        />
+        <RadioButton 
+          Name="AmountRadioButton"
+          GroupName="QuantityMethod"
+          Content="금액"
+        />
+        <NumericUpDown
+          Value="{Binding Amount}"
+          Increment="1"
+        />
+      </StackPanel>
     </StackPanel>
     <Grid
       ColumnDefinitions="*,*,*,*,*"
+      DockPanel.Dock="Top"
+      VerticalAlignment="Stretch"
       Name="OrderBookGrid"
       RowDefinitions="Auto"
-      RowSpacing="2"
+      Margin="20"
     >
       <TextBlock
         Grid.Row="0"
@@ -96,5 +108,5 @@
         매수
       </TextBlock>
     </Grid>
-  </StackPanel>
+  </DockPanel>
 </UserControl>
