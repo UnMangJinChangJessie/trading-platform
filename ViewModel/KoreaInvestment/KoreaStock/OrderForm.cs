@@ -9,7 +9,7 @@ using trading_platform.Model.KoreaInvestment;
 using static trading_platform.Model.KoreaInvestment.DomesticStock;
 using OrderFormBase = ViewModel.OrderForm;
 
-public partial class OrderForm([MaybeNull] KisClients api, MarketItemLabel label) : OrderFormBase([
+public partial class OrderFormViewModel([MaybeNull] KisClients api, MarketItemLabel label) : OrderFormBase([
   Model.KoreaInvestment.OrderMethod.Limit,
   Model.KoreaInvestment.OrderMethod.IocLimit,
   Model.KoreaInvestment.OrderMethod.FokLimit,
@@ -54,19 +54,11 @@ public partial class OrderForm([MaybeNull] KisClients api, MarketItemLabel label
     }
     SucceedShort?.Invoke(this, result.Response!);
   }
-  public override void IncreaseUnitPriceTick() {
-    UnitPrice = StockMarketInformation.KRXStock.GetTickIncrement(UnitPrice, SecuritiesType);
+  public override decimal GetNextPriceTick(decimal price) {
+    return StockMarketInformation.KRXStock.GetTickIncrement(price, SecuritiesType);
   }
-  public override void IncreaseStopLossPriceTick() {
-    if (StopLossPrice == null) return;
-    StopLossPrice = StockMarketInformation.KRXStock.GetTickIncrement(StopLossPrice.Value, SecuritiesType);
-  }
-  public override void DecreaseUnitPriceTick() {
-    UnitPrice = StockMarketInformation.KRXStock.GetTickDecrement(UnitPrice, SecuritiesType);
-  }
-  public override void DecreaseStopLossPriceTick() {
-    if (StopLossPrice == null) return;
-    StopLossPrice = StockMarketInformation.KRXStock.GetTickDecrement(StopLossPrice.Value, SecuritiesType);
+  public override decimal GetPreviousPriceTick(decimal price) {
+    return StockMarketInformation.KRXStock.GetTickDecrement(price, SecuritiesType);
   }
   public override void Long() {
     if (Api == null) return;

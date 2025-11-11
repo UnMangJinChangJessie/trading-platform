@@ -17,6 +17,10 @@ public abstract partial class MarketItem : ObservableObject, IRefresh {
   public partial MarketItemOHLC ItemOHLC { get; protected set; } = new();
   [ObservableProperty]
   public partial Model.Charts.CandlestickChartData ItemChart { get; protected set; } = new();
+  [ObservableProperty]
+  public partial int PriceDecimalDigits { get; set; }
+  [ObservableProperty]
+  public partial int QuantityDecimalDigits { get; set; }
   /// <summary>
   /// 호가 정보
   /// </summary>

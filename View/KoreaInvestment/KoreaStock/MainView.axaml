@@ -12,6 +12,7 @@
   x:Class="trading_platform.View.KoreaInvestment.KoreaStock.MainView"
   x:DataType="vmkis:KoreaStockMarket"
   x:Name="ControlRoot"
+  Loaded="UserControl_Loaded"
 >
   <TabControl>
     <TabItem Header="차트/주문" >
@@ -21,11 +22,11 @@
         OrderDataContext="{Binding #ControlRoot.DataContext.Order}"
       />
     </TabItem>
-    <!-- <TabItem Header="빠른 주문">
-      <vkis:KoreaStockQuickOrder
-        DataContext="{Binding #ControlRoot.DataContext"
+    <TabItem Header="빠른 주문">
+      <v:QuickOrderView 
+        Name="KoreaStockQuickOrderView"
       />
-    </TabItem> -->
+    </TabItem>
     <TabItem Header="재무정보" >
       <vkis:FinancialView 
         Name="PART_FinancialInfo"

@@ -17,7 +17,7 @@ public partial class Order : OrderBase {
     [ObservableProperty]
     public partial string InitialOrderId { get; set; }
   }
-  private OrderForm CastedForm => (OrderForm)Form;
+  private OrderFormViewModel CastedForm => (OrderFormViewModel)Form;
   public KisClients Api {
     get => field;
     set {
@@ -31,7 +31,7 @@ public partial class Order : OrderBase {
   public Order([MaybeNull] KisClients api, MarketItemLabel label) {
     PendingOrders = [];
     Api = api;
-    Form = new OrderForm(api, label);
+    Form = new OrderFormViewModel(api, label);
   }
   public void OnReceivedModifiable(string jsonString, bool hasNextData, object? args) {
     var result = ApiModel.DeserializeJson<GetModifiableResult>(jsonString);

@@ -21,20 +21,28 @@ public abstract partial class OrderForm(IEnumerable<object> methodsList, MarketI
   [ObservableProperty]
   public partial bool BlockStopLossPriceInput { get; set; } = true;
 
-  public virtual void IncreaseUnitPriceTick() {
-    UnitPrice += 1;
+  public void IncreaseUnitPriceTick() {
+    UnitPrice = GetNextPriceTick(UnitPrice);
   }
-  public virtual void IncreaseStopLossPriceTick() {
-    StopLossPrice += 1;
+  public void IncreaseStopLossPriceTick() {
+    if (StopLossPrice == null) return;
+    StopLossPrice = GetNextPriceTick(StopLossPrice.Value);
   }
-  public virtual void DecreaseUnitPriceTick() {
-    UnitPrice -= 1;
+  public virtual decimal GetNextPriceTick(decimal price) {
+    return price + 1;
   }
-  public virtual void DecreaseStopLossPriceTick() {
-    StopLossPrice += 1;
+  public void DecreaseUnitPriceTick() {
+    UnitPrice = GetPreviousPriceTick(UnitPrice);
+  }
+  public void DecreaseStopLossPriceTick() {
+    if (StopLossPrice == null) return;
+    StopLossPrice = GetPreviousPriceTick(StopLossPrice.Value);
+  }
+  public virtual decimal GetPreviousPriceTick(decimal price) {
+    return price - 1;
   }
   // 일본 주식이나 암호화폐와 같이 거래 단위가 1이 아닌 경우가 있음
-  public virtual void IncreaseQuantityTick() {
+  public void IncreaseQuantityTick() {
     Quantity += 1;
   }
   public virtual void DecreaseQuantityTick() {
